@@ -46,14 +46,14 @@ html
                     each movie in user.moviesWatched
                         li.list-group-item.me-auto
                             button.btn.btn-danger.me-3 Remove
-                            a(href="") #{movie.name}
+                            a(href="") #{movie.title}
 
             div.mt-5(id="RecommendedDiv")
                 p Recommended Movies:
                 ul.list-group.list-group-flush
                     each movie in user.recommendedMovies
                         li.list-group-item.me-auto
-                            a(href="") #{movie.name}
+                            a(href="") #{movie.title}
 
             div.mt-5(id="NotificationsDiv")
                 p Notifications:

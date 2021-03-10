@@ -23,8 +23,8 @@ let user = {
         {name: "Parasite"}
     ],
     recommendedMovies: [
-        {name: "Breaking Bad"},
-        {name: "Better Call Saul"}
+        {title: "Breaking Bad"},
+        {title: "Better Call Saul"}
     ],
     notifications: [
         {text: "Followed!"}
@@ -60,6 +60,12 @@ app.get('/persons/:id', (req, res) => {
 //page displaying login form
 app.get('/login/', (req, res) => {
     let data = pug.renderFile("./partials/login.pug");
+    res.send(data);
+})
+
+//page for contribution form
+app.get('/contribute/', (req, res) => {
+    let data = pug.renderFile("./partials/contribute.pug");
     res.send(data);
 })
 
