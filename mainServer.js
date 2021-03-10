@@ -1,11 +1,38 @@
 const pug = require('pug');
 const express = require('express');
 
-
 let app = express();
-
 app.use(express.static("public"));
 app.use(express.json())
+
+let user = {
+    username: "exampleUser",
+    id: 0,
+    accountType: "regular",
+    peopleFollowing: [
+        {name: "personName1"},
+        {name: "personName2"},
+        {name: "personName3"}
+
+
+    ],
+    usersFollowing: [
+        {username: "exampleUser2"},
+        {username: "exampleUser3"}
+    ],
+    moviesWatched: [
+        {name: "Titanic"},
+        {name: "Parasite"}
+    ],
+    recommendedMovies: [
+        {name: "Breaking Bad"},
+        {name: "Better Call Saul"}
+    ],
+    notifications: [
+        {text: "Followed!"}
+    ]
+}
+
 
 //Start adding route handlers here
 //handler for adding recipe
@@ -16,23 +43,12 @@ app.get('/', (req, res) => {
 })
 
 
-//page displaying all recipes and links to each one
-app.get('/recipes', (req, res) => {
-  //  let data = pug.renderFile("./public/screens/recipes.pug",   {recipes: database})
-  //  res.send(data)
-})
-
-//page displaying a single recipe
-app.get('/recipes/:id', (req, res) => {
+//page displaying a single user
+app.get('/users/:id', (req, res) => {
     let id = req.params.id;
 
-    //redirect back to recipes page if no recipe found
-    if (database[id] === undefined) {
-        res.redirect('/recipes');
-        return
-    }
-    let data = pug.renderFile("./public/screens/singleRecipe.pug", {recipe: database[id]})
-    res.send(data);
+    let data = pug.renderFile("./partials/user.pug", {user: user});
+    res.send(data)
 })
 
 
