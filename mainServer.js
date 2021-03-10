@@ -13,8 +13,6 @@ let user = {
         {name: "personName1"},
         {name: "personName2"},
         {name: "personName3"}
-
-
     ],
     usersFollowing: [
         {username: "exampleUser2"},
@@ -51,6 +49,19 @@ app.get('/users/:id', (req, res) => {
     res.send(data)
 })
 
+
+//page displaying a single person
+app.get('/persons/:id', (req, res) => {
+    let id = req.params.id;
+
+    //let data = pug.renderFile("./partials/person.pug" {person: person})
+})
+
+//page displaying login form
+app.get('/login/', (req, res) => {
+    let data = pug.renderFile("./partials/login.pug");
+    res.send(data);
+})
 
 app.listen(3000);
 console.log("Server listening at http://localhost:3000");
