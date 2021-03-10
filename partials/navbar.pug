@@ -1,12 +1,22 @@
 nav.navbar.navbar-expand.navbar-dark.bg-dark
-    div.collapse.navbar-collapse.d-lg-flex.align-items-center
-        a.navbar-brand(href="../index.html") IMDB CLONE
-        ul.navbar-nav
-            li.nav-item
-                a.nav-link(href="../create.html") Create Recipe
-            li.nav-item
-                a.nav-link(href="../recipes") Browse Recipes
+    div.container-fluid
+        a.navbar-brand(href="../") IMDB CLONE
+            | !{' '}
+            i.fa.fa-film(style={color: "white"})
+        div.collapse.navbar-collapse
+            a.nav-link(href="../#") Contribute
 
-        form.form-inline.ml-auto
-            input.form-control.mt-3.mr-3(type="search" placeholder="Search Movie" aria-label="Search")
-            button.btn.btn-outline-success.mt-3(type="submit") Search
+
+        form.d-flex.mt-3
+            input.form-control.me-3(type="search" placeholder="Search Movie" aria-label="Search")
+            button.btn.btn-outline-success.me-3(type="submit") Search
+
+        div.dropdown
+            button.btn.btn-outline-primary.btn-lg.dropdown-toggle(type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false")
+                i.fa.fa-user(style={color: "white"})
+
+            div.dropdown-menu.dropdown-menu-dark.dropdown-menu-end(aria-labelledby="dropdownMenuButton")
+                a.dropdown-item(href="#") Sign In/Up
+                a.dropdown-item(href="#") Profile
+
+
