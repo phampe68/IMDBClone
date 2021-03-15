@@ -5,7 +5,13 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
             i.fa.fa-film(style={color: "white"})
         div.collapse.navbar-collapse
             a.nav-link(href="../contribute/") Contribute
-            a.nav-link(href="../#") Advanced Search
+            div.dropdown
+                a.nav-link.dropdown-toggle(href="#" role="button" id="searchDropDownLink" data-bs-toggle="dropdown" aria-expanded="false") Advanced Search
+                form.dropdown-menu.dropdown-menu-dark.p-2(action="/movies/?" aria-labelledby="searchDropDownLink")
+                    input.form-control.mb-3(type="search" placeholder="Title" aria-label="Search")
+                    input.form-control.mb-3(type="search" placeholder="Genre" aria-label="Search")
+                    input.form-control.mb-3(type="search" placeholder="Actor Name" aria-label="Search")
+                    button.btn.btn-outline-success.me-3(type="submit") Search
 
 
         form.d-flex.mt-3(action="/movies/?")
