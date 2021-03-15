@@ -1,0 +1,14 @@
+body{
+    background: #222831;
+}
+.list-group-item{
+    background: #30475e;
+}
+
+li a{
+    color: white;
+}
+
+li a:hover{
+    color:yellow;
+}

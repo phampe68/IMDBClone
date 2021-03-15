@@ -5,56 +5,183 @@ let app = express();
 app.use(express.static("public"));
 app.use(express.json())
 
-let user = {
+let movieData = require("./movie-data-10.json");
+
+/**
+ * EXAMPLE OBJECTS: Movie, Person, User, Notification, Review
+ * (NOTE: for now
+ */
+let exampleMovie = {
+    "id": 0,
+    "Title": "Meatballs 4",
+    "Year": "1992",
+    "Rated": "R",
+    "Released": "04 Dec 1992",
+    "Runtime": "84 mins",
+    "Genre": [
+        "Comedy"
+    ],
+    "Director": [
+        0
+    ],
+    "Writer": [
+        0,
+        1,
+        2
+    ],
+    "Actors": [
+        0,
+        0,
+        0,
+        0
+    ],
+    "Plot": "Ricky is the hottest water-ski instructor around and he has just be rehired by his former employer/camp to whip up attendance. But the camp is in serious financial trouble and the owner of ...",
+    "Awards": "N/A",
+    "Poster": "https://m.media-amazon.com/images/M/MV5BZjY1NDZjYjYtZjRmMi00M2NhLTllMDktZDg2ZTRmNDA4Njc5XkEyXkFqcGdeQXVyNjQ4NTg2ODY@._V1_SX300.jpg",
+    "Reviews": [
+        0,
+    ]
+}
+
+let examplePerson = {
+    name: "Bob Logan",
+    id: 0,
+    contributions: [
+        0
+    ],
+    numFollowers: 0
+}
+
+let exampleUser = {
     username: "exampleUser",
+    password: "not_a_secure_password",
     id: 0,
     accountType: "regular",
     peopleFollowing: [
-        {name: "personName1"},
-        {name: "personName2"},
-        {name: "personName3"}
+        0
     ],
     usersFollowing: [
         {username: "exampleUser2"},
         {username: "exampleUser3"}
     ],
-    moviesWatched: [
-        {name: "Titanic"},
-        {name: "Parasite"}
-    ],
+    moviesWatched: [0, 1],
     recommendedMovies: [
-        {title: "Breaking Bad"},
-        {title: "Better Call Saul"}
+        0, 0, 1
     ],
     notifications: [
         {text: "Followed!"}
     ]
 }
 
+let exampleOtherUser = {
+    username: "exampleOtherUser",
+    password: "not_a_secure_password",
+    id: 1,
+    accountType: "contributor",
+    peopleFollowing: [
+        0
+    ],
+    usersFollowing: [
+        0,
+        0
+    ],
+    moviesWatched: [0, 1],
+    recommendedMovies: [
+        0, 0, 1
+    ],
+    notifications: [
+        0, 0
+    ]
+}
+
+let exampleReview = {
+    id: 0,
+    name: "exampleName",
+    movie: 1,
+    summaryText: "This was an incredible movie. Loved it!",
+    fullText: "Extremely good movie with great plot, actors, and writing. I especially loved how Bob Logan managed to act, direct, and write the whole thing!",
+    score: 8
+}
+
+let exampleNotification = {
+    id: 0,
+    text: "Jean meadows is part of a new movie!",
+    type: "movie",
+    relatedID: 0
+}
 
 //Start adding route handlers here
 //handler for adding recipe
 app.get('/', (req, res) => {
     let data = pug.renderFile('./partials/index.pug');
     res.send(data);
-
 })
 
-
 //page displaying a single user
-app.get('/users/:id', (req, res) => {
+app.get('/users/myProfile', (req, res) => {
+    //use id in param to get a user (for now just use an exampleUser object)
     let id = req.params.id;
+    let mainUser = exampleUser;
 
-    let data = pug.renderFile("./partials/user.pug", {user: user});
+    //here we would use the ids in our user object to get all the other relevant objects for this page
+    //for now we'll just use example objects
+    let usersFollowing = [exampleOtherUser, exampleOtherUser];
+    let peopleFollowing = [examplePerson, examplePerson, examplePerson];
+    let moviesWatched = [exampleMovie];
+    let recommendedMovies = [exampleMovie, exampleMovie, exampleMovie];
+    let notifications = [exampleNotification, exampleNotification, exampleNotification];
+
+    let data = pug.renderFile("./partials/user.pug", {
+        user: mainUser,
+        usersFollowing: usersFollowing,
+        peopleFollowing: peopleFollowing,
+        moviesWatched: moviesWatched,
+        recommendedMovies: recommendedMovies,
+        notifications: notifications
+    })
     res.send(data)
 })
 
 
+//page for viewing another user
+app.get(`/users/:id`, (req, res) => {
+    let peopleFollowing = [examplePerson, examplePerson, examplePerson];
+    let moviesWatched = [exampleMovie];
+    let reviewsWritten = [exampleReview];
+
+    let data = pug.renderFile("./partials/otherUser.pug", {
+        user: exampleOtherUser,
+        peopleFollowing: peopleFollowing,
+        moviesWatched: moviesWatched,
+        reviewsWritten: reviewsWritten
+
+    });
+    res.send(data);
+})
+
+
 //page displaying a single person
-app.get('/persons/:id', (req, res) => {
+app.get('/people/:id', (req, res) => {
+    //use id in param to get a person (for now just user examplePerson object)
     let id = req.params.id;
 
-    //let data = pug.renderFile("./partials/person.pug" {person: person})
+    //here we would use the ids in our person object to get all the other relevant objects for this page
+    //for now we'll just use example objects
+    let following = exampleUser.peopleFollowing.includes(id);
+    let frequentCollaborators = [examplePerson, examplePerson, examplePerson];
+    let moviesWritten = [exampleMovie, exampleMovie];
+    let moviesDirected = [exampleMovie];
+    let moviesActed = [exampleMovie];
+
+    let data = pug.renderFile("./partials/person.pug", {
+        person: examplePerson,
+        following: following,
+        frequentCollaborators: frequentCollaborators,
+        moviesWritten: moviesWritten,
+        moviesDirected: moviesDirected,
+        moviesActed: moviesActed
+    })
+    res.send(data);
 })
 
 //page displaying login form
@@ -69,5 +196,48 @@ app.get('/contribute/', (req, res) => {
     res.send(data);
 })
 
+//page for a single movie
+app.get('/movies/:id', (req, res) => {
+    let id = parseInt(req.params.id);
+    let watched = exampleUser.moviesWatched.includes(id);
+
+    let directors = [examplePerson];
+    let writers = [examplePerson, examplePerson];
+    let actors = [examplePerson, examplePerson, examplePerson, examplePerson];
+    let reviews = [exampleReview, exampleReview];
+    let relatedMovies = [exampleMovie, exampleMovie];
+
+    let data = pug.renderFile("./partials/movie.pug", {
+        movie: exampleMovie,
+        watched: watched,
+        directors: directors,
+        writers: writers,
+        actors: actors,
+        reviews: reviews,
+        relatedMovies: relatedMovies
+    });
+    res.send(data);
+})
+
+//page for search results
+app.get('/movies/?', (req, res) => {
+    //here we would use query params to generate search results
+    //for now we'll pass in some example results
+    let movies = [exampleMovie, exampleMovie, exampleMovie, exampleMovie];
+
+    let data = pug.renderFile("./partials/movieSearch.pug", {
+        movies: movies,
+    });
+    res.send(data);
+})
+
+//page for a single review
+app.get(`/reviews/:id`, (req, res) => {
+    let data = pug.renderFile("./partials/review.pug", {review: exampleReview});
+    res.send(data);
+})
+
+
 app.listen(3000);
+
 console.log("Server listening at http://localhost:3000");

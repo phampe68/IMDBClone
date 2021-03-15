@@ -1,0 +1,20 @@
+body{
+    background: #222831;
+}
+
+h1, h2, h3, h4, p, hr, label, input, a{
+    color:white;
+}
+a:hover{
+    color: yellow;
+}
+
+
+li a{
+    color: black;
+}
+
+li a:hover{
+    color:purple;
+}
+

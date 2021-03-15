@@ -1,0 +1,13 @@
+.star-selector{
+    font-size: 30px;
+    color:white;
+    -webkit-text-stroke-width: 3px;
+    -webkit-text-stroke-color: black;
+}
+.star-checked{
+    color: yellow;
+}
+
+.star-clicked{
+    color: yellow;
+}

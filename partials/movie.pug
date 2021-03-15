@@ -1,0 +1,107 @@
+html
+    head
+        link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css')
+        link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous")
+        script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous")
+
+        style
+            include ../stylesheets/index.css
+            include ../stylesheets/star.css
+        script
+            include ../scripts/starReview.js
+    title Card Info Page
+    body
+        include ./navbar.pug
+
+        div#movie-info-container.container.mt-5
+            div#movie-info
+                h1#movie-title.display-1 Title: #{movie.Title} (#{movie.Rated})
+                hr
+                if watched
+                    button.btn.btn-outline-danger Remove From Watched List
+                else
+                    button.btn.btn-outline-success Add to Watched List
+
+                h3#movie-subheadings.mt-4 Released: #{movie.Released} | Runtime: #{movie.Runtime} | Genre: #{movie.Genre}
+                h
+                p#movie-description #{movie.Plot}
+            div#contributor-list.col
+
+                h4#director-list-label Directors:
+                ul#director-list.list-group
+                    each person in directors
+                        li.list-group-item.list-group-item-info
+                            a(href=`/people/${person.id}`) #{person.name}
+
+                h4#writer-list-label.mt-2 Writers:
+                ul#writer-list.list-group
+                    each person in writers
+                        li.list-group-item.list-group-item-info
+                            a(href=`/people/${person.id}`) #{person.name}
+
+                h4#actor-list-label.mt-2 Actors:
+                ul#actor-list.list-group
+                    each person in actors
+                        li.list-group-item.list-group-item-info
+                            a(href=`/people/${person.id}`) #{person.name}
+
+            h4#related-movies-label.mt-2 Related Movies:
+            ul#related-movie-list.list-group
+                each movie in relatedMovies
+                    li.list-group-item.list-group-item-primary
+                        a(href=`/movies/${movie.id}`) #{movie.Title}
+
+            hr
+
+        div#reviews-container.container
+            h1 Reviews
+
+            -let cardIndex = 0;
+            each review in reviews
+                div.card.text-white.bg-dark.mb-3
+                    div.card-body
+                        h5.card-title #{review.name}
+                        - let starIndex = 0;
+
+                        while starIndex < review.score
+                            i#star.fa.fa-star.me-1(style={color: "yellow"})
+                            - starIndex++;
+                        p.card-text.fw-bold.ms-2(style={display: "inline-block"}) #{review.score} / 10
+                        p.card-text #{review.summaryText}
+
+                        button.btn.btn-outline-primary(type='button' data-bs-toggle='collapse' data-bs-target=`#review-details${cardIndex}` aria-expanded='false' aria-controls=`review-details${cardIndex}`) View Details
+                        div.collapse.mt-3(id=`review-details${cardIndex}`)
+                            p.card.card-body.bg-dark.border-light #{review.fullText}
+                - cardIndex++
+            hr
+
+
+
+
+        div#add-review-container.container
+            h1 Add Review
+            form
+                div#review-selector.mt-3.mb-3(style={display: "inline-block"})
+                    i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick='starMouseClick(0)')
+                    i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick='starMouseClick(1)')
+                    i#star-2.fa.fa-star.star-selector(onmouseover='starMouseOver(2)' onmouseleave='starMouseLeave(2)' onclick='starMouseClick(2)')
+                    i#star-3.fa.fa-star.star-selector(onmouseover='starMouseOver(3)' onmouseleave='starMouseLeave(3)' onclick='starMouseClick(3)')
+                    i#star-4.fa.fa-star.star-selector(onmouseover='starMouseOver(4)' onmouseleave='starMouseLeave(4)' onclick='starMouseClick(4)')
+                    i#star-5.fa.fa-star.star-selector(onmouseover='starMouseOver(5)' onmouseleave='starMouseLeave(5)' onclick='starMouseClick(5)')
+                    i#star-6.fa.fa-star.star-selector(onmouseover='starMouseOver(6)' onmouseleave='starMouseLeave(6)' onclick='starMouseClick(6)')
+                    i#star-7.fa.fa-star.star-selector(onmouseover='starMouseOver(7)' onmouseleave='starMouseLeave(7)' onclick='starMouseClick(7)')
+                    i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick='starMouseClick(8)')
+                    i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick='starMouseClick(9)')
+                button.btn.btn-outline-primary.mt-2(type="button" style={float: "right"})
+                    | Submit Basic Review
+
+                div.mb-3
+                    label.form-label(for='name') Name
+                    input#name.form-control(type='text' aria-describedby='emailHelp')
+                div.mb-3
+                    label.form-label(for='review') Review
+                    textarea#review.form-control(type='text' rows='5' style='resize: none')
+                button.btn.btn-outline-primary.btn-block(type='button')
+                    | Add Review
+            hr.my-4
+            #review-deck.card-deck

@@ -8,7 +8,7 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
             a.nav-link(href="../#") Advanced Search
 
 
-        form.d-flex.mt-3
+        form.d-flex.mt-3(action="/movies/?")
             input.form-control.me-3(type="search" placeholder="Search Movie" aria-label="Search")
             button.btn.btn-outline-success.me-3(type="submit") Search
 
@@ -18,6 +18,6 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
 
             div.dropdown-menu.dropdown-menu-dark.dropdown-menu-end(aria-labelledby="dropdownMenuButton")
                 a.dropdown-item(href="../login/") Sign In/Up
-                a.dropdown-item(href="../users/0") Profile
+                a.dropdown-item(href="../users/myProfile") Profile
 
 
