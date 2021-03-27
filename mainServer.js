@@ -1,11 +1,19 @@
-const pug = require('pug');
 const express = require('express');
+const app = express();
+const mongoose = require('mongoose');
+const pug = require('pug');
 
-let app = express();
+
+//routers:
+let movieRouter = require('./routers/movies-router.js');
+
+
+app.use("/movies", movieRouter);
 app.use(express.static("public"));
 app.use(express.json())
+app.set("view engine", "pug");
 
-let movieData = require("./movie-data-10.json");
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
 /**
  * EXAMPLE OBJECTS: Movie, Person, User, Notification, Review
@@ -42,7 +50,6 @@ let exampleMovie = {
         0,
     ]
 }
-
 let examplePerson = {
     name: "Bob Logan",
     id: 0,
@@ -51,7 +58,6 @@ let examplePerson = {
     ],
     numFollowers: 0
 }
-
 let exampleUser = {
     username: "exampleUser",
     password: "not_a_secure_password",
@@ -72,7 +78,6 @@ let exampleUser = {
         {text: "Followed!"}
     ]
 }
-
 let exampleOtherUser = {
     username: "exampleOtherUser",
     password: "not_a_secure_password",
@@ -93,7 +98,6 @@ let exampleOtherUser = {
         0, 0
     ]
 }
-
 let exampleReview = {
     id: 0,
     name: "exampleName",
@@ -102,7 +106,6 @@ let exampleReview = {
     fullText: "Extremely good movie with great plot, actors, and writing. I especially loved how Bob Logan managed to act, direct, and write the whole thing!",
     score: 8
 }
-
 let exampleNotification = {
     id: 0,
     text: "Jean meadows is part of a new movie!",
@@ -154,7 +157,6 @@ app.get(`/users/:id`, (req, res) => {
         peopleFollowing: peopleFollowing,
         moviesWatched: moviesWatched,
         reviewsWritten: reviewsWritten
-
     });
     res.send(data);
 })
@@ -196,28 +198,6 @@ app.get('/contribute/', (req, res) => {
     res.send(data);
 })
 
-//page for a single movie
-app.get('/movies/:id', (req, res) => {
-    let id = parseInt(req.params.id);
-    let watched = exampleUser.moviesWatched.includes(id);
-
-    let directors = [examplePerson];
-    let writers = [examplePerson, examplePerson];
-    let actors = [examplePerson, examplePerson, examplePerson, examplePerson];
-    let reviews = [exampleReview, exampleReview];
-    let relatedMovies = [exampleMovie, exampleMovie];
-
-    let data = pug.renderFile("./partials/movie.pug", {
-        movie: exampleMovie,
-        watched: watched,
-        directors: directors,
-        writers: writers,
-        actors: actors,
-        reviews: reviews,
-        relatedMovies: relatedMovies
-    });
-    res.send(data);
-})
 
 //page for search results
 app.get('/movies/?', (req, res) => {

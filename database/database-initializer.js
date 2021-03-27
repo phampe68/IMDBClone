@@ -2,28 +2,10 @@ const movieData = require('../movie-data-10.json');
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-//define schemas for each object:
-let movieSchema = Schema({
-    title: {type: String, required: true},
-    year: {type: String},
-    averageRating: {type: Number},
-    rated: {type: String},
-    released: {type: String},
-    runtime: {type: String},
-    genre: [String],
-    director: [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    actor: [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    writer: [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    plot: {type: String}
-});
-let personSchema = Schema({
-    name: {type: String, required: true},
-    writerFor: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
-    actorFor: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
-    directorFor: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
-    frequentCollaborators: [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    numFollowers: {type: Number},
-});
+//import data-models
+const Movie = require('../database/data-models/movie-model.js');
+const Person = require('../database/data-models/person-model.js');
+
 let userSchema = Schema({
     username: {type: String, required: true},
     contributor: {type: Boolean, required: true},
@@ -47,17 +29,18 @@ let reviewSchema = Schema({
     score: {type: Number}
 });
 
-
-// objects that can be extracted from movies json data
-let Movie = mongoose.model("Movie", movieSchema);
+// collection of movies and people which is extracted from movie data
 let allMovies = [];
-
-let Person = mongoose.model("Person", personSchema);
 let allPersons = [];
 
+
 /**
- * create a new person if person with name doesn't exist
- * update person
+ * Creates a new person with personName and default values if the person isn't in the allPersons collection
+ * - Updates references to that person in movie object (ex: if the person wrote the movie, add their id to the movie obj)
+ * - update reference to movie associated with person  (i.e. if the person wrote the movie, also add the movie to the person obj)
+ * @param personName: name of person to add
+ * @param movie: movie object to update with related person
+ * @param position: role person had in movie (i.e. writer, director, actor)
  */
 const addPersonToMovie = (personName, movie, position) => {
     let currPerson = allPersons.find(person => person.name === personName);
@@ -70,6 +53,7 @@ const addPersonToMovie = (personName, movie, position) => {
         newPerson.actorFor = [];
         newPerson.directorFor = [];
         newPerson.frequentCollaborators = [];
+        newPerson.numFollowers = 0;
         allPersons.push(newPerson);
     }
 
@@ -81,7 +65,6 @@ const addPersonToMovie = (personName, movie, position) => {
     }
     currPerson[position].push(movie._id);
     movie[positionMap[position]].push(currPerson._id);
-
 }
 
 // generate database colelctions based off movie data:
@@ -89,29 +72,30 @@ movieData.forEach(movie => {
 
     //generate movie obj
     let aMovie = new Movie();
-    aMovie._id = mongoose.Types.ObjectId();
+    //aMovie._id = mongoose.Types.ObjectId();
     aMovie.title = movie.Title;
     aMovie.year = movie.year;
     aMovie.averageRating = 0;
     aMovie.rated = movie.Rated;
     aMovie.released = movie.Released;
-    aMovie.runtime = movie.Runtime;
     aMovie.genre = movie.Genre;
-    aMovie.plot = movie.Plot;
 
-    movie.Actors.forEach(actorName => {
-        addPersonToMovie(actorName, aMovie, "actorFor");
-    })
 
-    //Repeat for directors
     movie.Director.forEach(directorName => {
         addPersonToMovie(directorName, aMovie, "directorFor");
     })
-
-    //Repeat for writers
     movie.Writer.forEach(writerName => {
         addPersonToMovie(writerName, aMovie, "writerFor");
     })
+    movie.Actors.forEach(actorName => {
+        addPersonToMovie(actorName, aMovie, "actorFor");
+    })
+    aMovie.plot = movie.Plot;
+    aMovie.awards = movie.Awards;
+    aMovie.poster = movie.Poster;
+    aMovie.reviews = [];
+    aMovie.runtime = movie.Runtime;
+    aMovie.relatedMovies = [];
 
     allMovies.push(aMovie);
 });
@@ -145,7 +129,6 @@ db.once('open', () => {
                     return;
                 }
                 console.log("Successfully added people");
-                mongoose.connection.close()
             })
         })
     })

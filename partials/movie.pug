@@ -15,16 +15,16 @@ html
 
         div#movie-info-container.container.mt-5
             div#movie-info
-                h1#movie-title.display-1 Title: #{movie.Title} (#{movie.Rated})
+                h1#movie-title.display-1 Title: #{movie.title} (#{movie.rated})
                 hr
                 if watched
                     button.btn.btn-outline-danger Remove From Watched List
                 else
                     button.btn.btn-outline-success Add to Watched List
 
-                h3#movie-subheadings.mt-4 Released: #{movie.Released} | Runtime: #{movie.Runtime} | Genre: #{movie.Genre}
+                h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} | Genre: #{movie.genre}
                 h
-                p#movie-description #{movie.Plot}
+                p#movie-description #{movie.plot}
             div#contributor-list.col
 
                 h4#director-list-label Directors:
@@ -49,7 +49,7 @@ html
             ul#related-movie-list.list-group
                 each movie in relatedMovies
                     li.list-group-item.list-group-item-primary
-                        a(href=`/movies/${movie.id}`) #{movie.Title}
+                        a(href=`/movies/${movie.id}`) #{movie.title}
 
             hr
 
