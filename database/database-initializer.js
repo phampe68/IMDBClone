@@ -5,29 +5,10 @@ const Schema = mongoose.Schema;
 //import data-models
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
+const User = require('../database/data-models/user-model.js');
+const Notification = require('../database/data-models/notification-model.js');
+const Review = require('../database/data-models/review-model.js');
 
-let userSchema = Schema({
-    username: {type: String, required: true},
-    contributor: {type: Boolean, required: true},
-    peopleFollowing: [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    usersFollowing: [{type: Schema.Types.ObjectId, ref: 'User'}],
-    moviesWatched: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
-    recommendedMovies: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
-    notifications: [{type: Schema.Types.ObjectId, ref: 'Notification'}],
-});
-let notificationSchema = Schema({
-    text: {type: String},
-    relatedID: {type: Schema.Types.ObjectId},
-    link: {type: String}
-
-});
-let reviewSchema = Schema({
-    author: {type: Schema.Types.ObjectId, ref: 'Person'},
-    movie: {type: Schema.Types.ObjectId, ref: 'Movie'},
-    summaryText: {type: String},
-    fullText: {type: String},
-    score: {type: Number}
-});
 
 // collection of movies and people which is extracted from movie data
 let allMovies = [];
