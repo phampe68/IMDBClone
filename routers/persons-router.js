@@ -13,7 +13,7 @@ const getPerson = (req, res, next) => {
     //find the Person in the db by its id
     Person.findOne({
         _id: id
-    }).exec((err, movie) => {
+    }).exec((err, person) => {
         console.log(person);
 
         // use ids in person obj to find relevant data to render the page:
@@ -39,3 +39,9 @@ const getPerson = (req, res, next) => {
 
 
 }
+
+//specify handlers:
+router.get('/:id', getPerson);
+
+
+module.exports = router;
