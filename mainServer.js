@@ -9,7 +9,7 @@ let movieRouter = require('./routers/movies-router.js');
 let personRouter = require('./routers/persons-router.js');
 
 app.use("/movies", movieRouter);
-app.use("/persons", personRouter);
+app.use("/people", personRouter);
 app.use(express.static("public"));
 app.use(express.json())
 app.set("view engine", "pug");
@@ -162,7 +162,7 @@ app.get(`/users/:id`, (req, res) => {
     res.send(data);
 })
 
-
+/*
 //page displaying a single person
 app.get('/people/:id', (req, res) => {
     //use id in param to get a person (for now just user examplePerson object)
@@ -187,6 +187,8 @@ app.get('/people/:id', (req, res) => {
     res.send(data);
 })
 
+ */
+
 //page displaying login form
 app.get('/login/', (req, res) => {
     let data = pug.renderFile("./partials/login.pug");
@@ -196,19 +198,6 @@ app.get('/login/', (req, res) => {
 //page for contribution form
 app.get('/contribute/', (req, res) => {
     let data = pug.renderFile("./partials/contribute.pug");
-    res.send(data);
-})
-
-
-//page for search results
-app.get('/movies/?', (req, res) => {
-    //here we would use query params to generate search results
-    //for now we'll pass in some example results
-    let movies = [exampleMovie, exampleMovie, exampleMovie, exampleMovie];
-
-    let data = pug.renderFile("./partials/movieSearch.pug", {
-        movies: movies,
-    });
     res.send(data);
 })
 

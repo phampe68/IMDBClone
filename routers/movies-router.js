@@ -7,7 +7,6 @@ const Person = require('../database/data-models/person-model.js');
 let router = express.Router();
 
 const getMovie = (req, res, next) => {
-
     let id = mongoose.Types.ObjectId(req.params.id);
 
     //find the movie in the db by its id
@@ -42,13 +41,33 @@ const getMovie = (req, res, next) => {
             })
         })
     })
+}
 
 
+const searchMovie = (req, res, next) => {
+    let search = "";
+
+    if (req.query.hasOwnProperty("search"))
+        search = req.query.search;
+
+
+    Movie.find({
+        title: {$regex: `.*${search}.*`, $options: 'i'},
+    }).exec((err, results) => {
+        if (results === undefined)
+            results = [];
+
+        let data = pug.renderFile("./partials/movieSearch.pug", {
+            movies: results
+        });
+
+        res.send(data);
+    });
 }
 
 
 //specify handlers:
 router.get('/:id', getMovie);
-
+router.get('/?', searchMovie);
 
 module.exports = router;

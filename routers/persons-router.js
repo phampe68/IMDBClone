@@ -17,8 +17,6 @@ const getPerson = (req, res, next) => {
         console.log(person);
 
         // use ids in person obj to find relevant data to render the page:
-
-
         Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
             Movie.find({'_id': {$in: person.directorFor}}).exec((err, moviesDirected) => {
                 Movie.find({'_id': {$in: person.actorFor}}).exec((err, moviesActed) => {

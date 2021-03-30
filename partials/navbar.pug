@@ -1,3 +1,5 @@
+
+
 nav.navbar.navbar-expand.navbar-dark.bg-dark
     div.container-fluid
         a.navbar-brand(href="../") IMDB CLONE
@@ -7,15 +9,15 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
             a.nav-link(href="../contribute/") Contribute
             div.dropdown
                 a.nav-link.dropdown-toggle(href="#" role="button" id="searchDropDownLink" data-bs-toggle="dropdown" aria-expanded="false") Advanced Search
-                form.dropdown-menu.dropdown-menu-dark.p-2(action="/movies/?" aria-labelledby="searchDropDownLink")
+                form.dropdown-menu.dropdown-menu-dark.p-2( aria-labelledby="searchDropDownLink")
                     input.form-control.mb-3(type="search" placeholder="Title" aria-label="Search")
                     input.form-control.mb-3(type="search" placeholder="Genre" aria-label="Search")
                     input.form-control.mb-3(type="search" placeholder="Actor Name" aria-label="Search")
                     button.btn.btn-outline-success.me-3(type="submit") Search
 
 
-        form.d-flex.mt-3(action="/movies/?")
-            input.form-control.me-3(type="search" placeholder="Search Movie" aria-label="Search")
+        form.d-flex.mt-3(action="/movies?search=" method="GET")
+            input.form-control.me-3#basic-search-input(type="search" placeholder="Search Movie" aria-label="Search" name="search")
             button.btn.btn-outline-success.me-3(type="submit") Search
 
         div.dropdown
@@ -25,5 +27,6 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
             div.dropdown-menu.dropdown-menu-dark.dropdown-menu-end(aria-labelledby="dropdownMenuButton")
                 a.dropdown-item(href="../login/") Sign In/Up
                 a.dropdown-item(href="../users/myProfile") Profile
+
 
 
