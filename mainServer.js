@@ -6,9 +6,10 @@ const pug = require('pug');
 
 //routers:
 let movieRouter = require('./routers/movies-router.js');
-
+let personRouter = require('./routers/persons-router.js');
 
 app.use("/movies", movieRouter);
+app.use("/persons", personRouter);
 app.use(express.static("public"));
 app.use(express.json())
 app.set("view engine", "pug");
