@@ -43,13 +43,11 @@ const getMovie = (req, res, next) => {
     })
 }
 
-
 const searchMovie = (req, res, next) => {
     let search = "";
 
     if (req.query.hasOwnProperty("search"))
         search = req.query.search;
-
 
     Movie.find({
         title: {$regex: `.*${search}.*`, $options: 'i'},
@@ -64,6 +62,7 @@ const searchMovie = (req, res, next) => {
         res.send(data);
     });
 }
+
 
 
 //specify handlers:

@@ -29,18 +29,21 @@ html
             hr
             h2.display-6 Work History
 
-            h3.mt-4 Writer
-            ul.list-group.list-group
-                each movie in moviesWritten
-                    li.list-group-item
-                        a(href=`/movies/${movie.id}`) #{movie.Title}
-            h3.mt-4 Director
-            ul.list-group
-                each movie in moviesDirected
-                    li.list-group-item
-                        a(href=`/movies/${movie.id}`) #{movie.Title}
-            h3.mt-4 Actor:
-            ul.list-group
-                each movie in moviesActed
-                    li.list-group-item
-                        a(href=`/movies/${movie.id}`) #{movie.Title}
+            if moviesWritten.length !== 0
+                h3.mt-4 Writer
+                ul.list-group.list-group
+                    each movie in moviesWritten
+                        li.list-group-item
+                            a(href=`/movies/${movie.id}`) #{movie.title}
+            if moviesDirected.length !== 0
+                h3.mt-4 Director
+                ul.list-group
+                    each movie in moviesDirected
+                        li.list-group-item
+                            a(href=`/movies/${movie.id}`) #{movie.title}
+            if moviesActed.length !== 0
+                h3.mt-4 Actor:
+                ul.list-group
+                    each movie in moviesActed
+                        li.list-group-item
+                            a(href=`/movies/${movie.id}`) #{movie.title}
