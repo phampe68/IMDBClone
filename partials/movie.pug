@@ -22,7 +22,11 @@ html
                 else
                     button.btn.btn-outline-success Add to Watched List
 
-                h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} | Genre: #{movie.genre}
+                h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} |
+                h3(style={whiteSpace: "nowrap"}) Genre:
+                each genre in movie.genre
+                    a(style={color: "white"} href=(`/movies?genre=${genre}`)) #{genre},
+                    | #{' '}
                 h
                 p#movie-description #{movie.plot}
             div#contributor-list.col
