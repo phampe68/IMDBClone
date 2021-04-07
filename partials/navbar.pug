@@ -9,7 +9,7 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
             a.nav-link(href="../contribute/") Contribute
             div.dropdown
                 a.nav-link.dropdown-toggle(href="#" role="button" id="searchDropDownLink" data-bs-toggle="dropdown" aria-expanded="false") Advanced Search
-                form.dropdown-menu.dropdown-menu-dark.p-2( action="/movies?" aria-labelledby="searchDropDownLink" id="advanced-search-form")
+                form.dropdown-menu.dropdown-menu-dark.p-2(onsubmit="return submitAdvancedSearch()" action="/movies?" method ="GET" aria-labelledby="searchDropDownLink" id="advanced-search-form")
                     input.form-control.mb-3(type="search" placeholder="Title" aria-label="Search" name="title")
                     input.form-control.mb-3(type="search" placeholder="Genre" aria-label="Search" name="genre")
                     input.form-control.mb-3(type="search" placeholder="Actor Name" aria-label="Search" name="actorName")
