@@ -7,7 +7,6 @@ const Person = require('../database/data-models/person-model.js');
 let router = express.Router();
 
 const getPerson = (req, res, next) => {
-
     let id = mongoose.Types.ObjectId(req.params.id);
 
     //find the Person in the db by its id
@@ -34,12 +33,21 @@ const getPerson = (req, res, next) => {
             })
         })
     })
-
-
 }
+
+
+const getActors = (req, res, next) => {
+    Person.find(
+        {actorFor: {$exists: true, $not: {$size: 0}}}
+    ).exec((err, actors) => {
+        res.send(actors);
+    })
+}
+
 
 //specify handlers:
 router.get('/:id', getPerson);
+router.get('/actors/', getActors);
 
 
 module.exports = router;

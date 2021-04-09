@@ -6,14 +6,91 @@ const Person = require('../database/data-models/person-model.js');
 
 let router = express.Router();
 
+
+/**
+ * build a query object based off of query paramaters that will be used to search the database
+ *  make sure params are good
+ *  - limit: maximum number of pages to send back
+ *  - page: page of results to send back
+ *  - title: title of movie (search by contains)
+ *  - genre: movie genre (search by contains)
+ *  - actor name: movie should contain this actor
+ */
+const MAX_ITEMS = 50;
+const DEFAULT_LIMIT = 10;
+const queryParser = async (req, res, next) => {
+    let query = {};
+
+    //parse limit param
+    try {
+        if (req.query.hasOwnProperty("limit")) {
+            let limit = Number(req.query.limit);
+            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
+        } else {
+            req.query.limit = DEFAULT_LIMIT;
+        }
+    } catch {
+        req.query.limit = DEFAULT_LIMIT;
+    }
+
+    //parse page param
+    try {
+        if (req.query.hasOwnProperty("page")) {
+            let page = Number(req.query.page);
+            req.query.page = (page > 1) ? page : 1;
+        } else {
+            req.query.page = 1;
+        }
+    } catch {
+        req.query.page = 1;
+    }
+
+    //parse title, genre, and actor name
+    if (req.query.hasOwnProperty("title"))
+        query.title = {$regex: `.*${req.query.title}.*`, $options: 'i'};
+    if (req.query.hasOwnProperty("genre"))
+        query.genre = {$regex: `.*${req.query.genre}.*`, $options: 'i'};
+    if (req.query.hasOwnProperty("actorName")) {
+        //find id associated with actorName
+        await getPersonIDByName(req.query.actorName).then(id => {
+            query.actor = id;
+        });
+    }
+
+    let queryString = "";
+    for(let param in req.query) {
+        if (param === "page")
+            continue
+        queryString += `&${param}=${req.query[param]}`;
+    }
+
+    console.log(queryString);
+    req.queryString = queryString;
+    //build query string for pagination:
+
+
+    req.queryObj = query;
+    next();
+}
+
 const getMovie = (req, res, next) => {
-    let id = mongoose.Types.ObjectId(req.params.id);
+    let id;
+
+    try {
+        id = mongoose.Types.ObjectId(req.params.id);
+    } catch (err) {
+        res.status(404).send("ERROR 404: Could not find movie.");
+    }
+
 
     //find the movie in the db by its id
     Movie.findOne({
-        _id: id
+        _id: mongoose.Types.ObjectId(id)
+
     }).exec((err, movie) => {
-        console.log(movie);
+        if (err || !movie) {
+            res.status(404).send("Could not find movie.");
+        }
 
         // use ids in movie obj to find relevant data to render the page:
 
@@ -63,39 +140,35 @@ const getPersonIDByName = async (personName) => {
 
 
 const searchMovie = async (req, res, next) => {
-    let query = {};
-
-    //build a query based on query params
-    if (req.query.hasOwnProperty("title"))
-        query.title = {$regex: `.*${req.query.title}.*`, $options: 'i'};
-    if (req.query.hasOwnProperty("genre"))
-        query.genre = {$regex: `.*${req.query.genre}.*`, $options: 'i'};
-    if (req.query.hasOwnProperty("actorName")) {
-        //find id associated with actorName
-        await getPersonIDByName(req.query.actorName).then(id => {
-            query.actor = id;
-            console.log(id);
-        });
-    }
+    let query = req.queryObj;
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page-1);
 
 
-    Movie.find(query).exec((err, results) => {
+
+    Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
         if (results === undefined)
             results = [];
 
-       // console.log(query, results);
+        let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+
         let data = pug.renderFile("./partials/movieSearch.pug", {
-            movies: results
+            movies: results,
+            nextURL
         });
+
+
+
 
         res.send(data);
     });
 }
 
 
-
 //specify handlers:
 router.get('/:id', getMovie);
+router.get('/?', queryParser);
 router.get('/?', searchMovie);
 
 module.exports = router;

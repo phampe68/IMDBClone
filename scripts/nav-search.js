@@ -1,4 +1,12 @@
 
+window.onload = () => {
+
+    //generate select of all actors:
+    let actorSelect = document.getElementById('select-actor');
+    //make request to get all people
+}
+
+
 /**
  * handler for advanced search on submit, removes inputs from url if no value is entered in that input, prevents form submission if all inputs are missing values
  * @returns {boolean} : false if no values are entered, true otherwise
