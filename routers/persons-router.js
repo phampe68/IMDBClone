@@ -34,20 +34,52 @@ const getPerson = (req, res, next) => {
         })
     })
 }
+const MAX_ITEMS = 50;
+
+const DEFAULT_LIMIT = 50;
+const queryParser = (req, res, next) => {
+    let query = {};
+
+    //parse limit param
+    try {
+        if (req.query.hasOwnProperty("limit")) {
+
+            let limit = Number(req.query.limit);
+            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
+
+        } else {
+            req.query.limit = DEFAULT_LIMIT;
+        }
+    } catch (err) {
+        req.query.limit = DEFAULT_LIMIT;
+    }
+    if(req.query.hasOwnProperty('name')){
+        query.name = {$regex: `.*${req.query.name}.*`, $options: 'i'};
+    }
+    req.queryObj = query;
+    req.next();
+
+}
+const searchPeople = (req, res, next) => {
+    let query = req.queryObj;
+    let limit = req.query.limit;
+
+    Person.find(query).limit(limit).exec((err, results) => {
+        if (results === undefined)
+            results = [];
+        res.send(results);
+    });
 
 
-const getActors = (req, res, next) => {
-    Person.find(
-        {actorFor: {$exists: true, $not: {$size: 0}}}
-    ).exec((err, actors) => {
-        res.send(actors);
-    })
+
+
 }
 
 
 //specify handlers:
 router.get('/:id', getPerson);
-router.get('/actors/', getActors);
+router.get('/?', queryParser);
+router.get('/?', searchPeople);
 
 
 module.exports = router;

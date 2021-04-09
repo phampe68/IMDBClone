@@ -12,9 +12,10 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
                 form.dropdown-menu.dropdown-menu-dark.p-2(onsubmit="return submitAdvancedSearch()" action="/movies?" method ="GET" aria-labelledby="searchDropDownLink" id="advanced-search-form")
                     input.form-control.mb-3(type="search" placeholder="Title" aria-label="Search" name="title")
                     input.form-control.mb-3(type="search" placeholder="Genre" aria-label="Search" name="genre")
-                    input.form-control.mb-3(type="search" placeholder="Actor Name" aria-label="Search" name="actorName")
-                    select.form-control.mb-3#select-actor
-                        option.disabled.selected.hidden(value="") Select an actor
+
+                    input.form-control.mb-3(list="actorAutoList" type="search" placeholder="Actor Name" aria-label="Search" name="actorName" onkeypress="actorSelectKeyPress()")#actorNameSearch
+                    datalist#actorAutoList
+                        option(value="Edge")
 
                     button.btn.btn-outline-success.me-3(type="submit") Search
 

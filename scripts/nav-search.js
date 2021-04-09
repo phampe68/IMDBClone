@@ -1,9 +1,46 @@
 
 window.onload = () => {
 
-    //generate select of all actors:
     let actorSelect = document.getElementById('select-actor');
+
     //make request to get all people
+}
+
+const actorSelectKeyPress = () => {
+    let enteredText = document.getElementById('actorNameSearch').value;
+
+    //make request to find actors with name:
+    let req = new XMLHttpRequest();
+
+    //update autocomplete suggestions using person search api
+    req.onreadystatechange = () => {
+        if(req.readyState === 4 && req.status === 200){
+            // response is array of person objects, exctract their names
+            let peopleFound = JSON.parse(req.responseText);
+            let peopleNames = peopleFound.map(person => person.name);
+            let actorList = document.getElementById('actorAutoList');
+
+
+            //reset actor list first:
+            actorList.innerHTML = "";
+            //use names to populate data list suggestions
+            peopleNames.forEach(name => {
+                let listItem = document.createElement("option");
+                listItem.value = name;
+                actorList.appendChild(listItem);
+            })
+
+
+
+
+        }
+    }
+
+    req.open("GET", `/people?name=${enteredText}&limit=${10}`);
+    req.send();
+
+
+
 }
 
 
