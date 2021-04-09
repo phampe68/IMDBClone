@@ -13,9 +13,8 @@ nav.navbar.navbar-expand.navbar-dark.bg-dark
                     input.form-control.mb-3(type="search" placeholder="Title" aria-label="Search" name="title")
                     input.form-control.mb-3(type="search" placeholder="Genre" aria-label="Search" name="genre")
 
-                    input.form-control.mb-3(list="actorAutoList" type="search" placeholder="Actor Name" aria-label="Search" name="actorName" onkeypress="actorSelectKeyPress()")#actorNameSearch
+                    input.form-control.mb-3(list="actorAutoList" type="search" placeholder="Actor Name" aria-label="Search" name="actorName" onkeypress="actorSelectKeyPress()" autocomplete="off")#actorNameSearch
                     datalist#actorAutoList
-                        option(value="Edge")
 
                     button.btn.btn-outline-success.me-3(type="submit") Search
 

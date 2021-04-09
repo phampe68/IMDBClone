@@ -1,4 +1,3 @@
-
 window.onload = () => {
 
     let actorSelect = document.getElementById('select-actor');
@@ -14,23 +13,23 @@ const actorSelectKeyPress = () => {
 
     //update autocomplete suggestions using person search api
     req.onreadystatechange = () => {
-        if(req.readyState === 4 && req.status === 200){
+        if (req.readyState === 4 && req.status === 200) {
             // response is array of person objects, exctract their names
             let peopleFound = JSON.parse(req.responseText);
-            let peopleNames = peopleFound.map(person => person.name);
+            let actors = peopleFound.filter(person => person.actorFor.length > 0);
+            let actorNames = actors.map(actor => actor.name);
             let actorList = document.getElementById('actorAutoList');
 
+            console.log(actorNames);
 
             //reset actor list first:
             actorList.innerHTML = "";
             //use names to populate data list suggestions
-            peopleNames.forEach(name => {
+            actorNames.forEach(name => {
                 let listItem = document.createElement("option");
                 listItem.value = name;
                 actorList.appendChild(listItem);
             })
-
-
 
 
         }
@@ -38,7 +37,6 @@ const actorSelectKeyPress = () => {
 
     req.open("GET", `/people?name=${enteredText}&limit=${10}`);
     req.send();
-
 
 
 }
@@ -55,15 +53,15 @@ const submitAdvancedSearch = () => {
     let badInputs = [];
 
     //find out if something is entered, remove name property from input if there's nothing entered (this removes it from the url)
-    for(let input of form.childNodes){
-        if(input.value !== "")
-            somethingEntered = true;
+    for (let input of form.childNodes) {
+        if (input.value !== "" && input.value !== undefined){
+            somethingEntered = true; console.log("VALUE: ", input.value)}
         else
             badInputs.push(input);
     }
 
     //alert user if nothing entered
-    if(!somethingEntered){
+    if (!somethingEntered) {
         alert("Please enter a value in one of the textboxes.");
         return false;
     }
