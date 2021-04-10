@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const mongoose = require('mongoose');
 const pug = require('pug');
@@ -7,14 +8,34 @@ const pug = require('pug');
 //routers:
 let movieRouter = require('./routers/movies-router.js');
 let personRouter = require('./routers/persons-router.js');
+let userRouter = require('./routers/users-router.js');
+
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {
+    console.log("Connected to IMDB Clone");
+})
+
+
 
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
+app.use("/users", userRouter);
 app.use(express.static("public"));
+
+const User = require('./database/data-models/user-model.js');
+
 app.use(express.json())
 app.set("view engine", "pug");
 
+app.use(session({ name: "session", secret: 'a super duper secret secret'}))
+
+app.use(express.urlencoded({extended:true}));
+
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+
 
 /**
  * EXAMPLE OBJECTS: Movie, Person, User, Notification, Review
@@ -114,83 +135,37 @@ let exampleNotification = {
     relatedID: 0
 }
 
+
 //Start adding route handlers here
 //handler for adding recipe
 app.get('/', (req, res) => {
-    let data = pug.renderFile('./partials/index.pug');
+    let data
+    if(req.session.loggedin === true){
+        data = pug.renderFile('./partials/index.pug');
+    }else{
+        console.log("Redirecting to login page")
+        res.redirect("/loginPage");
+    }
     res.send(data);
 })
 
 //page displaying a single user
-app.get('/users/myProfile', (req, res) => {
-    //use id in param to get a user (for now just use an exampleUser object)
-    let id = req.params.id;
-    let mainUser = exampleUser;
-
-    //here we would use the ids in our user object to get all the other relevant objects for this page
-    //for now we'll just use example objects
-    let usersFollowing = [exampleOtherUser, exampleOtherUser];
-    let peopleFollowing = [examplePerson, examplePerson, examplePerson];
-    let moviesWatched = [exampleMovie];
-    let recommendedMovies = [exampleMovie, exampleMovie, exampleMovie];
-    let notifications = [exampleNotification, exampleNotification, exampleNotification];
-
-    let data = pug.renderFile("./partials/user.pug", {
-        user: mainUser,
-        usersFollowing: usersFollowing,
-        peopleFollowing: peopleFollowing,
-        moviesWatched: moviesWatched,
-        recommendedMovies: recommendedMovies,
-        notifications: notifications
-    })
-    res.send(data)
+app.get('/myProfile', (req, res) => {
+    console.log("ayo");
+    if(req.session.loggedin===true){
+        console.log(req.session.loggedin);
+        console.log(req.session.username);
+        console.log(req.session.userID);
+        res.redirect(`/users/myProfile/${req.session.userID}/`);
+    }
+    else{
+        res.redirect("/login");
+    }
 })
 
-
-//page for viewing another user
-app.get(`/users/:id`, (req, res) => {
-    let peopleFollowing = [examplePerson, examplePerson, examplePerson];
-    let moviesWatched = [exampleMovie];
-    let reviewsWritten = [exampleReview];
-
-    let data = pug.renderFile("./partials/otherUser.pug", {
-        user: exampleOtherUser,
-        peopleFollowing: peopleFollowing,
-        moviesWatched: moviesWatched,
-        reviewsWritten: reviewsWritten
-    });
-    res.send(data);
-})
-
-/*
-//page displaying a single person
-app.get('/people/:id', (req, res) => {
-    //use id in param to get a person (for now just user examplePerson object)
-    let id = req.params.id;
-
-    //here we would use the ids in our person object to get all the other relevant objects for this page
-    //for now we'll just use example objects
-    let following = exampleUser.peopleFollowing.includes(id);
-    let frequentCollaborators = [examplePerson, examplePerson, examplePerson];
-    let moviesWritten = [exampleMovie, exampleMovie];
-    let moviesDirected = [exampleMovie];
-    let moviesActed = [exampleMovie];
-
-    let data = pug.renderFile("./partials/person.pug", {
-        person: examplePerson,
-        following: following,
-        frequentCollaborators: frequentCollaborators,
-        moviesWritten: moviesWritten,
-        moviesDirected: moviesDirected,
-        moviesActed: moviesActed
-    })
-    res.send(data);
-})
-
- */
 
 //page displaying login form
-app.get('/login/', (req, res) => {
+app.get('/loginPage/', (req, res) => {
     let data = pug.renderFile("./partials/login.pug");
     res.send(data);
 })
@@ -207,6 +182,125 @@ app.get(`/reviews/:id`, (req, res) => {
     res.send(data);
 })
 
+app.post("/login/", function(req,res,next){
+    //determine which button was used on login form
+    if(req.body.action==="login"){
+        login(req,res,next);
+    }else{
+        signup(req,res,next);
+    }
+});
+
+//receive and authenticate user credentials, set session user
+const login = (req,res,next) => {
+    console.log("Logging in");
+    let username = req.body.username;
+    let password = req.body.password;
+
+    if (req.session.loggedin) {
+        res.redirect("/logout");
+    }
+    console.log("Logging in with credentials:");
+    console.log("Username: " + req.body.username);
+    console.log("Password: " + req.body.password);
+
+    let user = new User;
+
+    getUserByName(req.body.username).then(result => {
+        if (!result) {
+            console.log("Username does not exist");
+        }
+        else{
+            user = result;
+        }
+    })
+
+    if (user.password === password) {
+        req.session.username = username;
+        req.session.loggedin = true;
+        req.session.userID = user.id;
+        res.redirect(`/users/myProfile/${user.id}`);
+        console.log(`Logged in with user id ${req.session.userID}`);
+        //res.status(200).send("Logged in");
+    } else {
+        console.log(user.password);
+        res.status(401).send("Login unauthorized. Invalid password");
+    }
+    next();
+}
+
+//log a user out of their session
+const signup = (req,res,next) => {
+    if(!req.session.loggedin){
+        res.status(200).send("Already logged out.");
+    }else{
+        req.session.loggedin = false;
+        req.session.username = false;
+        req.session.userID = false;
+        console.log("successfully logged out");
+        res.redirect("loginPage");
+    }
+    next();
+}
+
+//add a new user to database, using username and password
+app.get("/signup", (req,res,next) => {
+    console.log("Signing up");
+    let username = req.body.username;
+    let password = req.body.password;
+
+    if (req.session.loggedin) {
+        res.status(200).send("Already logged in.");
+        return;
+    }
+
+    getUserByName(req.body.username).then(user => {
+        //ensure username is unique
+        if (!user) {
+            //res.status(200).send("Authorized, username does not exist");
+            console.log("Signing up with credentials:");
+            console.log("Username: " + req.body.username);
+            console.log("Password: " + req.body.password);
+
+            let newUser = new User({
+                username: username,
+                password: password,
+                accountType: "regular",
+                contributor: false,
+                peopleFollowing: [],
+                usersFollowing: [],
+                moviesWatched: [],
+                recommendedMovies: [],
+                notifications: [],
+                reviews: []
+            })
+            newUser.save(function (err) {
+                if (err) throw err;
+                console.log("Saved new user.");
+                req.session.username = username;
+                req.session.loggedin = true;
+                req.session.userID = newUser.id;
+                res.redirect(`/users/${newUser.id}`);
+            });
+        } else {
+            res.status(401).send("Username already exists.")
+        }
+    });
+})
+
+const getUserByName = async (userName) => {
+    return User.findOne(
+        {
+            username: {$regex: `.*${userName}.*`, $options: 'i'}
+        }
+    ).exec().then((result) => {
+        //console.log(`User found: ${result}`);
+        return result;
+    }).catch((err) => {
+        //console.log(`Error finding user by name: ${err}`);
+        return `Error finding user by name: ${err}`;
+    });
+}
 
 app.listen(3000);
 
