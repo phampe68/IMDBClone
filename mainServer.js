@@ -18,14 +18,13 @@ db.once('open', () => {
     console.log("Connected to IMDB Clone");
 })
 
-
-
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
 app.use(express.static("public"));
 
 const User = require('./database/data-models/user-model.js');
+const Review = require("./database/data-models/review-model");
 
 app.use(express.json())
 app.set("view engine", "pug");
@@ -151,7 +150,7 @@ app.get('/', (req, res) => {
 
 //page displaying a single user
 app.get('/myProfile', (req, res) => {
-    console.log("ayo");
+    //console.log("ayo");
     if(req.session.loggedin===true){
         console.log(req.session.loggedin);
         console.log(req.session.username);
@@ -159,7 +158,7 @@ app.get('/myProfile', (req, res) => {
         res.redirect(`/users/myProfile/${req.session.userID}/`);
     }
     else{
-        res.redirect("/login");
+        res.redirect("/loginPage");
     }
 })
 
@@ -192,7 +191,7 @@ app.post("/login/", function(req,res,next){
 });
 
 //receive and authenticate user credentials, set session user
-const login = (req,res,next) => {
+const login = async(req,res,next) => {
     console.log("Logging in");
     let username = req.body.username;
     let password = req.body.password;
@@ -206,15 +205,15 @@ const login = (req,res,next) => {
 
     let user = new User;
 
-    getUserByName(req.body.username).then(result => {
+    await getUserByName(req.body.username).then(result => {
         if (!result) {
             console.log("Username does not exist");
+            return;
         }
         else{
             user = result;
         }
     })
-
     if (user.password === password) {
         req.session.username = username;
         req.session.loggedin = true;
@@ -223,14 +222,12 @@ const login = (req,res,next) => {
         console.log(`Logged in with user id ${req.session.userID}`);
         //res.status(200).send("Logged in");
     } else {
-        console.log(user.password);
-        res.status(401).send("Login unauthorized. Invalid password");
+        console.log("Login unauthorized. Invalid password");
     }
-    next();
 }
 
 //log a user out of their session
-const signup = (req,res,next) => {
+app.get("/logout", (req,res,next) => {
     if(!req.session.loggedin){
         res.status(200).send("Already logged out.");
     }else{
@@ -241,10 +238,10 @@ const signup = (req,res,next) => {
         res.redirect("loginPage");
     }
     next();
-}
+})
 
 //add a new user to database, using username and password
-app.get("/signup", (req,res,next) => {
+const signup = async(req,res,next) => {
     console.log("Signing up");
     let username = req.body.username;
     let password = req.body.password;
@@ -254,7 +251,8 @@ app.get("/signup", (req,res,next) => {
         return;
     }
 
-    getUserByName(req.body.username).then(user => {
+    await getUserByName(req.body.username).then(user => {
+        console.log("ayo");
         //ensure username is unique
         if (!user) {
             //res.status(200).send("Authorized, username does not exist");
@@ -286,7 +284,7 @@ app.get("/signup", (req,res,next) => {
             res.status(401).send("Username already exists.")
         }
     });
-})
+}
 
 const getUserByName = async (userName) => {
     return User.findOne(
@@ -301,6 +299,15 @@ const getUserByName = async (userName) => {
         return `Error finding user by name: ${err}`;
     });
 }
+
+app.post("/movies/addReview/:id/",(req,res,next)=>{
+    review = new Review();
+    if(req.body.action === "basic"){
+        review.summaryText = "";
+        review.fullText = "";
+    }
+    console.log(req.body);
+})
 
 app.listen(3000);
 
