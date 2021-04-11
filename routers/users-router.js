@@ -33,6 +33,7 @@ const getUser = (req, res, next) => {
     }).exec((err, user) => {
         if (err || !user) {
             //res.status(404).send("Could not find user.");
+            return;
         }
 
         // use ids in user obj to find relevant data to render the page:

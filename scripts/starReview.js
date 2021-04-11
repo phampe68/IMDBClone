@@ -21,5 +21,4 @@ const starMouseClick = (i) => {
     for (let index = 0; index <= i; index++)
         stars[index].classList.add("star-clicked");
 
-
 }
