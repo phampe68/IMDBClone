@@ -109,6 +109,38 @@ db.once('open', () => {
                     return;
                 }
                 console.log("Successfully added people");
+                let exampleUser1 = new User({
+                    username: "exampleUser1",
+                    password: "password",
+                    accountType: "regular",
+                    contributor: false,
+                    peopleFollowing: [],
+                    usersFollowing: [],
+                    moviesWatched: [],
+                    recommendedMovies: [],
+                    notifications: [],
+                    reviews: []
+                })
+                exampleUser1.save(function(err){
+                    if(err) throw err;
+                    console.log("Saved new user.");
+                });
+                let exampleUser2 = new User({
+                    username: "exampleUser2",
+                    password: "password",
+                    accountType: "regular",
+                    contributor: false,
+                    peopleFollowing: [],
+                    usersFollowing: [exampleUser1.id],
+                    moviesWatched: [],
+                    recommendedMovies: [],
+                    notifications: [],
+                    reviews: []
+                })
+                exampleUser2.save(function(err){
+                    if(err) throw err;
+                    console.log("Saved new user.");
+                });
             })
         })
     })

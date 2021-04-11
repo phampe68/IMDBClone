@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const pug = require('pug');
+
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
 
@@ -155,8 +156,6 @@ const searchMovie = async (req, res, next) => {
             movies: results,
             nextURL
         });
-
-
 
 
         res.send(data);

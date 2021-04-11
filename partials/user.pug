@@ -15,6 +15,10 @@ html
         div.container.mt-5
             h1.mb-5 #{user.username}
 
+            div(id="logout")
+                form(action="/logout", method='GET')
+                    button.btn.btn-primary.mt-2.ms-3(type="submit") Logout
+
             div(id="AccountTypeDiv")
                 p Account Type:
                 -let contributorType = user.accountType === "contributor"
@@ -26,6 +30,7 @@ html
                     input.form-check-input(type="radio" name="accountTypeRadio" id="2" checked = {regularType})
                     label.form-check-label(for="radRegular") Regular
                 button.btn.btn-primary.mt-2.ms-3 Save
+
 
             div.mt-5(id="PersonFollowDiv")
                 p People Following:

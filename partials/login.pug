@@ -6,21 +6,21 @@ html
 
     style
         include ../stylesheets/index.css
+
     title Login Page
-    include ./navbar.pug
+    //include ./navbar.pug
 
     body
         div.bg-dark.p-5
             h1.text-white Login
-
-            form
+            form(action='/login', method='POST')
                 div.mt-5
                     label.form-label.text-white(for="inputUsername") Username
-                    input.form-control(type="text" id="inputUsername" aria-describedby="usernameHelp")
+                    input.form-control(type="text" name="username" id="inputUsername" aria-describedby="usernameHelp")
                     div.form-text.mt-2(id="usernameHelp") Your account is secure with us.
 
                     label.form-label.text-white.mt-3(for="inputPassword") Password
-                    input.form-control(type="text" id="inputPassword")
+                    input.form-control(type="password" name="password" id="inputPassword")
 
-                    button.btn.btn-outline-primary.btn-lg.mt-5 Submit
-                    button.btn.btn-outline-success.btn-lg.mt-5.ms-3 Sign Up
+                    button.btn.btn-outline-primary.btn-lg.mt-5(type="submit" name="action" value="login") Login
+                    button.btn.btn-outline-success.btn-lg.mt-5.ms-3(type="submit" name="action" value="signup") Sign Up
