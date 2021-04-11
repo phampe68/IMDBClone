@@ -146,8 +146,6 @@ const searchMovie = async (req, res, next) => {
     let page = req.query.page;
     let offset = limit * (page-1);
 
-
-
     Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
         if (results === undefined)
             results = [];
