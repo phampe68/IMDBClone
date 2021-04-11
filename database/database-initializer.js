@@ -53,7 +53,6 @@ movieData.forEach(movie => {
 
     //generate movie obj
     let aMovie = new Movie();
-    //aMovie._id = mongoose.Types.ObjectId();
     aMovie.title = movie.Title;
     aMovie.year = movie.year;
     aMovie.averageRating = 0;
