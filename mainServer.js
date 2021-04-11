@@ -235,7 +235,7 @@ app.get("/logout", (req,res,next) => {
         req.session.username = false;
         req.session.userID = false;
         console.log("successfully logged out");
-        res.redirect("loginPage");
+        res.redirect("/loginPage");
     }
     next();
 })
