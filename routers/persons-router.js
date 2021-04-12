@@ -16,7 +16,6 @@ const getPerson = (req, res, next) => {
         res.status(404).send("Couldn't find person with id.");
     }
 
-
     //find the Person in the db by its id
     Person.findOne({
         _id: id
@@ -38,8 +37,6 @@ const getPerson = (req, res, next) => {
                         res.send(data);
 
                     })
-
-
                 })
             })
         })

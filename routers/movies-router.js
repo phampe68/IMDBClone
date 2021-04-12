@@ -65,9 +65,7 @@ const queryParser = async (req, res, next) => {
         queryString += `&${param}=${req.query[param]}`;
     }
 
-    console.log(queryString);
     req.queryString = queryString;
-    //build query string for pagination:
 
 
     req.queryObj = query;
@@ -161,6 +159,14 @@ const searchMovie = async (req, res, next) => {
         res.send(data);
     });
 }
+
+/**
+ * Get movies that are similar genre and have similar actors
+ */
+const getSimilarMovies = () => {
+
+}
+
 
 
 //specify handlers:
