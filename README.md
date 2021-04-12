@@ -66,12 +66,14 @@
 
 
 ### Built With
-* [node.js]("https://nodejs.org/en/")
-* [pug]("https://pugjs.org/")
-* [bootstrap5]("https://getbootstrap.com/docs/5.0/getting-started/introduction/")
-* [mongodb]("https://www.mongodb.com/")
-* [mongoose]("https://mongoosejs.com/")
-* [express]("https://expressjs.com/")
+* [Bootstrap](https://getbootstrap.com)
+
+* [node.js](https://nodejs.org/en/)
+* [pug](https://pugjs.org/)
+* [bootstrap5](https://getbootstrap.com/docs/5.0/getting-started/introduction/)
+* [mongodb](https://www.mongodb.com/)
+* [mongoose](https://mongoosejs.com/)
+* [express](https://expressjs.com/)
 
 
 
@@ -83,7 +85,7 @@ To get a local copy up and running follow these simple steps.
 ### Prerequisites
 
 * node
-    [Download Node.js and npm]("https://nodejs.org/en/download/")
+    [Download Node.js and npm](https://nodejs.org/en/download/)
 
 * npm
   ```sh
@@ -158,9 +160,6 @@ Project Link: [https://github.com/phampe68/IMDBClone](https://github.com/phampe6
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 
-* []()
-* []()
-* []()
 
 
 [product-screenshot]: ./images/IMDBCloneLogo.jpg
