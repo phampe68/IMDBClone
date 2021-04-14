@@ -4,135 +4,33 @@ const app = express();
 const mongoose = require('mongoose');
 const pug = require('pug');
 
+const User = require('./database/data-models/user-model.js');
+const Review = require("./database/data-models/review-model");
 
 //routers:
 let movieRouter = require('./routers/movies-router.js');
 let personRouter = require('./routers/persons-router.js');
 let userRouter = require('./routers/users-router.js');
 
+//connect mongoose
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
     console.log("Connected to IMDB Clone");
 })
 
+//configure routers
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
 app.use(express.static("public"));
-
-const User = require('./database/data-models/user-model.js');
-const Review = require("./database/data-models/review-model");
-
 app.use(express.json())
 app.set("view engine", "pug");
-
 app.use(session({ name: "session", secret: 'a super duper secret secret'}))
-
 app.use(express.urlencoded({extended:true}));
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
-
-/**
- * EXAMPLE OBJECTS: Movie, Person, User, Notification, Review
- * (NOTE: for now
- */
-let exampleMovie = {
-    "id": 0,
-    "Title": "Meatballs 4",
-    "Year": "1992",
-    "Rated": "R",
-    "Released": "04 Dec 1992",
-    "Runtime": "84 mins",
-    "Genre": [
-        "Comedy"
-    ],
-    "Director": [
-        0
-    ],
-    "Writer": [
-        0,
-        1,
-        2
-    ],
-    "Actors": [
-        0,
-        0,
-        0,
-        0
-    ],
-    "Plot": "Ricky is the hottest water-ski instructor around and he has just be rehired by his former employer/camp to whip up attendance. But the camp is in serious financial trouble and the owner of ...",
-    "Awards": "N/A",
-    "Poster": "https://m.media-amazon.com/images/M/MV5BZjY1NDZjYjYtZjRmMi00M2NhLTllMDktZDg2ZTRmNDA4Njc5XkEyXkFqcGdeQXVyNjQ4NTg2ODY@._V1_SX300.jpg",
-    "Reviews": [
-        0,
-    ]
-}
-let examplePerson = {
-    name: "Bob Logan",
-    id: 0,
-    contributions: [
-        0
-    ],
-    numFollowers: 0
-}
-let exampleUser = {
-    username: "exampleUser",
-    password: "not_a_secure_password",
-    id: 0,
-    accountType: "regular",
-    peopleFollowing: [
-        0
-    ],
-    usersFollowing: [
-        {username: "exampleUser2"},
-        {username: "exampleUser3"}
-    ],
-    moviesWatched: [0, 1],
-    recommendedMovies: [
-        0, 0, 1
-    ],
-    notifications: [
-        {text: "Followed!"}
-    ]
-}
-let exampleOtherUser = {
-    username: "exampleOtherUser",
-    password: "not_a_secure_password",
-    id: 1,
-    accountType: "contributor",
-    peopleFollowing: [
-        0
-    ],
-    usersFollowing: [
-        0,
-        0
-    ],
-    moviesWatched: [0, 1],
-    recommendedMovies: [
-        0, 0, 1
-    ],
-    notifications: [
-        0, 0
-    ]
-}
-let exampleReview = {
-    id: 0,
-    name: "exampleName",
-    movie: 1,
-    summaryText: "This was an incredible movie. Loved it!",
-    fullText: "Extremely good movie with great plot, actors, and writing. I especially loved how Bob Logan managed to act, direct, and write the whole thing!",
-    score: 8
-}
-let exampleNotification = {
-    id: 0,
-    text: "Jean meadows is part of a new movie!",
-    type: "movie",
-    relatedID: 0
-}
 
 
 //Start adding route handlers here
@@ -308,6 +206,17 @@ app.post("/movies/addReview/:id/",(req,res,next)=>{
     }
     console.log(req.body);
 })
+
+
+
+
+/**
+ * catch urls that don't exist
+ */
+const redirectBadURL = (req, res) => {
+    res.status(404).send("The requested URL was not found on our server.");
+}
+app.get('*',redirectBadURL);
 
 app.listen(3000);
 

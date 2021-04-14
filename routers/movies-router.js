@@ -19,6 +19,11 @@ let router = express.Router();
  */
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
+
+
+/**
+ * parses query params into a query object
+ */
 const queryParser = async (req, res, next) => {
     let query = {};
 
@@ -58,6 +63,7 @@ const queryParser = async (req, res, next) => {
         });
     }
 
+    //save the query string
     let queryString = "";
     for (let param in req.query) {
         if (param === "page")
@@ -66,37 +72,35 @@ const queryParser = async (req, res, next) => {
     }
 
     req.queryString = queryString;
-
-
     req.queryObj = query;
     next();
 }
 
 /**
- * Finds movies that match query in request
+ * Finds movies that match query object generated from queryParser and generate template
  */
-const searchMovie = async (req, res, next) => {
+const searchMovie = (req, res, next) => {
     let query = req.queryObj;
     let limit = req.query.limit;
     let page = req.query.page;
     let offset = limit * (page - 1);
 
     Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
+        //show nothing if no search results
         if (results === undefined)
             results = [];
 
+        //link to navigate to next page
         let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+
 
         let data = pug.renderFile("./partials/movieSearch.pug", {
             movies: results,
             nextURL
         });
-
-
         res.send(data);
     });
 }
-
 
 /**
  * Asynchronous function for finding a person's ID given their name
@@ -122,8 +126,8 @@ const getPersonIDByName = async (personName) => {
  * return 404 if not found
  */
 const getMovie = (req, res, next) => {
+    //extract ID from request param
     let id;
-
     try {
         id = mongoose.Types.ObjectId(req.params.id);
     } catch (err) {
@@ -144,29 +148,36 @@ const getMovie = (req, res, next) => {
     })
 }
 
+
 /**
  * Get movies that are similar genre and have similar actors
+ *  - STEP 1: get top 50 movies by genre similarity using aggregation pipeline
+ *  - STEP 2: sort the top 50 movies by similar people
+ *  - STEP 3: store list of IDs in request
  */
 const getSimilarMovies = (req, res, next) => {
     let movie = req.movie;
 
-    // STEP 1: get top 20 movies with similar genres using aggregation pipeline
-    // see: https://stackoverflow.com/questions/41491393/query-for-similar-array-in-mongodb
+    /* STEP 1: get top 50 movies by genre similarity using aggregation pipeline
+    see: https://stackoverflow.com/questions/41491393/query-for-similar-array-in-mongodb
+     */
     Movie.aggregate(
         [
-            {$unwind: "$genre"},
+            {$unwind: "$genre"}, //unwind the genre array to go through its separate keywords
             {
                 $match: {
-                    genre: {$in: movie.genre},
-                    _id: {$ne: movie._id},
+                    genre: {$in: movie.genre}, //look for movies that contain the genre
+                    _id: {$ne: movie._id},  //exclude the original movie's ID
                 }
             },
             {
                 $group: {
-                    _id: "$_id",
-                    count: {$sum: 1},
+                    _id: "$_id", // group back movies using id
+                    count: {$sum: 1}, //sum up movies (this counts how many genres are shared with the original movie)
                 }
             },
+            //specify the result object: with the id, count of similar genres, and score (which is the mean value for similar genres)
+            // i.e. divide number of genre similarities by total genres.
             {$project: {_id: 1, count: 1, score: {$divide: ["$count", movie.genre.length]}}},
             {$sort: {score: -1}},
         ]).limit(50)
@@ -177,21 +188,25 @@ const getSimilarMovies = (req, res, next) => {
             Movie.find({
                 _id: {$in: movieIDs}
             }).exec((err, simGenreMovies) => {
-                // STEP 2: for each of these movies, rank by similar collaborators:
-                let similarMovies = {};
+                // STEP 2: sort the top 50 movies by similar people
+                let similarMovies = {}; //stores number of similar people between each movie and the original
+
+                //get all people associated with the original movie
                 let originalMoviePeople = [].concat(movie.writer, movie.director, movie.actor);
                 originalMoviePeople = [...new Set(originalMoviePeople)]; //remove duplicates
 
+                //go through list of 50 similar genre movies
                 simGenreMovies.forEach(aMovie => {
                     similarMovies[aMovie._id] = 0;
 
-                    //get set of unique people associated with the movie
+                    //get all people associated with a similar genre movie
                     let otherMoviePeople = [].concat(aMovie.writer, aMovie.director, aMovie.actor);
-                    otherMoviePeople = [...new Set(otherMoviePeople)]; //remove duplicates (i.e if a person had 2+ roles, only count once)
+                    otherMoviePeople = [...new Set(otherMoviePeople)]; //remove duplicates
 
-
+                    //check for similarities and add to score in similarMovies obj if similarity exists
                     originalMoviePeople.forEach(person => {
                         otherMoviePeople.forEach(otherPerson => {
+                            //convert object IDs to strings for comparison
                             if ((person + "") === (otherPerson + "")) {
                                 similarMovies[aMovie._id]++;
                             }
@@ -199,20 +214,22 @@ const getSimilarMovies = (req, res, next) => {
                     })
                 });
 
-                //use ES10 to by most frequent sort: https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+                // STEP 3: store list of IDs in request
+                //use ES10 sort by value: https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
                 similarMovies = Object.fromEntries(
                     Object.entries(similarMovies).sort(([, a], [, b]) => b - a)
                 );
+                //only keep top 10 movies
                 req.similarMovies = Object.keys(similarMovies).slice(0, 10);
                 next();
-
             })
         });
-
-    //get movies with similar directors, actors, and writers
 }
 
 
+/**
+ * Generate pug template for this movie
+ */
 const createTemplate = (req, res, next) => {
     //TODO : add user functionality, for now leave watched as false
     //let watched = exampleUser.moviesWatched.includes(id);
@@ -220,13 +237,17 @@ const createTemplate = (req, res, next) => {
 
 
     let movie = req.movie;
+    //find actors
     Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
+        //find directors
         Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
+            //find movies
             Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
-
-
+                //find related movies (list of IDs stored in req)
                 Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
+                    //TODO: add review functionality
                     let reviews = [];
+                    //generate template with found data
                     let data = pug.renderFile("./partials/movie.pug", {
                         movie: movie,
                         watched: watched,
