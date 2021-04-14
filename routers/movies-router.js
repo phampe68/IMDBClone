@@ -59,7 +59,7 @@ const queryParser = async (req, res, next) => {
     }
 
     let queryString = "";
-    for(let param in req.query) {
+    for (let param in req.query) {
         if (param === "page")
             continue
         queryString += `&${param}=${req.query[param]}`;
@@ -72,52 +72,31 @@ const queryParser = async (req, res, next) => {
     next();
 }
 
-const getMovie = (req, res, next) => {
-    let id;
+/**
+ * Finds movies that match query in request
+ */
+const searchMovie = async (req, res, next) => {
+    let query = req.queryObj;
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page - 1);
 
-    try {
-        id = mongoose.Types.ObjectId(req.params.id);
-    } catch (err) {
-        res.status(404).send("ERROR 404: Could not find movie.");
-    }
+    Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
+        if (results === undefined)
+            results = [];
+
+        let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+
+        let data = pug.renderFile("./partials/movieSearch.pug", {
+            movies: results,
+            nextURL
+        });
 
 
-    //find the movie in the db by its id
-    Movie.findOne({
-        _id: mongoose.Types.ObjectId(id)
-
-    }).exec((err, movie) => {
-        if (err || !movie) {
-            res.status(404).send("Could not find movie.");
-        }
-
-        // use ids in movie obj to find relevant data to render the page:
-
-        //TODO : add user functionality, for now leave watched as false
-        //let watched = exampleUser.moviesWatched.includes(id);
-        let watched = false;
-
-        Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
-            Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
-                Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
-                    Movie.find({'_id': {$in: movie.relatedMovies}}).exec((err, relatedMovies) => {
-                        let reviews = [];
-                        let data = pug.renderFile("./partials/movie.pug", {
-                            movie: movie,
-                            watched: watched,
-                            directors: directors,
-                            writers: writers,
-                            actors: actors,
-                            reviews: reviews,
-                            relatedMovies: relatedMovies
-                        });
-                        res.send(data);
-                    })
-                })
-            })
-        })
-    })
+        res.send(data);
+    });
 }
+
 
 /**
  * Asynchronous function for finding a person's ID given their name
@@ -138,40 +117,137 @@ const getPersonIDByName = async (personName) => {
 }
 
 
-const searchMovie = async (req, res, next) => {
-    let query = req.queryObj;
-    let limit = req.query.limit;
-    let page = req.query.page;
-    let offset = limit * (page-1);
+/**
+ * Given a movieID in the URL, find a movie object with the associated ID
+ * return 404 if not found
+ */
+const getMovie = (req, res, next) => {
+    let id;
 
-    Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
-        if (results === undefined)
-            results = [];
+    try {
+        id = mongoose.Types.ObjectId(req.params.id);
+    } catch (err) {
+        res.status(404).send("ERROR 404: Could not find movie.");
+    }
 
-        let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+    //find the movie in the db by its id
+    Movie.findOne({
+        _id: mongoose.Types.ObjectId(id)
 
-        let data = pug.renderFile("./partials/movieSearch.pug", {
-            movies: results,
-            nextURL
-        });
+    }).exec((err, movie) => {
+        if (err || !movie) {
+            res.status(404).send("Could not find movie.");
+        }
 
-
-        res.send(data);
-    });
+        req.movie = movie;
+        next();
+    })
 }
 
 /**
  * Get movies that are similar genre and have similar actors
  */
-const getSimilarMovies = () => {
+const getSimilarMovies = (req, res, next) => {
+    let movie = req.movie;
 
+    // STEP 1: get top 20 movies with similar genres using aggregation pipeline
+    // see: https://stackoverflow.com/questions/41491393/query-for-similar-array-in-mongodb
+    Movie.aggregate(
+        [
+            {$unwind: "$genre"},
+            {
+                $match: {
+                    genre: {$in: movie.genre},
+                    _id: {$ne: movie._id},
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    count: {$sum: 1},
+                }
+            },
+            {$project: {_id: 1, count: 1, score: {$divide: ["$count", movie.genre.length]}}},
+            {$sort: {score: -1}},
+        ]).limit(50)
+        .exec((err, res) => {
+            let movieIDs = res.map(ele => ele._id);
+
+            //find movie objects from aggregation results
+            Movie.find({
+                _id: {$in: movieIDs}
+            }).exec((err, simGenreMovies) => {
+                // STEP 2: for each of these movies, rank by similar collaborators:
+                let similarMovies = {};
+                let originalMoviePeople = [].concat(movie.writer, movie.director, movie.actor);
+                originalMoviePeople = [...new Set(originalMoviePeople)]; //remove duplicates
+
+                simGenreMovies.forEach(aMovie => {
+                    similarMovies[aMovie._id] = 0;
+
+                    //get set of unique people associated with the movie
+                    let otherMoviePeople = [].concat(aMovie.writer, aMovie.director, aMovie.actor);
+                    otherMoviePeople = [...new Set(otherMoviePeople)]; //remove duplicates (i.e if a person had 2+ roles, only count once)
+
+
+                    originalMoviePeople.forEach(person => {
+                        otherMoviePeople.forEach(otherPerson => {
+                            if ((person + "") === (otherPerson + "")) {
+                                similarMovies[aMovie._id]++;
+                            }
+                        })
+                    })
+                });
+
+                //use ES10 to by most frequent sort: https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+                similarMovies = Object.fromEntries(
+                    Object.entries(similarMovies).sort(([, a], [, b]) => b - a)
+                );
+                console.log(similarMovies);
+                req.similarMovies = (Object.keys(similarMovies));
+
+            })
+        });
+
+    //get movies with similar directors, actors, and writers
+    next();
 }
 
 
+const createTemplate = (req, res, next) => {
+    //TODO : add user functionality, for now leave watched as false
+    //let watched = exampleUser.moviesWatched.includes(id);
+    let watched = false;
+
+
+    let movie = req.movie;
+    Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
+        Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
+            Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
+
+
+                Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
+                    let reviews = [];
+                    let data = pug.renderFile("./partials/movie.pug", {
+                        movie: movie,
+                        watched: watched,
+                        directors: directors,
+                        writers: writers,
+                        actors: actors,
+                        reviews: reviews,
+                        relatedMovies: relatedMovies
+                    });
+                    res.send(data);
+                })
+            })
+        })
+    })
+}
+
 
 //specify handlers:
-router.get('/:id', getMovie);
-router.get('/?', queryParser);
-router.get('/?', searchMovie);
+router.get('/:id', [getMovie, getSimilarMovies, createTemplate]);
+router.get('/?', [queryParser, searchMovie]);
+
 
 module.exports = router;
