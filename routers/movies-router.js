@@ -203,14 +203,13 @@ const getSimilarMovies = (req, res, next) => {
                 similarMovies = Object.fromEntries(
                     Object.entries(similarMovies).sort(([, a], [, b]) => b - a)
                 );
-                console.log(similarMovies);
-                req.similarMovies = (Object.keys(similarMovies));
+                req.similarMovies = Object.keys(similarMovies).slice(0, 10);
+                next();
 
             })
         });
 
     //get movies with similar directors, actors, and writers
-    next();
 }
 
 
