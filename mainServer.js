@@ -106,9 +106,10 @@ app.get('/loginPage/', (req, res) => {
 //page for contribution form
 app.get('/contribute/', (req, res) => {
     User.findOne({_id: req.session.userID}).exec((err, user) => {
-        if(err||!user){
+        if(err || !user){
             console.log(`Error finding user with id ${req.session.userID}`)
         }
+        console.log(user);
         if(user.contributor === true){
             let data = pug.renderFile("./partials/contribute.pug");
             res.send(data);

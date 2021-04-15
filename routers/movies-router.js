@@ -215,6 +215,7 @@ const getSimilarMovies = (req, res, next) => {
                 similarMovies = Object.fromEntries(
                     Object.entries(similarMovies).sort(([, a], [, b]) => b - a)
                 );
+
                 //only keep top 10 movies
                 req.similarMovies = Object.keys(similarMovies).slice(0, 10);
                 next();
