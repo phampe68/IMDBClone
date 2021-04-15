@@ -1,13 +1,23 @@
-const express = require('express');
 const mongoose = require('mongoose');
 const pug = require('pug');
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
+const User = require('../database/data-models/user-model.js');
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 50;
+
+
+const express = require('express');
+const session = require('express-session');
+
 let router = express.Router();
 
+router.use(session({ name: "session",
+    secret: 'a super duper secret secret',
+    saveUninitialized: true,
+    //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
+}))
 
 const queryParser = (req, res, next) => {
     let query = {};
@@ -117,20 +127,26 @@ const getFrequentCollaborators = (req, res, next) => {
  */
 const createPersonTemplate = (req, callback) => {
     let person = req.person;
-    // use ids in person obj to find relevant data to render the page:
-    Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
-        Movie.find({'_id': {$in: person.directorFor}}).exec((err, moviesDirected) => {
-            Movie.find({'_id': {$in: person.actorFor}}).exec((err, moviesActed) => {
-                let collaboratorIDs = req.frequentCollaborators;
-                Person.find({'_id': {$in: collaboratorIDs}}).exec((err, collaborators) => {
-                    let data = pug.renderFile("./partials/person.pug", {
-                        person: person,
-                        moviesWritten: moviesWritten,
-                        moviesDirected: moviesDirected,
-                        moviesActed: moviesActed,
-                        frequentCollaborators: collaborators,
-                    });
-                    return callback(data);
+    let currUserId = mongoose.Types.ObjectId(req.session.userId);
+
+    User.findOne({'_id': currUserId}).exec((err, currUser) => {
+        let following = currUser['peopleFollowing'].includes(person._id) === true;
+        // use ids in person obj to find relevant data to render the page:
+        Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
+            Movie.find({'_id': {$in: person.directorFor}}).exec((err, moviesDirected) => {
+                Movie.find({'_id': {$in: person.actorFor}}).exec((err, moviesActed) => {
+                    let collaboratorIDs = req.frequentCollaborators;
+                    Person.find({'_id': {$in: collaboratorIDs}}).exec((err, collaborators) => {
+                        let data = pug.renderFile("./partials/person.pug", {
+                            person: person,
+                            moviesWritten: moviesWritten,
+                            moviesDirected: moviesDirected,
+                            moviesActed: moviesActed,
+                            frequentCollaborators: collaborators,
+                            following: following
+                        });
+                        return callback(data);
+                    })
                 })
             })
         })

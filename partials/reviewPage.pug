@@ -17,8 +17,8 @@ html
             div.card.text-white.bg-dark.mb-3.mt-3
                 div.card-body
                     h5.card-title #{review.name}
-                    - let starIndex = 0;
 
+                    - let starIndex = 0;
                     while starIndex < review.score
                         i#star.fa.fa-star.me-1(style={color: "yellow"})
                         - starIndex++;
