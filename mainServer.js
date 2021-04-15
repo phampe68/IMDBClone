@@ -3,64 +3,37 @@ const session = require('express-session');
 const app = express();
 const mongoose = require('mongoose');
 const pug = require('pug');
-//const redis = require('redis');
-//const redisStore = require('connect-redis')(session);
-//const client  = redis.createClient();
-
-
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-    console.log("Connected to IMDB Clone");
-})
-
-
-app.use(express.static("public"));
 
 const User = require('./database/data-models/user-model.js');
 const Review = require("./database/data-models/review-model");
-const Movie = require("./database/data-models/movie-model");
-const Person = require("./database/data-models/person-model");
-
-app.use(express.json())
-app.set("view engine", "pug");
-
-app.use(session({ name: "session",
-    secret: 'a super duper secret secret',
-    saveUninitialized: true,
-    //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
-}))
 
 //routers:
 let movieRouter = require('./routers/movies-router.js');
 let personRouter = require('./routers/persons-router.js');
 let userRouter = require('./routers/users-router.js');
-let reviewRouter = require('./routers/reviews-router.js');
 
+//connect mongoose
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {
+    console.log("Connected to IMDB Clone");
+})
+app.set("view engine", "pug");
+
+//mount routers
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
-app.use("/reviews", reviewRouter);
-
+app.use(express.static("public"));
+app.use(express.json())
+app.use(session({ name: "session", secret: 'a super duper secret secret'}))
 app.use(express.urlencoded({extended:true}));
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
 
-
-
-let exampleNotification = {
-    id: 0,
-    text: "Jean meadows is part of a new movie!",
-    type: "movie",
-    relatedID: 0
-}
-
-
-//Start adding route handlers here
-//handler for adding recipe
+//home page route:
 app.get('/', (req, res) => {
     let data
     if(req.session.loggedin === true){
@@ -95,18 +68,15 @@ app.get('/loginPage/', (req, res) => {
 
 //page for contribution form
 app.get('/contribute/', (req, res) => {
-    User.findOne({_id: req.session.userID}).exec((err, user) => {
-        if(err||!user){
-            console.log(`Error finding user with id ${req.session.userID}`)
-        }
-        if(user.contributor === true){
-            let data = pug.renderFile("./partials/contribute.pug");
-            res.send(data);
-        }
-    })
-
+    let data = pug.renderFile("./partials/contribute.pug");
+    res.send(data);
 })
 
+//page for a single review
+app.get(`/reviews/:id`, (req, res) => {
+    let data = pug.renderFile("./partials/review.pug", {review: exampleReview});
+    res.send(data);
+})
 
 app.post("/login/", function(req,res,next){
     //determine which button was used on login form
@@ -179,6 +149,7 @@ const signup = async(req,res,next) => {
     }
 
     await getUserByName(req.body.username).then(user => {
+        console.log("ayo");
         //ensure username is unique
         if (!user) {
             //res.status(200).send("Authorized, username does not exist");
@@ -204,14 +175,13 @@ const signup = async(req,res,next) => {
                 req.session.username = username;
                 req.session.loggedin = true;
                 req.session.userID = newUser.id;
-                res.redirect(`/myProfile`);
+                res.redirect(`/users/${newUser.id}`);
             });
         } else {
             res.status(401).send("Username already exists.")
         }
     });
 }
-
 
 const getUserByName = async (userName) => {
     return User.findOne(
@@ -227,177 +197,24 @@ const getUserByName = async (userName) => {
     });
 }
 
-app.post("/addMovie",(req,res,next)=> {
-    let title = req.body.title;
-    let runtime = req.body.runtime;
-    let releaseYear = req.body.releaseYear;
-    let writers = req.body.writers;
-    let directors = req.body.directors;
-    let actors = req.body.actors;
-
-    let movie = new Movie();
-    movie.title = title;
-    movie.runtime = runtime;
-    movie.year = releaseYear;
-    movie.writers = writers;
-    movie.directors = directors;
-    movie.actors = actors;
-
-    Movie.save(movie,(err,result)=>{
-        if(err) throw err;
-        console.log("Saved new movie.");
-    })
-})
-
-app.post("/addPerson",(req,res,next)=> {
-    let name = req.body.name;
-    Person.findOne({name:name}).exec((err,person)=>{
-        if(!person){
-            let newPerson = new Person();
-            newPerson.name = name;
-            newPerson.save(function (err) {
-                if(err) throw err;
-                console.log("Saved new person");
-            })
-        }
-    });
-})
-
-app.post("/addReview/:id/",(req,res,next)=>{
+app.post("/movies/addReview/:id/",(req,res,next)=>{
     review = new Review();
-    let score = parseInt(req.body.action);
-    let id = mongoose.Types.ObjectId(req.params.id);
-    User.findOne({_id:req.session.userID}).exec((err,user)=> {
-        Movie.findOne({_id: id}).exec((err, movie) => {
-            review.author = user._id;
-            review.score = score;
-            console.log(`Score: ${review.score}`)
-
-            review.summaryText = req.body.summaryText;
-            review.fullText = req.body.fullText;
-
-            console.log(user);
-            console.log(movie);
-
-            user["reviews"].push(review._id);
-            movie["reviews"].push(review._id);
-
-            user.save(function (err) {
-                if (err) throw err;
-                console.log("Updated user.");
-            });
-            movie.save(function (err) {
-                if (err) throw err;
-                console.log("Updated movie.");
-            });
-            review.save(function (err) {
-                if (err) throw err;
-                console.log("Saved new review.");
-                res.redirect(`/movies/${req.params.id}`);
-            });
-            console.log(req.body);
-        })
-
-    })
-})
-
-app.post("/accountType/:id",(req,res,next)=>{
-    let id = mongoose.Types.ObjectId(req.params.id);
+    if(req.body.action === "basic"){
+        review.summaryText = "";
+        review.fullText = "";
+    }
     console.log(req.body);
-    User.findOne({_id: id}).exec((err, user) => {
-        if(req.body.accountTypeRadio === "true"){
-            user.contributor = true;
-        }else{
-            user.contributor = false;
-        }
-        user.save(function(err){
-            if(err) throw err;
-            console.log("updated account type")
-        })
-    })
 })
 
-app.post("/followUser/:id",(req,res,next)=> {
-    let userID = mongoose.Types.ObjectId(req.session.userID);
-    let otherID = mongoose.Types.ObjectId(req.params.id);
 
-    User.findOne({'_id': userID}).exec((err, user) => {
-        User.findOne({'_id': otherID}).exec((err, other) => {
-            if(user&&other){
-                user["usersFollowing"].push(other._id);
-            }
-            user.save(function(err){
-                if(err) throw err;
-                console.log("updated user following list");
-                res.redirect(`/users/${otherID}`);
-            })
-        })
-    })
-})
 
-app.post("/unfollowUser/:id",(req,res,next)=> {
-    let userID = mongoose.Types.ObjectId(req.session.userID);
-    let otherID = mongoose.Types.ObjectId(req.params.id);
-    let from = req.body.from;
-    console.log(`UserID ${userID} is attempting to unfollow ${otherID} from ${from}`);
-    User.findOne({'_id': userID}).exec((err, user) => {
-        User.findOne({'_id': otherID}).exec((err, other) => {
-            if(user&&other){
-                user["usersFollowing"].pull({_id: other._id});
-                console.log(user["usersFollowing"]);
-            }
-            user.save(function(err){
-                if (err) throw err;
-                if(from === "profile"){
-                    res.redirect("/myProfile");
-                }else{
-                    res.redirect(`/users/${otherID}`)
-                }
-            })
-        })
-    })
-})
-
-app.post("/followPerson/:id",(req,res,next)=> {
-    let userID = mongoose.Types.ObjectId(req.session.userID);
-    let otherID = mongoose.Types.ObjectId(req.params.id);
-
-    User.findOne({'_id': userID}).exec((err, user) => {
-        Person.findOne({'_id': otherID}).exec((err, other) => {
-            if(user&&other){
-                user["peopleFollowing"].push(other._id);
-            }
-            user.save(function(err){
-                if(err) throw err;
-                console.log("updated person following list");
-                res.redirect(`/people/${otherID}`);
-            })
-        })
-    })
-})
-
-app.post("/unfollowPerson/:id",(req,res,next)=> {
-    let userID = mongoose.Types.ObjectId(req.session.userID);
-    let otherID = mongoose.Types.ObjectId(req.params.id);
-    let from = req.body.from;
-    console.log(`UserID ${userID} is attempting to unfollow ${otherID} from ${from}`);
-    User.findOne({'_id': userID}).exec((err, user) => {
-        Person.findOne({'_id': otherID}).exec((err, other) => {
-            if(user&&other){
-                user["peopleFollowing"].pull({_id: other._id});
-                console.log(user["peopleFollowing"]);
-            }
-            user.save(function(err){
-                if (err) throw err;
-                if(from === "profile"){
-                    res.redirect("/myProfile");
-                }else{
-                    res.redirect(`/people/${otherID}`)
-                }
-            })
-        })
-    })
-})
+/**
+ * catch urls that don't exist
+ */
+const redirectBadURL = (req, res) => {
+    res.status(404).send("The requested URL was not found on our server.");
+}
+app.get('*',redirectBadURL);
 
 app.listen(3000);
 

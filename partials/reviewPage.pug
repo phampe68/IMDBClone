@@ -1,0 +1,30 @@
+html
+    head
+        link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css')
+        link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous")
+        script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous")
+
+        style
+            include ../stylesheets/index.css
+            include ../stylesheets/star.css
+        script
+            include ../scripts/starReview.js
+    title Card Info Page
+    body
+        include ./navbar.pug
+
+        div.container-fluid
+            div.card.text-white.bg-dark.mb-3.mt-3
+                div.card-body
+                    h5.card-title #{review.name}
+                    - let starIndex = 0;
+
+                    while starIndex < review.score
+                        i#star.fa.fa-star.me-1(style={color: "yellow"})
+                        - starIndex++;
+                    p.card-text.fw-bold.ms-2(style={display: "inline-block"}) #{review.score} / 10
+                    p.card-text #{review.summaryText}
+
+                    button.btn.btn-outline-primary(type='button' data-bs-toggle='collapse' data-bs-target=`#review-details${cardIndex}` aria-expanded='false' aria-controls=`review-details${cardIndex}`) View Details
+                    div.collapse.mt-3(id=`review-details${cardIndex}`)
+                        p.card.card-body.bg-dark.border-light #{review.fullText}
