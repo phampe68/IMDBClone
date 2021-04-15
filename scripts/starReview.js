@@ -20,5 +20,6 @@ const starMouseClick = (i) => {
         stars[index].classList.remove("star-clicked");
     for (let index = 0; index <= i; index++)
         stars[index].classList.add("star-clicked");
-
+    let action = document.getElementsByName("action");
+    action.value = `${i+1}`
 }

@@ -84,7 +84,7 @@ html
 
         div#add-review-container.container
             h1 Add Review
-            form(action='/movies/addReview/:id/', method='POST')
+            form(action=`/addReview/${movie.id}` method='POST' name="score")
                 div#review-selector.mt-3.mb-3(style={display: "inline-block"})
                     i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick='starMouseClick(0)')
                     i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick='starMouseClick(1)')
@@ -96,16 +96,20 @@ html
                     i#star-7.fa.fa-star.star-selector(onmouseover='starMouseOver(7)' onmouseleave='starMouseLeave(7)' onclick='starMouseClick(7)')
                     i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick='starMouseClick(8)')
                     i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick='starMouseClick(9)')
-                button.btn.btn-outline-primary.mt-2(type="submit" name="action" value="basic" style={float: "right"})
+
+                //- let rating = document.getElementsByClassName("star-clicked").length
+
+                button.btn.btn-outline-primary.mt-2(type="submit" name="action" value={rating} style={float: "right"})
                     | Submit Basic Review
 
                 div.mb-3
-                    label.form-label(for='name') Name
-                    input#name.form-control(type='text' aria-describedby='emailHelp')
+                    label.form-label(for='name') Summary
+                    input#name.form-control(type='text' name="summaryText" aria-describedby='emailHelp')
                 div.mb-3
                     label.form-label(for='review') Review
-                    textarea#review.form-control(type='text' rows='5' style='resize: none')
-                button.btn.btn-outline-primary.btn-block(type='submit' name="action" value="full")
+                    textarea#review.form-control(type='text' name="fullText" rows='5' style='resize: none')
+
+                button.btn.btn-outline-primary.btn-block(type='submit' name="action" value={rating})
                     | Add Review
             hr.my-4
             #review-deck.card-deck

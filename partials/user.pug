@@ -20,16 +20,14 @@ html
                     button.btn.btn-primary.mt-2.ms-3(type="submit") Logout
 
             div(id="AccountTypeDiv")
-                p Account Type:
-                -let contributorType = user.accountType === "contributor"
-                -let regularType = user.accountType === "regular"
-                div.form-check.ms-4
-                    input.form-check-input(type="radio" name="accountTypeRadio" id="1" checked={contributorType})
-                    label.form-check-label(for="radContributor") Contributor
-                div.form-check.ms-4
-                    input.form-check-input(type="radio" name="accountTypeRadio" id="2" checked = {regularType})
-                    label.form-check-label(for="radRegular") Regular
-                button.btn.btn-primary.mt-2.ms-3 Save
+                form(action=`/accountType/${user._id}` method="POST") Account Type:
+                    div.form-check.ms-4
+                        input.form-check-input(type="radio" name="accountTypeRadio" value="true" id="radContributor" checked=user.contributor)
+                        label.form-check-label(for="radContributor") Contributor
+                    div.form-check.ms-4
+                        input.form-check-input(type="radio" name="accountTypeRadio" value="false" id="radRegular" checked=!user.contributor)
+                        label.form-check-label(for="radRegular") Regular
+                    button.btn.btn-primary.mt-2.ms-3(type="submit") Save
 
 
             div.mt-5(id="PersonFollowDiv")
@@ -37,16 +35,18 @@ html
                 ul.list-group
                     each person in peopleFollowing
                         li.list-group-item
-                            button.btn.btn-danger.me-3 Unfollow
-                            a(href=`/people/${person.id}`) #{person.name}
+                            form(action=`/unfollowPerson/${person._id}`, method='POST')
+                                button.btn.btn-danger.me-3(name="from" value="profile" type="submit") Unfollow
+                                a(href=`/people/${person._id}`) #{person.name}
 
             div.mt-5(id="UsersFollowingDiv")
                 p Users Following:
                 ul.list-group
                     each user in usersFollowing
                         li.list-group-item
-                            button.btn.btn-danger.me-3 Unfollow
-                            a(href=`/users/${user.id}`) #{user.username}
+                            form(action=`/unfollowUser/${user._id}`, method='POST')
+                                button.btn.btn-danger.mt-2.ms-3(name="from" value="profile" type="submit") Unfollow
+                                a(href=`/users/${user._id}`) #{user.username}
 
             div.mt-5(id="MoviesWatchedDiv")
                 p Movies you've watched:
@@ -54,14 +54,14 @@ html
                     each movie in moviesWatched
                         li.list-group-item
                             button.btn.btn-danger.me-3 Remove
-                            a(href=`/movies/${movie.id}`) #{movie.Title}
+                            a(href=`/movies/${movie._id}`) #{movie.Title}
 
             div.mt-5(id="RecommendedDiv")
                 p Recommended Movies:
                 ul.list-group
                     each movie in recommendedMovies
                         li.list-group-item
-                            a(href=`/movies/${movie.id}`) #{movie.Title}
+                            a(href=`/movies/${movie._id}`) #{movie.Title}
 
             div.mt-5.mb-5(id="NotificationsDiv")
                 p Notifications:

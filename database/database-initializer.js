@@ -112,7 +112,6 @@ db.once('open', () => {
                 let exampleUser1 = new User({
                     username: "exampleUser1",
                     password: "password",
-                    accountType: "regular",
                     contributor: false,
                     peopleFollowing: [],
                     usersFollowing: [],
@@ -128,7 +127,6 @@ db.once('open', () => {
                 let exampleUser2 = new User({
                     username: "exampleUser2",
                     password: "password",
-                    accountType: "regular",
                     contributor: false,
                     peopleFollowing: [],
                     usersFollowing: [exampleUser1.id],

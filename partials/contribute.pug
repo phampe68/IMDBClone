@@ -15,31 +15,31 @@ html
         div.container
             h1.display-5.mt-3 Contribute:
             hr
-            form
+            form(action="/addPerson" method="POST")
                 h2 Add an Actor:
                 label.form-label.text-white(for="inputActorName") Actor Name
-                input.form-control.mb-3(type="text" name="inputActorName")
+                input.form-control.mb-3(type="text" id="inputActorName" name=name)
 
-                button.btn.btn-outline-primary.mt-3 Add Actor
+                button.btn.btn-outline-primary.mt-3(type="submit") Add Person
             form.mt-5
                 h2 Add a Movie:
 
                 label.form-label.text-white(for="inputTitle") Title
-                input.form-control.mb-3(type="text" name="inputTitle")
+                input.form-control.mb-3(type="text" name="title" id="inputTitle")
 
-                label.form-label.text-white(for="inputTitle") Runtime
-                input.form-control.mb-3(type="text" name="inputRuntime")
+                label.form-label.text-white(for="inputRuntime") Runtime
+                input.form-control.mb-3(type="text" name="runtime" id="inputRuntime")
 
                 label.form-label.text-white(for="inputReleaseYear") Release Year
-                input.form-control.mb-3(type="text" name="inputReleaseUear")
+                input.form-control.mb-3(type="text" name="releaseYear" id="inputReleaseYear")
 
                 label.form-label.text-white(for="inputWriters") Writers
-                input.form-control.mb-3(type="text" name="inputWriters")
+                input.form-control.mb-3(type="text" name="writers" id="inputWriters")
 
                 label.form-label.text-white(for="inputDirectors") Directors
-                input.form-control.mb-3(type="text" name="inputDirectors")
+                input.form-control.mb-3(type="text" name="directors" id="inputDirectors")
 
                 label.form-label.text-white(for="inputActors") Actors
-                input.form-control.mb-3(type="text" name="inputActors")
+                input.form-control.mb-3(type="text" name="actors" id="inputActors")
 
                 button.btn.btn-outline-primary.btn.mt-3 Add Movie
