@@ -110,8 +110,12 @@ const getFrequentCollaborators = (req, res, next) => {
 
 }
 
-
-const createTemplate = (req, res, next) => {
+/**
+ * Renders a pug template of a person
+ * @param req: contains the person object needed to generate the template
+ * @return callback: a callback containing rendered pug with all person data
+ */
+const createPersonTemplate = (req, callback) => {
     let person = req.person;
     // use ids in person obj to find relevant data to render the page:
     Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
@@ -126,15 +130,33 @@ const createTemplate = (req, res, next) => {
                         moviesActed: moviesActed,
                         frequentCollaborators: collaborators,
                     });
-                    res.send(data);
+                    return callback(data);
                 })
             })
         })
     })
 }
 
+
+/**
+ * If content type header is text/html, send the rendered pug template,
+ * if it's application/json, send the json representation of the person
+ */
+const sendPerson = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.person);
+        },
+        "text/html": () => {
+            createPersonTemplate(req, data => {
+                res.status(200).send(data);
+            })
+        },
+    })
+}
+
 //specify handlers:
-router.get('/:id', [getPerson, getFrequentCollaborators, createTemplate]);
+router.get('/:id', [getPerson, getFrequentCollaborators, sendPerson]);
 
 router.get('/?', queryParser);
 router.get('/?', searchPeople);

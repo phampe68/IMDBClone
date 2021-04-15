@@ -19,22 +19,21 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
     console.log("Connected to IMDB Clone");
 })
+app.set("view engine", "pug");
 
-//configure routers
+//mount routers
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
 app.use(express.static("public"));
 app.use(express.json())
-app.set("view engine", "pug");
 app.use(session({ name: "session", secret: 'a super duper secret secret'}))
 app.use(express.urlencoded({extended:true}));
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
 
-//Start adding route handlers here
-//handler for adding recipe
+//home page route:
 app.get('/', (req, res) => {
     let data
     if(req.session.loggedin === true){
@@ -206,7 +205,6 @@ app.post("/movies/addReview/:id/",(req,res,next)=>{
     }
     console.log(req.body);
 })
-
 
 
 

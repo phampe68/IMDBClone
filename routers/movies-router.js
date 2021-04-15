@@ -86,10 +86,6 @@ const searchMovie = (req, res, next) => {
     let offset = limit * (page - 1);
 
     Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
-        //show nothing if no search results
-        if (results === undefined)
-            results = [];
-
         //link to navigate to next page
         let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
 
@@ -228,9 +224,11 @@ const getSimilarMovies = (req, res, next) => {
 
 
 /**
- * Generate pug template for this movie
+ * Renders a pug template of a movie
+ * @param req: contains the movie object needed to generate the template
+ * @return callback: a callback containing rendered pug with all movie data
  */
-const createTemplate = (req, res, next) => {
+const createMovieTemplate = (req, callback) => {
     //TODO : add user functionality, for now leave watched as false
     //let watched = exampleUser.moviesWatched.includes(id);
     let watched = false;
@@ -257,7 +255,8 @@ const createTemplate = (req, res, next) => {
                         reviews: reviews,
                         relatedMovies: relatedMovies
                     });
-                    res.send(data);
+
+                    return callback(data);
                 })
             })
         })
@@ -265,9 +264,32 @@ const createTemplate = (req, res, next) => {
 }
 
 
-//specify handlers:
-router.get('/:id', [getMovie, getSimilarMovies, createTemplate]);
-router.get('/?', [queryParser, searchMovie]);
+/**
+ * If content type header is text/html, send the rendered pug template,
+ * if it's application/json, send the json representation of the movie
+ */
+const sendMovie = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.movie);
+        },
+        "text/html": () => {
+            createMovieTemplate(req, (data) => {
+                res.send(data);
+            })
+        },
+    })
+}
 
+
+const getReviewPage = (req, res, next) => {
+    let data = pug.renderFile('./partials/reviewPage.pug');
+    res.send(data);
+}
+
+//specify handlers:
+router.get('/:id', [getMovie, getSimilarMovies, sendMovie]);
+router.get('/?', [queryParser, searchMovie]);
+router.get('/:id/reviews/', getReviewPage);
 
 module.exports = router;
