@@ -86,7 +86,7 @@ app.get('/myProfile', (req, res) => {
         console.log(req.session.loggedin);
         console.log(req.session.username);
         console.log(req.session.userId);
-        res.redirect(`/users/myProfile/${req.session.userId}/`);
+        res.redirect(`/users/${req.session.userId}/`);
     }
     else{
         res.redirect("/loginPage");
