@@ -30,14 +30,10 @@ const actorSelectKeyPress = () => {
                 listItem.value = name;
                 actorList.appendChild(listItem);
             })
-
-
         }
     }
-
     req.open("GET", `/people?name=${enteredText}&limit=${10}`);
     req.send();
-
 }
 
 

@@ -114,6 +114,7 @@ app.get('/contribute/', (req, res) => {
             res.send(data);
         }
     })
+
 })
 
 
@@ -268,7 +269,6 @@ app.post("/addPerson",(req,res,next)=> {
             newPerson.save(function (err) {
                 if(err) throw err;
                 console.log("Saved new person");
-
             })
         }
     });
