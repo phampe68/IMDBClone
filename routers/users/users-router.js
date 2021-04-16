@@ -87,12 +87,8 @@ const loadUser = (req, res, next) => {
                                 User.findOne({'_id': currUserId}).exec((err, currUser) => {
                                     //make note if the logged in user is following this user
                                     req.options.following = currUser['usersFollowing'].includes(user._id) === true;
-
                                     next();
-
                                 })
-
-
                             }
                         })
                     })
@@ -111,54 +107,13 @@ let sendUser = (req, res, next) => {
         "text/html": () => {
             let data = (req.loadType === "currentUser") ? pug.renderFile('./partials/user.pug', req.options) : pug.renderFile("./partials/otherUser.pug", req.options);
             res.status(200).send(data);
-
         },
     })
 }
 
 
-/**
- * renders page for viewing other user
- */
-let other = (req, res) => {
-    console.log("rendering another user");
-
-    let currUserId = mongoose.Types.ObjectId(req.session.userId);
-    let otherUser = req.options.user;
-
-    User.findOne({'_id': currUserId}).exec((err, currUser) => {
-        //make note if the logged in user is following this user
-        req.options.following = currUser['usersFollowing'].includes(otherUser._id) === true;
-
-        let data = pug.renderFile("./partials/otherUser.pug", req.options);
-        res.send(data);
-    })
-}
-
-
-/**
- * Renders page for viewing user that's logged in
- */
-let current = (req, res) => {
-    console.log("rendering current user");
-    let data = pug.renderFile("./partials/user.pug", req.options);
-    res.send(data);
-}
-
-/**
- * STEP 1: Find all movies that user reviewed with 7 or more stars and get top similar movies for each
- * STEP 2:
- */
-
-let getRecommendedMovies = (req, res, next) => {
-
-    Review.find({})
-    next();
-
-}
 
 
 router.get('/:id/', getUser, loadUser, sendUser);
-//router.get('/myProfile/:id/', getUser, loadUser, getRecommendedMovies, current);
 
 module.exports = router;

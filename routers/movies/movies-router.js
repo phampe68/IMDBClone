@@ -78,22 +78,38 @@ const queryParser = async (req, res, next) => {
 /**
  * Finds movies that match query object generated from queryParser and generate template
  */
-const searchMovie = (req, res, next) => {
+const searchMovie = async (req, res, next) => {
     let query = req.queryObj;
     let limit = req.query.limit;
     let page = req.query.page;
     let offset = limit * (page - 1);
 
-    Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
-        //link to navigate to next page
-        req.nextURL = `/movies?${req.queryString}&page=${page + 1}`;
-        req.searchResults = results;
 
-        next();
+    req.searchResults = await Movie.find(query).skip(offset).limit(limit).catch(err => {
+        console.log(err);
+        res.status(404).send("Couldn't find search results.");
     });
+    let count = await Movie.find(query).count().catch(err => {
+        console.log(err);
+        res.status(404).send("Couldn't find search results.");
+    });
+
+    //make sure user can only navigate to next if there are more results
+    if (count <= DEFAULT_LIMIT)
+        req.nextURL = `/movies?${req.queryString}&page=${page - 1}`;
+    else
+        req.nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+
+    next();
 }
 
 
+/**
+ * if content type header is application/json,
+ * - send json representation of all search results (an array of movie objects)
+ * if content type header is text/html,
+ * - rendered pug template
+ */
 const sendSearchResults = (req, res, next) => {
     res.format({
         "application/json": () => {
@@ -108,8 +124,6 @@ const sendSearchResults = (req, res, next) => {
         }
     })
 }
-
-
 
 
 /**
@@ -159,33 +173,11 @@ const getMovie = (req, res, next) => {
 }
 
 
-/**
- * Get movies that are similar genre and have similar actors
- *  - STEP 1: get top 50 movies by genre similarity using aggregation pipeline
- *  - STEP 2: sort the top 50 movies by similar people
- *  - STEP 3: store list of IDs in request
- */
-const loadSimilarMovies = (req, res, next) => {
-    getSimilarMovies(req.movie, similarMovies => {
-        console.log(similarMovies);
-        req.similarMovies = similarMovies;
-        next();
-    })
-
-}
-
-
-/**
- * Renders a pug template of a movie
- * @param req: contains the movie object needed to generate the template
- * @return callback: a callback containing rendered pug with all movie data
- */
-const createMovieTemplate = (req, callback) => {
-    //TODO : add user functionality, for now leave watched as false
-
+const loadMovies = (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let movie = req.movie;
     let watched;
+
     User.findOne({'_id': currUserId}).exec((err, currUser) => {
         watched = currUser['moviesWatched'].includes(movie._id) === true;
         //find actors
@@ -196,23 +188,26 @@ const createMovieTemplate = (req, callback) => {
                 Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
                     //find related movies (list of IDs stored in req)
                     Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
-                        //TODO: add review functionality
-                        Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
+                        //get first 5 reviews:
+                        Review.find({'_id': {$in: movie.reviews}}).limit(5).exec((err, reviews) => {
+                            getSimilarMovies(req.movie, similarMovies => {
+                                Movie.find({'_id': {$in : similarMovies}}).exec((err, relatedMovies) => {
+                                    //generate template with found data
+                                    req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
+                                    req.options = {
+                                        movie: movie,
+                                        watched: watched,
+                                        directors: directors,
+                                        writers: writers,
+                                        actors: actors,
+                                        reviews: reviews,
+                                        relatedMovies: relatedMovies,
+                                        seeReviewsURL: req.seeReviewsURL
+                                    };
+                                    next();
+                                })
 
-                            //generate template with found data
-                            req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
-
-                            let data = pug.renderFile("./partials/movie.pug", {
-                                movie: movie,
-                                watched: watched,
-                                directors: directors,
-                                writers: writers,
-                                actors: actors,
-                                reviews: reviews,
-                                relatedMovies: relatedMovies,
-                                seeReviewsURL: req.seeReviewsURL
-                            });
-                            return callback(data);
+                            })
                         })
                     })
                 })
@@ -220,7 +215,6 @@ const createMovieTemplate = (req, callback) => {
         })
     })
 }
-
 
 /**
  * If content type header is text/html, send the rendered pug template,
@@ -232,17 +226,15 @@ const sendMovie = (req, res, next) => {
             res.status(200).json(req.movie);
         },
         "text/html": () => {
-            createMovieTemplate(req, (data) => {
-                res.send(data);
-            })
+            let data = pug.renderFile("./partials/movie.pug", req.options);
+            res.status(200).send(data);
         },
     })
 }
 
 
-
 //specify handlers:
-router.get('/:id', [getMovie, loadSimilarMovies, sendMovie]);
+router.get('/:id', [getMovie, loadMovies, sendMovie]);
 router.get('/?', [queryParser, searchMovie, sendSearchResults]);
 router.use('/:id/reviews/', reviewRouter);
 

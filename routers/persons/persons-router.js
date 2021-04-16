@@ -13,7 +13,8 @@ const session = require('express-session');
 
 let router = express.Router();
 
-router.use(session({ name: "session",
+router.use(session({
+    name: "session",
     secret: 'a super duper secret secret',
     saveUninitialized: true,
     //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
@@ -82,9 +83,7 @@ const getPerson = (req, res, next) => {
  *  Step 2: get all people who participated in these movies
  *  Step 3: tally up which people occur the most
  */
-const getFrequentCollaborators = (req, res, next) => {
-
-
+const getFrequentCollaborators = (req, callback) => {
     let person = req.person;
     //Step 1: find all movieIDs person was part of
     let movieIDs = [].concat(person.writerFor, person.actorFor, person.directorFor);
@@ -94,11 +93,10 @@ const getFrequentCollaborators = (req, res, next) => {
     Movie.find({
         _id: {$in: uniqueMoviesIDs}
     }).exec((err, movies) => {
-        //get all people involved in each movie
+        //get all people involved in each movie (except for the person we're looking at)
         movies.forEach(movie => {
             let allCollaborators = [].concat(movie.writer, movie.director, movie.actor);
             let uniqueCollaborators = [...new Set(allCollaborators)]; //remove duplicates (i.e if a person had 2+ roles, only count once)
-
             //tally people using the collaborators object
             uniqueCollaborators.forEach(collaborator => {
                 if (!collaborators.hasOwnProperty(collaborator))
@@ -113,19 +111,21 @@ const getFrequentCollaborators = (req, res, next) => {
             Object.entries(collaborators).sort(([, a], [, b]) => b - a)
         );
 
-        // store object in res
-        req.frequentCollaborators = (Object.keys(collaborators).slice(0, 5));
-        next();
+        collaborators = Object.keys(collaborators);
+        //remove person we're looking at
+        collaborators= collaborators.filter(collaborator => collaborator !== person._id + "");
+        collaborators = collaborators.slice(0, 5);
+        return callback(collaborators);
     });
-
 }
+
 
 /**
  * Renders a pug template of a person
  * @param req: contains the person object needed to generate the template
  * @return callback: a callback containing rendered pug with all person data
  */
-const createPersonTemplate = (req, callback) => {
+const loadPerson = (req, res, next) => {
     let person = req.person;
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
 
@@ -135,17 +135,20 @@ const createPersonTemplate = (req, callback) => {
         Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
             Movie.find({'_id': {$in: person.directorFor}}).exec((err, moviesDirected) => {
                 Movie.find({'_id': {$in: person.actorFor}}).exec((err, moviesActed) => {
-                    let collaboratorIDs = req.frequentCollaborators;
-                    Person.find({'_id': {$in: collaboratorIDs}}).exec((err, collaborators) => {
-                        let data = pug.renderFile("./partials/person.pug", {
-                            person: person,
-                            moviesWritten: moviesWritten,
-                            moviesDirected: moviesDirected,
-                            moviesActed: moviesActed,
-                            frequentCollaborators: collaborators,
-                            following: following
-                        });
-                        return callback(data);
+                    getFrequentCollaborators(req, collaboratorIDs => {
+
+
+                        Person.find({'_id': {$in: collaboratorIDs}}).exec((err, collaborators) => {
+                            req.options = {
+                                person: person,
+                                moviesWritten: moviesWritten,
+                                moviesDirected: moviesDirected,
+                                moviesActed: moviesActed,
+                                frequentCollaborators: collaborators,
+                                following: following
+                            };
+                            next();
+                        })
                     })
                 })
             })
@@ -164,16 +167,15 @@ const sendPerson = (req, res, next) => {
             res.status(200).json(req.person);
         },
         "text/html": () => {
-            createPersonTemplate(req, data => {
-                res.status(200).send(data);
-            })
+            let data = pug.renderFile("./partials/person.pug", req.options);
+            res.status(200).send(data);
         },
     })
 }
 
 
 //specify handlers:
-router.get('/:id', [getPerson, getFrequentCollaborators, sendPerson]);
+router.get('/:id', [getPerson, loadPerson, sendPerson]);
 
 router.get('/?', queryParser);
 router.get('/?', searchPeople);

@@ -1,5 +1,12 @@
 const Movie = require('../../database/data-models/movie-model.js');
 
+
+/**
+ * Get movies that are similar genre and have similar actors
+ *  - STEP 1: get top 50 movies by genre similarity using aggregation pipeline
+ *  - STEP 2: sort the top 50 movies by similar people
+ *  - STEP 3: store list of IDs in request
+ */
 const getSimilarMovies = (movie, callback) => {
     /* STEP 1: get top 50 movies by genre similarity using aggregation pipeline
     see: https://stackoverflow.com/questions/41491393/query-for-similar-array-in-mongodb
