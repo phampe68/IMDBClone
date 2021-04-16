@@ -105,7 +105,7 @@ app.get('/loginPage/', (req, res) => {
 
 //page for contribution form
 app.get('/contribute/', (req, res) => {
-    User.findOne({_id: req.session.userID}).exec((err, user) => {
+    User.findOne({_id: req.session.userId}).exec((err, user) => {
         if(err||!user){
             console.log(`Error finding user with id ${req.session.userID}`)
         }
@@ -114,7 +114,6 @@ app.get('/contribute/', (req, res) => {
             res.send(data);
         }
     })
-
 })
 
 
@@ -260,14 +259,16 @@ app.post("/addMovie",(req,res,next)=> {
 })
 
 app.post("/addPerson",(req,res,next)=> {
-    let name = req.body.name;
+    let name = req.body.personName;
+    console.log(name);
     Person.findOne({name:name}).exec((err,person)=>{
         if(!person){
-            let newPerson = new Person();
+            let newPerson = new Person;
             newPerson.name = name;
             newPerson.save(function (err) {
                 if(err) throw err;
                 console.log("Saved new person");
+
             })
         }
     });

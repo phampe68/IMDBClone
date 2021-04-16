@@ -16,9 +16,9 @@ html
             h1.display-5.mt-3 Contribute:
             hr
             form(action="/addPerson" method="POST")
-                h2 Add an Actor:
-                label.form-label.text-white(for="inputActorName") Actor Name
-                input.form-control.mb-3(type="text" id="inputActorName" name=name)
+                h2 Add a Person:
+                label.form-label.text-white(for="inputActorName") Person Name
+                input.form-control.mb-3(type="text" id="inputActorName" name="personName")
 
                 button.btn.btn-outline-primary.mt-3(type="submit") Add Person
             form.mt-5
