@@ -288,6 +288,8 @@ app.post("/addReview?",(req,res,next)=>{
         Movie.findOne({_id: id}).exec((err, movie) => {
             review.author = user._id;
             review.score = score;
+            review.movie = movie._id;
+
             console.log(`Score: ${review.score}`)
 
             review.summaryText = req.body.summaryText;
@@ -418,6 +420,46 @@ app.post("/unfollowPerson/:id",(req,res,next)=> {
     })
 })
 
+app.post("/watchMovie/:id",(req,res,next)=> {
+    let userId = mongoose.Types.ObjectId(req.session.userId);
+    let otherId = mongoose.Types.ObjectId(req.params.id);
+
+    User.findOne({'_id': userId}).exec((err, user) => {
+        Movie.findOne({'_id': otherId}).exec((err, other) => {
+            if(user&&other){
+                user["moviesWatched"].push(other._id);
+            }
+            user.save(function(err){
+                if(err) throw err;
+                console.log("updated watched movies list");
+                res.redirect(`/movies/${otherId}`);
+            })
+        })
+    })
+})
+
+app.post("/unwatchMovie/:id",(req,res,next)=> {
+    let userId = mongoose.Types.ObjectId(req.session.userId);
+    let otherId = mongoose.Types.ObjectId(req.params.id);
+    let from = req.body.from;
+    console.log(`UserID ${userId} is attempting to unfollow ${otherId} from ${from}`);
+    User.findOne({'_id': userId}).exec((err, user) => {
+        Movie.findOne({'_id': otherId}).exec((err, other) => {
+            if(user&&other){
+                user["moviesWatched"].pull({_id: other._id});
+                console.log(user["moviesWatched"]);
+            }
+            user.save(function(err){
+                if (err) throw err;
+                if(from === "profile"){
+                    res.redirect("/myProfile");
+                }else{
+                    res.redirect(`/movies/${otherId}`)
+                }
+            })
+        })
+    })
+})
 
 
 /**
