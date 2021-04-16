@@ -5,6 +5,7 @@ const pug = require('pug');
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
 const Review = require('../database/data-models/review-model.js');
+let reviewRouter = require('../routers/reviews-router.js');
 
 let router = express.Router();
 
@@ -249,8 +250,6 @@ const createMovieTemplate = (req, callback) => {
     //TODO : add user functionality, for now leave watched as false
     //let watched = exampleUser.moviesWatched.includes(id);
     let watched = false;
-
-
     let movie = req.movie;
     //find actors
     Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
@@ -299,14 +298,10 @@ const sendMovie = (req, res, next) => {
 }
 
 
-const getReviewPage = (req, res, next) => {
-    let data = pug.renderFile('./partials/reviewPage.pug');
-    res.send(data);
-}
 
 //specify handlers:
 router.get('/:id', [getMovie, getSimilarMovies, sendMovie]);
 router.get('/?', [queryParser, searchMovie, sendSearchResults]);
-router.get('/:id/reviews/', getReviewPage);
+router.use('/:id/reviews/', reviewRouter);
 
 module.exports = router;

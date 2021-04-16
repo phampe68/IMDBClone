@@ -18,12 +18,12 @@ const getReview = (req, res, next) => {
         res.status(404).send("ERROR 404: Could not find review.");
     }
 
-    //find the movie in the db by its id
+    //find the review in the db by its id
     Review.findOne({
         _id: mongoose.Types.ObjectId(id)
     }).exec((err, review) => {
         if (err || !review) {
-            //res.status(404).send("Could not find user.");
+            res.status(404).send("Could not find Review.");
             return;
         }
         User.findOne({'_id': review.author}).exec((err, author) => {
@@ -36,5 +36,18 @@ const getReview = (req, res, next) => {
     })
 }
 
+
+const getReviewPage = (req, res, next) => {
+    console.log(req.originalUrl.);
+    let data = pug.renderFile('./partials/reviewPage.pug', {
+
+    });
+
+    res.send(data);
+}
+
+
+
 router.get('/:id', getReview);
+router.get('/', getReviewPage);
 module.exports = router;

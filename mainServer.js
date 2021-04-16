@@ -48,16 +48,13 @@ app.use("/reviews", reviewRouter);
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
-app.use("/reviews", reviewRouter);
+//app.use("/reviews", reviewRouter);
+
 app.use(express.static("public"));
 app.use(express.json())
-
 app.use(express.urlencoded({extended:true}));
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
-
-
 
 let exampleNotification = {
     id: 0,
