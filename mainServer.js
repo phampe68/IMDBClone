@@ -34,15 +34,14 @@ app.use(session({ name: "session",
 
 //routers:
 let movieRouter = require('./routers/movies/movies-router.js');
-let personRouter = require('./routers/persons-router.js');
-let userRouter = require('./routers/users-router.js');
-let reviewRouter = require('./routers/reviews-router.js');
+let personRouter = require('./routers/persons/persons-router.js');
+let userRouter = require('./routers/users/users-router.js');
+let reviewRouter = require('./routers/reviews/reviews-router.js');
 
 app.use("/movies", movieRouter);
 app.use("/people", personRouter);
 app.use("/users", userRouter);
 app.use("/reviews", reviewRouter);
-
 
 //mount routers
 app.use("/movies", movieRouter);

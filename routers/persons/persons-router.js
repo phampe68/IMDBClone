@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const pug = require('pug');
-const Movie = require('../database/data-models/movie-model.js');
-const Person = require('../database/data-models/person-model.js');
-const User = require('../database/data-models/user-model.js');
+const Movie = require('../../database/data-models/movie-model.js');
+const Person = require('../../database/data-models/person-model.js');
+const User = require('../../database/data-models/user-model.js');
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 50;

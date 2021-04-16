@@ -8,7 +8,7 @@ const Review = require('../../database/data-models/review-model.js');
 const User = require("../../database/data-models/user-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
-let reviewRouter = require('../reviews-router.js');
+let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
 
 const MAX_ITEMS = 50;

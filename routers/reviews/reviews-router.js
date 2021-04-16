@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const pug = require('pug');
-const User = require('../database/data-models/user-model.js');
-const Movie = require('../database/data-models/movie-model.js');
-const Person = require('../database/data-models/person-model.js');
-const Notification = require('../database/data-models/notification-model.js');
-const Review = require('../database/data-models/review-model.js');
+const User = require('../../database/data-models/user-model.js');
+const Movie = require('../../database/data-models/movie-model.js');
+const Person = require('../../database/data-models/person-model.js');
+const Notification = require('../../database/data-models/notification-model.js');
+const Review = require('../../database/data-models/review-model.js');
 
 
 let router = express.Router();
