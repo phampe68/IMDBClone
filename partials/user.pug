@@ -38,6 +38,10 @@ html
                             form(action=`/unfollowPerson/${person._id}`, method='POST')
                                 button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/people/${person._id}`) #{person.name}
+            if peopleFollowing.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p No people followed yet!
 
             div.mt-5(id="UsersFollowingDiv")
                 p Users Following:
@@ -47,6 +51,10 @@ html
                             form(action=`/unfollowUser/${user._id}`, method='POST')
                                 button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/users/${user._id}`) #{user.username}
+            if usersFollowing.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p No users followed yet!
 
             div.mt-5(id="MoviesWatchedDiv")
                 p Movies you've watched:
@@ -56,6 +64,10 @@ html
                             form(action=`/unwatchMovie/${movie.id}` method="POST")
                                 button.btn.btn-danger.mt-3.me-3(type="submit" name="from" value="profile") Remove
                                 a(href=`/movies/${movie._id}`) #{movie.title}
+            if moviesWatched.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p No movies watched yet!
 
             div.mt-5(id="RecommendedDiv")
                 p Recommended Movies:
@@ -63,8 +75,12 @@ html
                     each movie in recommendedMovies
                         li.list-group-item
                             a(href=`/movies/${movie._id}`) #{movie.title}
+            if recommendedMovies.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p Browse the website or add reviews to get some recommendations!
 
-            div.mt-5.mb-5(id="NotificationsDiv")
+            div.mt-5(id="NotificationsDiv").mb-3
                 p Notifications:
                 ul.list-group
                     each notif in notifications
@@ -72,4 +88,10 @@ html
                             button.btn.btn-danger.me-2 Delete
                             a.btn.btn-info.me-2(href=`/${notif.type}s/${notif.relatedID}`) View
                             p.ms-2(style={display: "inline-block"}) #{notif.text}
+
+            if notifications.length === 0
+                ul.list-group.mb-5
+                    li.list-group-item
+                        p No notifications right now.
+            else
                 a(href=seeNotificationsURL) view all notifications

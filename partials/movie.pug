@@ -59,15 +59,16 @@ html
 
             hr
 
-        div#reviews-container.container
-            h1 Reviews
+        if reviews.length > 0
+            div#reviews-container.container
+                h1 Reviews
 
-            -let cardIndex = 0;
-            each review in reviews
-                include ./singleReview.pug
-                - cardIndex++
-            a(href=seeReviewsURL) see All Reviews
-            hr
+                -let cardIndex = 0;
+                each review in reviews
+                    include ./singleReview.pug
+                    - cardIndex++
+                a(href=seeReviewsURL) see All Reviews
+                hr
 
 
 
