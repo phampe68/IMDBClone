@@ -52,11 +52,11 @@ movieData.forEach(movie => {
     //generate movie obj
     let aMovie = new Movie();
     aMovie.title = movie.Title;
-    aMovie.year = movie.year;
     aMovie.averageRating = 0;
     aMovie.rated = movie.Rated;
     aMovie.released = movie.Released;
     aMovie.genre = movie.Genre;
+    aMovie.year = movie.Year;
 
 
     movie.Director.forEach(directorName => {
@@ -78,6 +78,7 @@ movieData.forEach(movie => {
     allMovies.push(aMovie);
 });
 
+console.log("All movies generated", allMovies);
 //connect to database:
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
@@ -85,8 +86,6 @@ let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
     console.log("Connected to IMDB Clone");
-
-
     //drop database first
     mongoose.connection.db.dropDatabase((err, results) => {
         if (err) {

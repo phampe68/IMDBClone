@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let reviewSchema = Schema({
-    author: {type: Schema.Types.ObjectId, ref: 'User'},
-    movie: {type: Schema.Types.ObjectId, ref: 'Movie'},
+    author: {type: Schema.Types.ObjectId, ref: 'User', required: true},
+    movie: {type: Schema.Types.ObjectId, ref: 'Movie', required: true},
     summaryText: {type: String, required: true, minLength: 3},
     fullText: {type: String},
     score: {type: Number, required: true, min: 1}
