@@ -1,4 +1,4 @@
-const movieData = require('../movie-data-1000.json');
+const movieData = require('../movie-data-10.json');
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -8,7 +8,6 @@ const Person = require('../database/data-models/person-model.js');
 const User = require('../database/data-models/user-model.js');
 const Notification = require('../database/data-models/notification-model.js');
 const Review = require('../database/data-models/review-model.js');
-
 
 // collection of movies and people which is extracted from movie data
 let allMovies = [];
@@ -50,7 +49,6 @@ const addPersonToMovie = (personName, movie, position) => {
 
 // generate database colelctions based off movie data:
 movieData.forEach(movie => {
-
     //generate movie obj
     let aMovie = new Movie();
     aMovie.title = movie.Title;
@@ -70,13 +68,13 @@ movieData.forEach(movie => {
     movie.Actors.forEach(actorName => {
         addPersonToMovie(actorName, aMovie, "actorFor");
     })
+
     aMovie.plot = movie.Plot;
     aMovie.awards = movie.Awards;
     aMovie.poster = movie.Poster;
     aMovie.reviews = [];
     aMovie.runtime = movie.Runtime;
     aMovie.relatedMovies = [];
-
     allMovies.push(aMovie);
 });
 
@@ -86,9 +84,10 @@ mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
-    //drop database first
     console.log("Connected to IMDB Clone");
 
+
+    //drop database first
     mongoose.connection.db.dropDatabase((err, results) => {
         if (err) {
             console.log("Error dropping collection. Likely case: collection did not exist (don't worry unless you get other errors...)")
@@ -96,6 +95,7 @@ db.once('open', () => {
         } else
             console.log("Cleared movies collection");
 
+        //add movies
         Movie.insertMany(allMovies, (err, result) => {
             if (err) {
                 console.log(err);
@@ -103,12 +103,17 @@ db.once('open', () => {
             }
             console.log("Successfully added movies");
 
+            //add people
             Person.insertMany(allPersons, (err, result) => {
                 if (err) {
                     console.log(err);
                     return;
                 }
                 console.log("Successfully added people");
+
+                //add some example users
+
+                //some example users:
                 let exampleUser1 = new User({
                     username: "exampleUser1",
                     password: "password",
@@ -119,11 +124,8 @@ db.once('open', () => {
                     recommendedMovies: [],
                     notifications: [],
                     reviews: []
-                })
-                exampleUser1.save(function(err){
-                    if(err) throw err;
-                    console.log("Saved new user.");
                 });
+
                 let exampleUser2 = new User({
                     username: "exampleUser2",
                     password: "password",
@@ -134,10 +136,24 @@ db.once('open', () => {
                     recommendedMovies: [],
                     notifications: [],
                     reviews: []
-                })
-                exampleUser2.save(function(err){
-                    if(err) throw err;
-                    console.log("Saved new user.");
+                });
+
+                exampleUser1.save(function (err) {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    console.log("Saved example user 1.");
+
+                    exampleUser2.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        console.log("Saved example user 2.");
+                        console.log("Finished.");
+                        process.exit(0);
+                    });
                 });
             })
         })
