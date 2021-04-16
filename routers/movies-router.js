@@ -87,16 +87,31 @@ const searchMovie = (req, res, next) => {
 
     Movie.find(query).limit(limit).skip(offset).exec((err, results) => {
         //link to navigate to next page
-        let nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+        req.nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+        req.searchResults = results;
 
-
-        let data = pug.renderFile("./partials/movieSearch.pug", {
-            movies: results,
-            nextURL
-        });
-        res.send(data);
+        next();
     });
 }
+
+
+const sendSearchResults = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.searchResults);
+        },
+        "text/html": () => {
+            let data = pug.renderFile("./partials/movieSearch.pug", {
+                movies: req.searchResults,
+                nextURL: req.nextURL
+            });
+            res.status(200).send(data);
+        }
+    })
+}
+
+
+
 
 /**
  * Asynchronous function for finding a person's ID given their name
@@ -290,7 +305,7 @@ const getReviewPage = (req, res, next) => {
 
 //specify handlers:
 router.get('/:id', [getMovie, getSimilarMovies, sendMovie]);
-router.get('/?', [queryParser, searchMovie]);
+router.get('/?', [queryParser, searchMovie, sendSearchResults]);
 router.get('/:id/reviews/', getReviewPage);
 
 module.exports = router;
