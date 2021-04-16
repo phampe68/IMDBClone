@@ -10,6 +10,8 @@ let reviewRouter = require('../routers/reviews-router.js');
 
 let router = express.Router();
 
+const MAX_ITEMS = 50;
+const DEFAULT_LIMIT = 10;
 
 /**
  * build a query object based off of query paramaters that will be used to search the database
@@ -19,13 +21,6 @@ let router = express.Router();
  *  - title: title of movie (search by contains)
  *  - genre: movie genre (search by contains)
  *  - actor name: movie should contain this actor
- */
-const MAX_ITEMS = 50;
-const DEFAULT_LIMIT = 10;
-
-
-/**
- * parses query params into a query object
  */
 const queryParser = async (req, res, next) => {
     let query = {};
@@ -265,7 +260,10 @@ const createMovieTemplate = (req, callback) => {
                     Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
                         //TODO: add review functionality
                         Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
+
                             //generate template with found data
+                            req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
+
                             let data = pug.renderFile("./partials/movie.pug", {
                                 movie: movie,
                                 watched: watched,
@@ -273,7 +271,8 @@ const createMovieTemplate = (req, callback) => {
                                 writers: writers,
                                 actors: actors,
                                 reviews: reviews,
-                                relatedMovies: relatedMovies
+                                relatedMovies: relatedMovies,
+                                seeReviewsURL: req.seeReviewsURL
                             });
                             return callback(data);
                         })

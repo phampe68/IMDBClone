@@ -18,6 +18,7 @@ html
             hr
 
             ul.list-group
+                each review in reviews
+                    include ./singleReview.pug
 
-
-            a(href=nextURL) next
+            a(href=nextURL style={color:"white"}) next
