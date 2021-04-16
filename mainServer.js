@@ -105,11 +105,10 @@ app.get('/loginPage/', (req, res) => {
 
 //page for contribution form
 app.get('/contribute/', (req, res) => {
-    User.findOne({_id: req.session.userID}).exec((err, user) => {
-        if(err || !user){
+    User.findOne({_id: req.session.userId}).exec((err, user) => {
+        if(err||!user){
             console.log(`Error finding user with id ${req.session.userID}`)
         }
-        console.log(user);
         if(user.contributor === true){
             let data = pug.renderFile("./partials/contribute.pug");
             res.send(data);
@@ -261,10 +260,11 @@ app.post("/addMovie",(req,res,next)=> {
 })
 
 app.post("/addPerson",(req,res,next)=> {
-    let name = req.body.name;
+    let name = req.body.personName;
+    console.log(name);
     Person.findOne({name:name}).exec((err,person)=>{
         if(!person){
-            let newPerson = new Person();
+            let newPerson = new Person;
             newPerson.name = name;
             newPerson.save(function (err) {
                 if(err) throw err;
@@ -274,10 +274,19 @@ app.post("/addPerson",(req,res,next)=> {
     });
 })
 
-app.post("/addReview/:id/",(req,res,next)=>{
-    review = new Review();
-    let score = parseInt(req.body.action);
-    let id = mongoose.Types.ObjectId(req.params.id);
+app.post("/addReview?",(req,res,next)=>{
+    let review = new Review();
+    console.log(req.body);
+    console.log(req.params);
+    console.log(req.query);
+    let score;
+    let id;
+    if(req.query.hasOwnProperty("score")){
+        score = Number(req.query.score);
+    }
+    if(req.query.hasOwnProperty("id")){
+        id = mongoose.Types.ObjectId(req.query.id);
+    }
     User.findOne({_id:req.session.userId}).exec((err,user)=> {
         Movie.findOne({_id: id}).exec((err, movie) => {
             review.author = user._id;
@@ -296,17 +305,19 @@ app.post("/addReview/:id/",(req,res,next)=>{
             user.save(function (err) {
                 if (err) throw err;
                 console.log("Updated user.");
+                console.log(user["reviews"]);
+                movie.save(function (err) {
+                    if (err) throw err;
+                    console.log("Updated movie.");
+                    console.log(movie["reviews"]);
+                    review.save(function (err) {
+                        if (err) throw err;
+                        console.log("Saved new review.");
+                        console.log(review);
+                        res.redirect(`/movies/${req.query.id}`);
+                    });
+                });
             });
-            movie.save(function (err) {
-                if (err) throw err;
-                console.log("Updated movie.");
-            });
-            review.save(function (err) {
-                if (err) throw err;
-                console.log("Saved new review.");
-                res.redirect(`/movies/${req.params.id}`);
-            });
-            console.log(req.body);
         })
 
     })
