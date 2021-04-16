@@ -6,6 +6,7 @@ const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
 const Review = require('../database/data-models/review-model.js');
 const User = require("../database/data-models/user-model");
+let reviewRouter = require('../routers/reviews-router.js');
 
 let router = express.Router();
 
@@ -302,14 +303,10 @@ const sendMovie = (req, res, next) => {
 }
 
 
-const getReviewPage = (req, res, next) => {
-    let data = pug.renderFile('./partials/reviewPage.pug');
-    res.send(data);
-}
 
 //specify handlers:
 router.get('/:id', [getMovie, getSimilarMovies, sendMovie]);
 router.get('/?', [queryParser, searchMovie, sendSearchResults]);
-router.get('/:id/reviews/', getReviewPage);
+router.use('/:id/reviews/', reviewRouter);
 
 module.exports = router;

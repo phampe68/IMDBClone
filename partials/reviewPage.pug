@@ -9,22 +9,15 @@ html
             include ../stylesheets/star.css
         script
             include ../scripts/starReview.js
-    title Card Info Page
+    title Reviews
     body
         include ./navbar.pug
 
-        div.container-fluid
-            div.card.text-white.bg-dark.mb-3.mt-3
-                div.card-body
-                    h5.card-title #{review.name}
+        div.container.mt-3
+            h1.display-2 Reviews for movie:
+            hr
 
-                    - let starIndex = 0;
-                    while starIndex < review.score
-                        i#star.fa.fa-star.me-1(style={color: "yellow"})
-                        - starIndex++;
-                    p.card-text.fw-bold.ms-2(style={display: "inline-block"}) #{review.score} / 10
-                    p.card-text #{review.summaryText}
+            ul.list-group
 
-                    button.btn.btn-outline-primary(type='button' data-bs-toggle='collapse' data-bs-target=`#review-details${cardIndex}` aria-expanded='false' aria-controls=`review-details${cardIndex}`) View Details
-                    div.collapse.mt-3(id=`review-details${cardIndex}`)
-                        p.card.card-body.bg-dark.border-light #{review.fullText}
+
+            a(href=nextURL) next
