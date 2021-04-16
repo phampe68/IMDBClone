@@ -44,7 +44,7 @@ const getUser = (req, res, next) => {
                 Movie.find({'_id': {$in: user.moviesWatched}}).exec((err, moviesWatched) => {
                     Movie.find({'_id': {$in: user.recommendedMovies}}).exec((err, recommendedMovies) => {
                         Notification.find({'_id': {$in: user.notifications}}).exec((err, notifications) => {
-                            Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
+                            Review.find({'_id': {$in: user.reviews}}).exec((err, reviews) => {
                                 req.options = {
                                     user: user,
                                     peopleFollowing: peopleFollowing,
