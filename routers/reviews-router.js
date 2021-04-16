@@ -7,7 +7,6 @@ const Person = require('../database/data-models/person-model.js');
 const Notification = require('../database/data-models/notification-model.js');
 const Review = require('../database/data-models/review-model.js');
 
-const getSimilarMovies = require('./movies/getSimilarMovies.js');
 
 let router = express.Router();
 

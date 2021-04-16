@@ -152,7 +152,7 @@ const login = async(req,res,next) => {
         req.session.username = username;
         req.session.loggedin = true;
         req.session.userId = user.id;
-        res.redirect(`/users/myProfile/${user.id}`);
+        res.redirect(`/users/${user.id}`);
         console.log(`Logged in with user id ${req.session.userId}`);
         //res.status(200).send("Logged in");
     } else {
