@@ -5,6 +5,7 @@ const pug = require('pug');
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
 const Review = require('../database/data-models/review-model.js');
+const User = require("../database/data-models/user-model");
 
 let router = express.Router();
 
@@ -247,32 +248,34 @@ const getSimilarMovies = (req, res, next) => {
  */
 const createMovieTemplate = (req, callback) => {
     //TODO : add user functionality, for now leave watched as false
-    //let watched = exampleUser.moviesWatched.includes(id);
-    let watched = false;
 
-
+    let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let movie = req.movie;
-    //find actors
-    Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
-        //find directors
-        Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
-            //find movies
-            Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
-                //find related movies (list of IDs stored in req)
-                Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
-                    //TODO: add review functionality
-                    Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
-                        //generate template with found data
-                        let data = pug.renderFile("./partials/movie.pug", {
-                            movie: movie,
-                            watched: watched,
-                            directors: directors,
-                            writers: writers,
-                            actors: actors,
-                            reviews: reviews,
-                            relatedMovies: relatedMovies
-                        });
-                        return callback(data);
+    let watched;
+    User.findOne({'_id': currUserId}).exec((err, currUser) => {
+        watched = currUser['moviesWatched'].includes(movie._id) === true;
+        //find actors
+        Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
+            //find directors
+            Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
+                //find movies
+                Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
+                    //find related movies (list of IDs stored in req)
+                    Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
+                        //TODO: add review functionality
+                        Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
+                            //generate template with found data
+                            let data = pug.renderFile("./partials/movie.pug", {
+                                movie: movie,
+                                watched: watched,
+                                directors: directors,
+                                writers: writers,
+                                actors: actors,
+                                reviews: reviews,
+                                relatedMovies: relatedMovies
+                            });
+                            return callback(data);
+                        })
                     })
                 })
             })

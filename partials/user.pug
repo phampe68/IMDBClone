@@ -53,15 +53,16 @@ html
                 ul.list-group
                     each movie in moviesWatched
                         li.list-group-item
-                            button.btn.btn-danger.me-3 Remove
-                            a(href=`/movies/${movie._id}`) #{movie.Title}
+                            form(action=`/unwatchMovie/${movie.id}` method="POST")
+                                button.btn.btn-danger.me-3(type="submit" name="from" value="profile") Remove
+                                a(href=`/movies/${movie._id}`) #{movie.title}
 
             div.mt-5(id="RecommendedDiv")
                 p Recommended Movies:
                 ul.list-group
                     each movie in recommendedMovies
                         li.list-group-item
-                            a(href=`/movies/${movie._id}`) #{movie.Title}
+                            a(href=`/movies/${movie._id}`) #{movie.title}
 
             div.mt-5.mb-5(id="NotificationsDiv")
                 p Notifications:

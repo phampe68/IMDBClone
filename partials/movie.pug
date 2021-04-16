@@ -18,9 +18,11 @@ html
                 h1#movie-title.display-1 Title: #{movie.title} (#{movie.rated})
                 hr
                 if watched
-                    button.btn.btn-outline-danger Remove From Watched List
+                    form(action=`/unwatchMovie/${movie.id}` method="POST")
+                        button.btn.btn-outline-danger(type="submit" name="from" value="other") Remove From Watched List
                 else
-                    button.btn.btn-outline-success Add to Watched List
+                    form(action=`/watchMovie/${movie.id}` method="POST")
+                        button.btn.btn-outline-success(type="submit") Add to Watched List
 
                 h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} |
                 h3(style={whiteSpace: "nowrap"}) Genre:
