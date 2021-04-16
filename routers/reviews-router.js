@@ -36,24 +36,40 @@ const getReview = (req, res, next) => {
     })
 }
 
-
-const getReviewPage = (req, res, next) => {
+/**
+ * Gets all the reviews associated with movieID in URL
+ */
+const getReviews = (req, res, next) => {
     let urlParts = req.originalUrl.split('/');
     let movieID = urlParts[urlParts.indexOf('movies') + 1];
 
     Review.find({
         movie: movieID
     }).exec((err, reviews) => {
-        console.log(reviews);
-        let data = pug.renderFile('./partials/reviewPage.pug', {
-            reviews
-        });
+        if (err) {
+            console.log(err);
+            res.status(404).send("Couldn't find review." + err);
+        }
+        req.reviews = reviews;
+        next();
+    });
 
-        res.send(data);
+}
+const sendReviewPage = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.reviews);
+        },
+        "text/html": () => {
+            console.log(req.reviews);
+            let data = pug.renderFile("./partials/reviewPage.pug", {reviews: req.reviews})
+            res.send(data);
+
+        },
     })
 }
 
 
 router.get('/:id', getReview);
-router.get('/', getReviewPage);
+router.get('/', [getReviews, sendReviewPage]);
 module.exports = router;
