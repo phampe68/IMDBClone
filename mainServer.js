@@ -270,6 +270,7 @@ app.post("/addPerson",(req,res,next)=> {
     });
 })
 
+
 app.post("/addReview?",(req,res,next)=>{
     let review = new Review();
     console.log(req.body);
@@ -321,6 +322,7 @@ app.post("/addReview?",(req,res,next)=>{
     })
 })
 
+
 app.post("/accountType/:id",(req,res,next)=>{
     let id = mongoose.Types.ObjectId(req.params.id);
     console.log(req.body);
@@ -359,6 +361,7 @@ app.post("/unfollowUser/:id",(req,res,next)=> {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
     let from = req.body.from;
+
     console.log(`UserID ${userId} is attempting to unfollow ${otherId} from ${from}`);
     User.findOne({'_id': userId}).exec((err, user) => {
         User.findOne({'_id': otherId}).exec((err, other) => {
@@ -383,12 +386,20 @@ app.post("/followPerson/:id",(req,res,next)=> {
     let otherId = mongoose.Types.ObjectId(req.params.id);
 
     User.findOne({'_id': userId}).exec((err, user) => {
+        if (err || !user) {
+            console.log("Couldn't find user");
+            res.send("Couldn't find user");
+            return;
+        }
+
         Person.findOne({'_id': otherId}).exec((err, other) => {
             if(user&&other){
                 user["peopleFollowing"].push(other._id);
             }
             user.save(function(err){
-                if(err) throw err;
+                if(err){
+                    res.send(err);
+                }
                 console.log("updated person following list");
                 res.redirect(`/people/${otherId}`);
             })

@@ -173,47 +173,43 @@ const getMovie = (req, res, next) => {
 }
 
 
-const loadMovies = (req, res, next) => {
+const loadMovies = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let movie = req.movie;
-    let watched;
 
-    User.findOne({'_id': currUserId}).exec((err, currUser) => {
-        watched = currUser['moviesWatched'].includes(movie._id) === true;
-        //find actors
-        Person.find({'_id': {$in: movie.actor}}).exec((err, actors) => {
-            //find directors
-            Person.find({'_id': {$in: movie.director}}).exec((err, directors) => {
-                //find movies
-                Person.find({'_id': {$in: movie.writer}}).exec((err, writers) => {
-                    //find related movies (list of IDs stored in req)
-                    Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
-                        //get first 5 reviews:
-                        Review.find({'_id': {$in: movie.reviews}}).limit(5).exec((err, reviews) => {
-                            getSimilarMovies(req.movie, similarMovies => {
-                                Movie.find({'_id': {$in : similarMovies}}).exec((err, relatedMovies) => {
-                                    //generate template with found data
-                                    req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
-                                    req.options = {
-                                        movie: movie,
-                                        watched: watched,
-                                        directors: directors,
-                                        writers: writers,
-                                        actors: actors,
-                                        reviews: reviews,
-                                        relatedMovies: relatedMovies,
-                                        seeReviewsURL: req.seeReviewsURL
-                                    };
-                                    next();
-                                })
+    let currUser, actors, directors, writers, reviews, similarMovies, relatedMovies;
 
-                            })
-                        })
-                    })
-                })
-            })
-        })
+    currUser = await User.findOne({'_id': currUserId});
+    actors = await Person.find({'_id': {$in: movie.actor}});
+    directors = await Person.find({'_id': {$in: movie.director}});
+    writers = await Person.find({'_id': {$in: movie.writer}});
+    reviews = await Review.find({'_id': {$in: movie.reviews}}).limit(5);
+
+
+    let watched = currUser['moviesWatched'].includes(movie._id) === true;
+
+    await getSimilarMovies(req.movie).then(simMovies => {
+        console.log(simMovies);
+        similarMovies = simMovies;
     })
+
+    relatedMovies = await Movie.find({'_id': {$in: similarMovies}});
+
+    //generate template with found data
+    req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
+    req.options = {
+        movie: movie,
+        watched: watched,
+        directors: directors,
+        writers: writers,
+        actors: actors,
+        reviews: reviews,
+        relatedMovies: relatedMovies,
+        seeReviewsURL: req.seeReviewsURL
+    };
+    next();
+
+
 }
 
 /**

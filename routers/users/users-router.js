@@ -51,51 +51,47 @@ const getUser = (req, res, next) => {
  * use ids in user obj to find relevant data to render the page:
  * - if the user we're loading has a differnet ID than the logged in user, make sure to store that info
  *      - also store whether or not this user is being followed by the logged in user
- *
  */
-const loadUser = (req, res, next) => {
+const loadUser = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let user = req.user;
 
+    let peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews;
+    //get all relevant data to render page
+    try {
+        peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});
+        usersFollowing = await User.find({'_id': {$in: user.usersFollowing}});
+        moviesWatched = await Movie.find({'_id': {$in: user.moviesWatched}});
+        recommendedMovies = await Movie.find({'_id': {$in: user.recommendedMovies}})
+        notifications = await Notification.find({'_id': {$in: user.notifications}});
+        reviews = await Review.find({'_id': {$in: user.reviews}})
+    } catch (err) {
+        res.status(404).send("Error loading user");
+    }
+    // load options common for both types of users (logged in, or other)
+    req.options = {
+        user: user,
+        peopleFollowing: peopleFollowing,
+        usersFollowing: usersFollowing,
+        moviesWatched: moviesWatched,
+        recommendedMovies: recommendedMovies,
+        reviews: reviews,
+        notifications: notifications,
+        following: false
+    };
 
-    Person.find({'_id': {$in: user.peopleFollowing}}).exec((err, peopleFollowing) => {
-        User.find({'_id': {$in: user.usersFollowing}}).exec((err, usersFollowing) => {
-            Movie.find({'_id': {$in: user.moviesWatched}}).exec((err, moviesWatched) => {
-                Movie.find({'_id': {$in: user.recommendedMovies}}).exec((err, recommendedMovies) => {
-                    Notification.find({'_id': {$in: user.notifications}}).exec((err, notifications) => {
-                        Review.find({'_id': {$in: user.reviews}}).exec((err, reviews) => {
-                            //options common for both types of users (logged in, or other)
-                            req.options = {
-                                user: user,
-                                peopleFollowing: peopleFollowing,
-                                usersFollowing: usersFollowing,
-                                moviesWatched: moviesWatched,
-                                recommendedMovies: recommendedMovies,
-                                reviews: reviews,
-                                notifications: notifications,
-                                following: false
-                            };
-
-                            //specify loadType to determine which pug file to render
-                            if (currUserId.equals(req.user._id)) {
-                                req.loadType = "currentUser";
-                                next();
-                            } else {
-                                req.loadType = "otherUser"
-
-
-                                User.findOne({'_id': currUserId}).exec((err, currUser) => {
-                                    //make note if the logged in user is following this user
-                                    req.options.following = currUser['usersFollowing'].includes(user._id) === true;
-                                    next();
-                                })
-                            }
-                        })
-                    })
-                })
-            })
+    // specify loadType to determine which pug file to render
+    if (currUserId.equals(req.user._id)) {
+        req.loadType = "currentUser";
+        next();
+    } else {
+        req.loadType = "otherUser"
+        User.findOne({'_id': currUserId}).exec((err, currUser) => {
+            //make note if the logged in user is following this user
+            req.options.following = currUser['usersFollowing'].includes(user._id) === true;
+            next();
         })
-    })
+    }
 }
 
 
@@ -110,8 +106,6 @@ let sendUser = (req, res, next) => {
         },
     })
 }
-
-
 
 
 router.get('/:id/', getUser, loadUser, sendUser);

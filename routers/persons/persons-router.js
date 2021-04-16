@@ -7,7 +7,6 @@ const User = require('../../database/data-models/user-model.js');
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 50;
 
-
 const express = require('express');
 const session = require('express-session');
 
@@ -83,27 +82,26 @@ const getPerson = (req, res, next) => {
  *  Step 2: get all people who participated in these movies
  *  Step 3: tally up which people occur the most
  */
-const getFrequentCollaborators = (req, callback) => {
-    let person = req.person;
+const getFrequentCollaborators = async (person) => {
     //Step 1: find all movieIDs person was part of
     let movieIDs = [].concat(person.writerFor, person.actorFor, person.directorFor);
     let uniqueMoviesIDs = [...new Set(movieIDs)]; //remove duplicates
     let collaborators = {};
 
-    Movie.find({
+    let movies = await Movie.find({
         _id: {$in: uniqueMoviesIDs}
-    }).exec((err, movies) => {
-        //get all people involved in each movie (except for the person we're looking at)
-        movies.forEach(movie => {
-            let allCollaborators = [].concat(movie.writer, movie.director, movie.actor);
-            let uniqueCollaborators = [...new Set(allCollaborators)]; //remove duplicates (i.e if a person had 2+ roles, only count once)
-            //tally people using the collaborators object
-            uniqueCollaborators.forEach(collaborator => {
-                if (!collaborators.hasOwnProperty(collaborator))
-                    collaborators[collaborator] = 1;
-                else
-                    collaborators[collaborator]++;
-            })
+    });
+
+    //get all people involved in each movie (except for the person we're looking at)
+    movies.forEach(movie => {
+        let allCollaborators = [].concat(movie.writer, movie.director, movie.actor);
+        let uniqueCollaborators = [...new Set(allCollaborators)]; //remove duplicates (i.e if a person had 2+ roles, only count once)
+        //tally people using the collaborators object
+        uniqueCollaborators.forEach(collaborator => {
+            if (!collaborators.hasOwnProperty(collaborator))
+                collaborators[collaborator] = 1;
+            else
+                collaborators[collaborator]++;
         })
 
         //use ES10 to by most frequent sort: https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
@@ -113,47 +111,49 @@ const getFrequentCollaborators = (req, callback) => {
 
         collaborators = Object.keys(collaborators);
         //remove person we're looking at
-        collaborators= collaborators.filter(collaborator => collaborator !== person._id + "");
+        collaborators = collaborators.filter(collaborator => collaborator !== person._id + "");
         collaborators = collaborators.slice(0, 5);
-        return callback(collaborators);
+
     });
+    return collaborators;
 }
 
 
 /**
- * Renders a pug template of a person
- * @param req: contains the person object needed to generate the template
- * @return callback: a callback containing rendered pug with all person data
+ * use ids in person obj to find relevant data to render the page:
+ * store options for rendering pug template in req
  */
-const loadPerson = (req, res, next) => {
+const loadPerson = async (req, res, next) => {
     let person = req.person;
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
 
-    User.findOne({'_id': currUserId}).exec((err, currUser) => {
-        let following = currUser['peopleFollowing'].includes(person._id) === true;
-        // use ids in person obj to find relevant data to render the page:
-        Movie.find({'_id': {$in: person.writerFor}}).exec((err, moviesWritten) => {
-            Movie.find({'_id': {$in: person.directorFor}}).exec((err, moviesDirected) => {
-                Movie.find({'_id': {$in: person.actorFor}}).exec((err, moviesActed) => {
-                    getFrequentCollaborators(req, collaboratorIDs => {
+    let currUser, moviesWritten, moviesDirected, moviesActed, collaboratorIDs;
+
+    currUser = await User.findOne({'_id': currUserId});
+    moviesWritten = await Movie.find({'_id': {$in: person.writerFor}});
+    moviesDirected = await Movie.find({'_id': {$in: person.directorFor}});
+    moviesActed = await Movie.find({'_id': {$in: person.actorFor}});
+
+    await getFrequentCollaborators(req.person).then(collabIDs => {
+            collaboratorIDs = collabIDs;
+            console.log(collaboratorIDs);
+        }
+    );
+
+    let following = currUser['peopleFollowing'].includes(person._id) === true;
+
+    let collaborators = await Person.find({'_id': {$in: collaboratorIDs}})
+    req.options = {
+        person: person,
+        moviesWritten: moviesWritten,
+        moviesDirected: moviesDirected,
+        moviesActed: moviesActed,
+        frequentCollaborators: collaborators,
+        following: following
+    };
+    next();
 
 
-                        Person.find({'_id': {$in: collaboratorIDs}}).exec((err, collaborators) => {
-                            req.options = {
-                                person: person,
-                                moviesWritten: moviesWritten,
-                                moviesDirected: moviesDirected,
-                                moviesActed: moviesActed,
-                                frequentCollaborators: collaborators,
-                                following: following
-                            };
-                            next();
-                        })
-                    })
-                })
-            })
-        })
-    })
 }
 
 
@@ -176,7 +176,6 @@ const sendPerson = (req, res, next) => {
 
 //specify handlers:
 router.get('/:id', [getPerson, loadPerson, sendPerson]);
-
 router.get('/?', queryParser);
 router.get('/?', searchPeople);
 
