@@ -91,6 +91,8 @@ const loadUser = async (req, res, next) => {
     // specify loadType to determine which pug file to render
     if (currUserId.equals(req.user._id)) {
         req.loadType = "currentUser";
+        req.options.seeNotificationsURL = `/users/${user._id}/notifications?page=1`;
+
         next();
     } else {
         req.loadType = "otherUser"
@@ -157,11 +159,9 @@ const getNotifications = (req, res, next) => {
     }).limit(limit).skip(offset).exec((err, notifs) => {
         if (err) {
             console.log(err);
-            res.status(404).send("Couldn't find review." + err);
+            res.status(404).send("Couldn't find notifications." + err);
         }
-
-
-        req.nextURL = `/movies/${userID}/reviews?${req.queryString}&page=${page + 1}`;
+        req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page + 1}`;
         req.notifs = notifs;
         next();
     });
@@ -181,6 +181,7 @@ const sendNotificationsPage = (req, res, next) => {
         },
     })
 }
+
 
 router.get('/:id/notifications/', notificationsPageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/', getUser, loadUser, sendUser);
