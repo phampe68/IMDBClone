@@ -36,14 +36,21 @@ const getReview = (req, res, next) => {
     })
 }
 
-
 const getReviewPage = (req, res, next) => {
-    console.log(req.originalUrl.);
-    let data = pug.renderFile('./partials/reviewPage.pug', {
+    let urlParts = req.originalUrl.split('/');
+    let movieID = urlParts[urlParts.indexOf('movies') + 1];
 
-    });
+    Review.find({
+        movie: movieID
+    }).exec((err, reviews) => {
+        let data = pug.renderFile('./partials/reviewPage.pug', {
+            reviews
+        });
 
-    res.send(data);
+        res.send(data);
+    })
+
+
 }
 
 
