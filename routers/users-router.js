@@ -82,8 +82,19 @@ let current = (req, res) => {
     res.send(data);
 }
 
+/**
+ * STEP 1: get all movies that user reviewed that has 4+ stars
+ * STEP 2:
+ */
+const MoviesRouter = require("./movies/movies-router.js");
+
+let getRecommendedMovies = (req, res, next) => {
+
+}
+
+
 
 router.get('/:id/', getUser,other);
-router.get('/myProfile/:id/', getUser,current);
+router.get('/myProfile/:id/', getUser, current);
 
 module.exports = router;

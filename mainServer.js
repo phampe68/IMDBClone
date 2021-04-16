@@ -33,7 +33,7 @@ app.use(session({ name: "session",
 }))
 
 //routers:
-let movieRouter = require('./routers/movies-router.js');
+let movieRouter = require('./routers/movies/movies-router.js');
 let personRouter = require('./routers/persons-router.js');
 let userRouter = require('./routers/users-router.js');
 let reviewRouter = require('./routers/reviews-router.js');
@@ -437,6 +437,7 @@ app.post("/watchMovie/:id",(req,res,next)=> {
         })
     })
 })
+
 
 app.post("/unwatchMovie/:id",(req,res,next)=> {
     let userId = mongoose.Types.ObjectId(req.session.userId);

@@ -171,6 +171,7 @@ const sendPerson = (req, res, next) => {
     })
 }
 
+
 //specify handlers:
 router.get('/:id', [getPerson, getFrequentCollaborators, sendPerson]);
 
