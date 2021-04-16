@@ -36,7 +36,7 @@ html
                     each person in peopleFollowing
                         li.list-group-item
                             form(action=`/unfollowPerson/${person._id}`, method='POST')
-                                button.btn.btn-danger.me-3(name="from" value="profile" type="submit") Unfollow
+                                button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/people/${person._id}`) #{person.name}
 
             div.mt-5(id="UsersFollowingDiv")
@@ -45,7 +45,7 @@ html
                     each user in usersFollowing
                         li.list-group-item
                             form(action=`/unfollowUser/${user._id}`, method='POST')
-                                button.btn.btn-danger.mt-2.ms-3(name="from" value="profile" type="submit") Unfollow
+                                button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/users/${user._id}`) #{user.username}
 
             div.mt-5(id="MoviesWatchedDiv")
@@ -54,7 +54,7 @@ html
                     each movie in moviesWatched
                         li.list-group-item
                             form(action=`/unwatchMovie/${movie.id}` method="POST")
-                                button.btn.btn-danger.me-3(type="submit" name="from" value="profile") Remove
+                                button.btn.btn-danger.mt-3.me-3(type="submit" name="from" value="profile") Remove
                                 a(href=`/movies/${movie._id}`) #{movie.title}
 
             div.mt-5(id="RecommendedDiv")

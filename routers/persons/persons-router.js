@@ -42,6 +42,7 @@ const queryParser = (req, res, next) => {
     req.next();
 }
 
+
 const searchPeople = (req, res, next) => {
     let query = req.queryObj;
     let limit = req.query.limit;
@@ -136,7 +137,6 @@ const loadPerson = async (req, res, next) => {
 
     await getFrequentCollaborators(req.person).then(collabIDs => {
             collaboratorIDs = collabIDs;
-            console.log(collaboratorIDs);
         }
     );
 
@@ -152,8 +152,6 @@ const loadPerson = async (req, res, next) => {
         following: following
     };
     next();
-
-
 }
 
 

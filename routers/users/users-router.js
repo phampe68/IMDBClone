@@ -47,6 +47,7 @@ const getUser = (req, res, next) => {
 }
 
 
+
 /**
  * use ids in user obj to find relevant data to render the page:
  * - if the user we're loading has a differnet ID than the logged in user, make sure to store that info
@@ -62,7 +63,7 @@ const loadUser = async (req, res, next) => {
         peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});
         usersFollowing = await User.find({'_id': {$in: user.usersFollowing}});
         moviesWatched = await Movie.find({'_id': {$in: user.moviesWatched}});
-        recommendedMovies = await Movie.find({'_id': {$in: user.recommendedMovies}})
+        recommendedMovies = await Movie.find({'_id': {$in: user.recommendedMovies}}) // change this
         notifications = await Notification.find({'_id': {$in: user.notifications}});
         reviews = await Review.find({'_id': {$in: user.reviews}})
     } catch (err) {
