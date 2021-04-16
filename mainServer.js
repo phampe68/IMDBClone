@@ -274,10 +274,19 @@ app.post("/addPerson",(req,res,next)=> {
     });
 })
 
-app.post("/addReview/:id/",(req,res,next)=>{
-    review = new Review();
-    let score = parseInt(req.body.action);
-    let id = mongoose.Types.ObjectId(req.params.id);
+app.post("/addReview?",(req,res,next)=>{
+    let review = new Review();
+    console.log(req.body);
+    console.log(req.params);
+    console.log(req.query);
+    let score;
+    let id;
+    if(req.query.hasOwnProperty("score")){
+        score = Number(req.query.score);
+    }
+    if(req.query.hasOwnProperty("id")){
+        id = mongoose.Types.ObjectId(req.query.id);
+    }
     User.findOne({_id:req.session.userId}).exec((err,user)=> {
         Movie.findOne({_id: id}).exec((err, movie) => {
             review.author = user._id;
@@ -296,17 +305,19 @@ app.post("/addReview/:id/",(req,res,next)=>{
             user.save(function (err) {
                 if (err) throw err;
                 console.log("Updated user.");
+                console.log(user["reviews"]);
+                movie.save(function (err) {
+                    if (err) throw err;
+                    console.log("Updated movie.");
+                    console.log(movie["reviews"]);
+                    review.save(function (err) {
+                        if (err) throw err;
+                        console.log("Saved new review.");
+                        console.log(review);
+                        res.redirect(`/movies/${req.query.id}`);
+                    });
+                });
             });
-            movie.save(function (err) {
-                if (err) throw err;
-                console.log("Updated movie.");
-            });
-            review.save(function (err) {
-                if (err) throw err;
-                console.log("Saved new review.");
-                res.redirect(`/movies/${req.params.id}`);
-            });
-            console.log(req.body);
         })
 
     })

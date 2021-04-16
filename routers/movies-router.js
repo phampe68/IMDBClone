@@ -4,6 +4,7 @@ const pug = require('pug');
 
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
+const Review = require('../database/data-models/review-model.js');
 
 let router = express.Router();
 
@@ -245,19 +246,19 @@ const createMovieTemplate = (req, callback) => {
                 //find related movies (list of IDs stored in req)
                 Movie.find({'_id': {$in: req.similarMovies}}).exec((err, relatedMovies) => {
                     //TODO: add review functionality
-                    let reviews = [];
-                    //generate template with found data
-                    let data = pug.renderFile("./partials/movie.pug", {
-                        movie: movie,
-                        watched: watched,
-                        directors: directors,
-                        writers: writers,
-                        actors: actors,
-                        reviews: reviews,
-                        relatedMovies: relatedMovies
-                    });
-
-                    return callback(data);
+                    Review.find({'_id': {$in: movie.reviews}}).exec((err, reviews) => {
+                        //generate template with found data
+                        let data = pug.renderFile("./partials/movie.pug", {
+                            movie: movie,
+                            watched: watched,
+                            directors: directors,
+                            writers: writers,
+                            actors: actors,
+                            reviews: reviews,
+                            relatedMovies: relatedMovies
+                        });
+                        return callback(data);
+                    })
                 })
             })
         })

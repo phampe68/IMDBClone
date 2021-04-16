@@ -84,22 +84,21 @@ html
 
         div#add-review-container.container
             h1 Add Review
-            form(action=`/addReview/${movie.id}` method='POST' name="score")
+            form(id="form" action=`/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
                 div#review-selector.mt-3.mb-3(style={display: "inline-block"})
-                    i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick='starMouseClick(0)')
-                    i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick='starMouseClick(1)')
-                    i#star-2.fa.fa-star.star-selector(onmouseover='starMouseOver(2)' onmouseleave='starMouseLeave(2)' onclick='starMouseClick(2)')
-                    i#star-3.fa.fa-star.star-selector(onmouseover='starMouseOver(3)' onmouseleave='starMouseLeave(3)' onclick='starMouseClick(3)')
-                    i#star-4.fa.fa-star.star-selector(onmouseover='starMouseOver(4)' onmouseleave='starMouseLeave(4)' onclick='starMouseClick(4)')
-                    i#star-5.fa.fa-star.star-selector(onmouseover='starMouseOver(5)' onmouseleave='starMouseLeave(5)' onclick='starMouseClick(5)')
-                    i#star-6.fa.fa-star.star-selector(onmouseover='starMouseOver(6)' onmouseleave='starMouseLeave(6)' onclick='starMouseClick(6)')
-                    i#star-7.fa.fa-star.star-selector(onmouseover='starMouseOver(7)' onmouseleave='starMouseLeave(7)' onclick='starMouseClick(7)')
-                    i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick='starMouseClick(8)')
-                    i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick='starMouseClick(9)')
+                    i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick=`starMouseClick(0`)
+                    i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick=`starMouseClick(1)`)
+                    i#star-2.fa.fa-star.star-selector(onmouseover='starMouseOver(2)' onmouseleave='starMouseLeave(2)' onclick=`starMouseClick(2)`)
+                    i#star-3.fa.fa-star.star-selector(onmouseover='starMouseOver(3)' onmouseleave='starMouseLeave(3)' onclick=`starMouseClick(3)`)
+                    i#star-4.fa.fa-star.star-selector(onmouseover='starMouseOver(4)' onmouseleave='starMouseLeave(4)' onclick=`starMouseClick(4)`)
+                    i#star-5.fa.fa-star.star-selector(onmouseover='starMouseOver(5)' onmouseleave='starMouseLeave(5)' onclick=`starMouseClick(5)`)
+                    i#star-6.fa.fa-star.star-selector(onmouseover='starMouseOver(6)' onmouseleave='starMouseLeave(6)' onclick=`starMouseClick(6)`)
+                    i#star-7.fa.fa-star.star-selector(onmouseover='starMouseOver(7)' onmouseleave='starMouseLeave(7)' onclick=`starMouseClick(7)`)
+                    i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick=`starMouseClick(8)`)
+                    i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick=`starMouseClick(9)`)
 
-                //- let rating = document.getElementsByClassName("star-clicked").length
 
-                button.btn.btn-outline-primary.mt-2(type="submit" name="action" value= style={float: "right"})
+                button.btn.btn-outline-primary.mt-2(type="submit" style={float: "right"})
                     | Submit Basic Review
 
                 div.mb-3
@@ -109,7 +108,7 @@ html
                     label.form-label(for='review') Review
                     textarea#review.form-control(type='text' name="fullText" rows='5' style='resize: none')
 
-                button.btn.btn-outline-primary.btn-block(type='submit' name="action" value={rating})
+                button.btn.btn-outline-primary.btn-block(type='submit')
                     | Add Review
             hr.my-4
             #review-deck.card-deck
