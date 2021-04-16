@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 let notificationSchema = Schema({
     text: {type: String},
+    user: {type: Schema.Types.ObjectId},
     link: {type: String}
 });
 
