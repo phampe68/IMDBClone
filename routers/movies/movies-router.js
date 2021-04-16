@@ -185,10 +185,9 @@ const loadMovies = async (req, res, next) => {
     writers = await Person.find({'_id': {$in: movie.writer}});
     reviews = await Review.find({'_id': {$in: movie.reviews}}).limit(5);
 
-
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
 
-    await getSimilarMovies(req.movie).then(simMovies => {
+    await getSimilarMovies(req.movie, 10).then(simMovies => {
         console.log(simMovies);
         similarMovies = simMovies;
     })
@@ -223,7 +222,16 @@ const sendMovie = (req, res, next) => {
         },
         "text/html": () => {
             let data = pug.renderFile("./partials/movie.pug", req.options);
+
+            //keep track of which movies have been viewed so far
+            if(req.session.viewedMovies)
+                req.session.viewedMovies.push(req.movie);
+            else
+                req.session.viewedMovies = [req.movie._id];
+
+            console.log(req.session.viewedMovies);
             res.status(200).send(data);
+
         },
     })
 }

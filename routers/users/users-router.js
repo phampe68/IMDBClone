@@ -10,7 +10,7 @@ const express = require('express');
 const session = require('express-session');
 let router = express.Router();
 
-const getSimilarMovies = require('../movies/getSimilarMovies.js');
+const getRecommendedMovies = require("./getRecommendedMovies");
 
 router.use(session({
     name: "session",
@@ -57,13 +57,20 @@ const loadUser = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let user = req.user;
 
-    let peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews;
+    let peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews, recommendedMovieIDs;
+
+    await getRecommendedMovies(user, req.session.viewedMovies).then(movieIDs => {
+        recommendedMovieIDs = movieIDs;
+    })
+
+
+
     //get all relevant data to render page
     try {
         peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});
         usersFollowing = await User.find({'_id': {$in: user.usersFollowing}});
         moviesWatched = await Movie.find({'_id': {$in: user.moviesWatched}});
-        recommendedMovies = await Movie.find({'_id': {$in: user.recommendedMovies}}) // change this
+        recommendedMovies = await Movie.find({'_id': {$in: recommendedMovieIDs}}) // change this
         notifications = await Notification.find({'_id': {$in: user.notifications}});
         reviews = await Review.find({'_id': {$in: user.reviews}})
     } catch (err) {
