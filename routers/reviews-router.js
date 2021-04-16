@@ -27,7 +27,7 @@ const getReview = (req, res, next) => {
             return;
         }
         User.findOne({'_id': review.author}).exec((err, author) => {
-            let data = pug.renderFile("./partials/review.pug",{
+            let data = pug.renderFile("./partials/review.pug", {
                 author: author,
                 review: review
             });
@@ -36,6 +36,7 @@ const getReview = (req, res, next) => {
     })
 }
 
+
 const getReviewPage = (req, res, next) => {
     let urlParts = req.originalUrl.split('/');
     let movieID = urlParts[urlParts.indexOf('movies') + 1];
@@ -43,16 +44,14 @@ const getReviewPage = (req, res, next) => {
     Review.find({
         movie: movieID
     }).exec((err, reviews) => {
+        console.log(reviews);
         let data = pug.renderFile('./partials/reviewPage.pug', {
             reviews
         });
 
         res.send(data);
     })
-
-
 }
-
 
 
 router.get('/:id', getReview);
