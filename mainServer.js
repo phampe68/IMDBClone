@@ -333,6 +333,7 @@ const addReview = async (req, res, next) => {
         followers[x]["notifications"].push(notification._id);
         console.log("After:");
         console.log(followers[x]);
+        await followers[x].save(function(err){if(err)throw err;})
     }
 
     await notification.save(function (err) {
@@ -347,6 +348,7 @@ const addReview = async (req, res, next) => {
         console.log("Updated user.");
         console.log(user["reviews"]);
     })
+
     await movie.save(function (err) {
         if (err) throw err;
         console.log("Updated movie.");

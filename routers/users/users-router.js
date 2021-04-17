@@ -76,6 +76,8 @@ const loadUser = async (req, res, next) => {
         res.status(404).send("Error loading user");
     }
     // load options common for both types of users (logged in, or other)
+    console.log("Notifications:");
+    console.log(notifications);
     req.options = {
         user: user,
         peopleFollowing: peopleFollowing,
