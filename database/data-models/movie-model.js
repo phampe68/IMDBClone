@@ -11,6 +11,7 @@ let movieSchema = Schema({
     director: [{type: Schema.Types.ObjectId, ref: 'Person', required: true}],
     actor: [{type: Schema.Types.ObjectId, ref: 'Person', required: true}],
     writer: [{type: Schema.Types.ObjectId, ref: 'Person', required: true}],
+    similarMovies: [{type: Schema.Types.ObjectId, ref: 'Movie', required: true}],
     plot: {type: String, required: true},
     awards: [{type: String}],
     poster: {type: String},

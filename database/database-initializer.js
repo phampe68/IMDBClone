@@ -11,8 +11,7 @@ const getFrequentCollaborators = require('../routers/persons/getFrequentCollabor
 const Movie = require('../database/data-models/movie-model.js');
 const Person = require('../database/data-models/person-model.js');
 const User = require('../database/data-models/user-model.js');
-const Notification = require('../database/data-models/notification-model.js');
-const Review = require('../database/data-models/review-model.js');
+
 
 // collection of movies and people which is extracted from movie data
 let allMovies = [];
@@ -87,101 +86,99 @@ const generateMovies = async () => {
 }
 
 
-const generateFrequentCollaborators = async () => {
-    //generate frequent collaborators for every person:
-    for (const person of allPersons) {
-        await getFrequentCollaborators(person).then(collaborators => {
-            console.log(collaborators);
-            person.frequentCollaborators = collaborators;
-        })
-    }
-}
-
-
 const initializeDB = async () => {
     await generateMovies();
-    await generateFrequentCollaborators();
+    console.log("Generated all movies");
 
 
-//connect to database:
-    mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
-    let db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'connection error:'));
-    db.once('open', () => {
-        console.log("Connected to IMDB Clone");
-        //drop database first
-        mongoose.connection.db.dropDatabase((err, results) => {
-            if (err) {
-                console.log("Error dropping collection. Likely case: collection did not exist (don't worry unless you get other errors...)")
-                return;
-            } else
-                console.log("Cleared movies collection");
-
-            //add movies
-            Movie.insertMany(allMovies, (err, result) => {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-                console.log("Successfully added movies");
-
-                //add people
-                Person.insertMany(allPersons, (err, result) => {
-                    if (err) {
-                        console.log(err);
-                        return;
-                    }
-                    console.log("Successfully added people");
-
-                    //add some example users
-
-                    //some example users:
-                    let exampleUser1 = new User({
-                        username: "exampleUser1",
-                        password: "password",
-                        contributor: false,
-                        peopleFollowing: [],
-                        usersFollowing: [],
-                        moviesWatched: [],
-                        recommendedMovies: [],
-                        notifications: [],
-                        reviews: []
-                    });
-
-                    let exampleUser2 = new User({
-                        username: "exampleUser2",
-                        password: "password",
-                        contributor: false,
-                        peopleFollowing: [],
-                        usersFollowing: [exampleUser1.id],
-                        moviesWatched: [],
-                        recommendedMovies: [],
-                        notifications: [],
-                        reviews: []
-                    });
-
-                    exampleUser1.save(function (err) {
-                        if (err) {
-                            console.log(err);
-                            return;
-                        }
-                        console.log("Saved example user 1.");
-
-                        exampleUser2.save(function (err) {
-                            if (err) {
-                                console.log(err);
-                                return;
-                            }
-                            console.log("Saved example user 2.");
-                            console.log("Finished.");
-                            process.exit(0);
-                        });
-                    });
-                })
-            })
-        })
+    //connect to database:
+    await mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true}).catch(err => {
+        console.log(err);
     });
+    console.log("Connected to IMDB Clone");
+
+    //drop database
+    await mongoose.connection.db.dropDatabase().catch(err => {
+        console.log("Error dropping collection. Likely case: collection did not exist", err);
+    });
+    console.log("Successfully dropped old collection");
+
+    //add movies
+    await Movie.insertMany(allMovies).catch(err => {
+        console.log("Error adding movies", err);
+    })
+    console.log("Successfully inserted movies");
+
+    //generate similar movies
+    for (let movie of allMovies) {
+        await getSimilarMovies(movie).then(similarMovies => {
+            movie.similarMovies = similarMovies;
+        })
+    }
+
+    //re add movies:
+    await mongoose.connection.db.dropCollection('movies');
+    await Movie.insertMany(allMovies).catch(err => {
+        console.log("Error adding movies", err);
+    })
+    console.log("Successfully inserted movies with similar movies");
+
+
+    //generate frequent collaborators for each person
+    for (let person of allPersons) {
+        await getFrequentCollaborators(person).then(collaborators => {
+            person.frequentCollaborators = collaborators;
+        }).catch(err => {
+            console.log("Error getting frequent collaborators", err);
+        })
+    }
+
+    console.log("Successfully added frequent collaborators");
+
+    //add people
+    await Person.insertMany(allPersons).catch(err => {
+        console.log("Error adding people", err);
+    })
+
+
+
+    let exampleUser1 = new User({
+        username: "exampleUser1",
+        password: "password",
+        contributor: false,
+        peopleFollowing: [],
+        usersFollowing: [],
+        moviesWatched: [],
+        recommendedMovies: [],
+        notifications: [],
+        reviews: []
+    });
+
+    let exampleUser2 = new User({
+        username: "exampleUser2",
+        password: "password",
+        contributor: false,
+        peopleFollowing: [],
+        usersFollowing: [exampleUser1.id],
+        moviesWatched: [],
+        recommendedMovies: [],
+        notifications: [],
+        reviews: []
+    });
+
+    await exampleUser1.save().catch(err => {
+        console.log("Error adding example user1", err);
+    });
+    console.log("Saved example user 1.");
+
+    await exampleUser2.save().catch(err => {
+        console.log("Error adding example user2", err);
+
+    });
+    console.log("Saved example user 2.");
+
+    console.log("Finished.");
+    process.exit(0);
 }
 
 initializeDB();
