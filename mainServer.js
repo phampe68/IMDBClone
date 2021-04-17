@@ -118,7 +118,7 @@ app.get('/contribute', checkLogin, function(req,res){
         if(user.contributor === true){
             let data = pug.renderFile("./partials/contribute.pug");
             res.send(data);
-        }else{res.redirect("/myProfile");}
+        }else{res.redirect("back");}
     })
 })
 
