@@ -4,8 +4,6 @@ const Movie = require('../../database/data-models/movie-model.js');
 const Person = require('../../database/data-models/person-model.js');
 const User = require('../../database/data-models/user-model.js');
 
-const getFrequentCollaborators = require("./getFrequentCollaborators");
-
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 50;
 
@@ -88,22 +86,18 @@ const getPerson = (req, res, next) => {
 const loadPerson = async (req, res, next) => {
     let person = req.person;
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
+    let collaboratorIDs = person.frequentCollaborators;
 
-    let currUser, moviesWritten, moviesDirected, moviesActed, collaboratorIDs;
+    let currUser, moviesWritten, moviesDirected, moviesActed, collaborators;
 
     currUser = await User.findOne({'_id': currUserId});
     moviesWritten = await Movie.find({'_id': {$in: person.writerFor}});
     moviesDirected = await Movie.find({'_id': {$in: person.directorFor}});
     moviesActed = await Movie.find({'_id': {$in: person.actorFor}});
-
-    await getFrequentCollaborators(req.person).then(collabIDs => {
-            collaboratorIDs = collabIDs;
-        }
-    );
+    collaborators = await Person.find({'_id': {$in: collaboratorIDs}});
 
     let following = currUser['peopleFollowing'].includes(person._id) === true;
 
-    let collaborators = await Person.find({'_id': {$in: collaboratorIDs}})
     req.options = {
         person: person,
         moviesWritten: moviesWritten,
