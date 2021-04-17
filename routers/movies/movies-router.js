@@ -175,6 +175,7 @@ const getMovie = (req, res, next) => {
 
 const loadMovies = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
+
     let movie = req.movie;
 
     let currUser, actors, directors, writers, reviews, similarMovies, relatedMovies;
@@ -236,10 +237,17 @@ const sendMovie = (req, res, next) => {
     })
 }
 
+function checkLogin (req,res,next){
+    if(!req.session.userId){
+        console.log("checking")
+        res.redirect("/loginPage");
+    }
+    next();
+}
 
 //specify handlers:
-router.get('/:id', [getMovie, loadMovies, sendMovie]);
-router.get('/?', [queryParser, searchMovie, sendSearchResults]);
+router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
+router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
 router.use('/:id/reviews/', reviewRouter);
 
 module.exports = router;

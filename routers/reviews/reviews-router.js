@@ -106,7 +106,14 @@ const sendReviewPage = (req, res, next) => {
     })
 }
 
+function checkLogin (req,res,next){
+    if(!req.session.userId){
+        console.log("checking")
+        res.redirect("/loginPage");
+    }
+    next();
+}
 
 router.get('/:id', getReview);
-router.get('/', [reviewsPageParser, getReviews, sendReviewPage]);
+router.get('/', [checkLogin,reviewsPageParser, getReviews, sendReviewPage]);
 module.exports = router;

@@ -182,8 +182,15 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
+function checkLogin (req,res,next){
+    if(!req.session.userId){
+        console.log("checking")
+        res.redirect("/loginPage");
+    }
+    next();
+}
 
-router.get('/:id/notifications/', notificationsPageParser, getNotifications, sendNotificationsPage);
-router.get('/:id/', getUser, loadUser, sendUser);
+router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
+router.get('/:id/',checkLogin, getUser, loadUser, sendUser);
 
 module.exports = router;

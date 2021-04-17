@@ -171,9 +171,16 @@ const sendPerson = (req, res, next) => {
     })
 }
 
+function checkLogin (req,res,next){
+    if(!req.session.userId){
+        console.log("checking")
+        res.redirect("/loginPage");
+    }
+    next();
+}
 
 //specify handlers:
-router.get('/:id', [getPerson, loadPerson, sendPerson]);
+router.get('/:id', [checkLogin, getPerson, loadPerson, sendPerson]);
 router.get('/?', queryParser);
 router.get('/?', searchPeople);
 

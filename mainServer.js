@@ -62,24 +62,34 @@ let exampleNotification = {
     relatedID: 0
 }
 
+function checkLogin (req,res,next){
+    console.log("checking");
+    console.log(req.session.userId);
+    if(!req.session.userId){
+        console.log("going to login page")
+        res.redirect("/loginPage");
+    }else{
+        next();
+    }
+}
 
 //Start adding route handlers here
 //handler for adding recipe
 
 //home page route:
-app.get('/', (req, res) => {
+app.get('/', checkLogin,function(req, res) {
     let data
     if(req.session.loggedin === true){
         data = pug.renderFile('./partials/index.pug');
     }else{
         console.log("Redirecting to login page")
-        res.redirect("/loginPage");
+        //res.redirect("/loginPage");
     }
     res.send(data);
 })
 
 //page displaying a single user
-app.get('/myProfile', (req, res) => {
+app.get('/myProfile',checkLogin, function (req, res) {
     //console.log("ayo");
     if(req.session.loggedin===true){
         console.log(req.session.loggedin);
@@ -100,21 +110,20 @@ app.get('/loginPage/', (req, res) => {
 })
 
 //page for contribution form
-app.get('/contribute/', (req, res) => {
+app.get('/contribute', checkLogin, function(req,res){
     User.findOne({_id: req.session.userId}).exec((err, user) => {
-        if(err||!user){
-            console.log(`Error finding user with id ${req.session.userID}`)
+        if(!user){
+            //res.redirect("/loginPage");
         }
         if(user.contributor === true){
             let data = pug.renderFile("./partials/contribute.pug");
             res.send(data);
-        }
+        }else{res.redirect("/myProfile");}
     })
-
 })
 
 
-app.post("/login/", function(req,res,next){
+app.post('/login',function(req,res,next){
     //determine which button was used on login form
     if(req.body.action==="login"){
         login(req,res,next);
@@ -141,7 +150,7 @@ const login = async(req,res,next) => {
     await getUserByName(req.body.username).then(result => {
         if (!result) {
             console.log("Username does not exist");
-            return;
+            res.status(200);
         }
         else{
             user = result;
@@ -160,7 +169,7 @@ const login = async(req,res,next) => {
 }
 
 //log a user out of their session
-app.get("/logout", (req,res,next) => {
+app.post('/logout',checkLogin,function (req,res,next) {
     if(!req.session.loggedin){
         res.status(200).send("Already logged out.");
     }else{
@@ -233,7 +242,7 @@ const getUserByName = async (userName) => {
     });
 }
 
-app.post("/addMovie",(req,res,next)=> {
+app.post('/addMovie',checkLogin,function(req,res,next) {
     let title = req.body.title;
     let runtime = req.body.runtime;
     let releaseYear = req.body.releaseYear;
@@ -255,7 +264,7 @@ app.post("/addMovie",(req,res,next)=> {
     })
 })
 
-app.post("/addPerson",(req,res,next)=> {
+app.post('/addPerson',checkLogin,function(req,res,next) {
     let name = req.body.personName;
     console.log(name);
     Person.findOne({name:name}).exec((err,person)=>{
@@ -271,7 +280,7 @@ app.post("/addPerson",(req,res,next)=> {
 })
 
 
-app.post("/addReview?",(req,res,next)=>{
+app.post('/addReview?',checkLogin,function(req,res,next){
     let review = new Review();
     console.log(req.body);
     console.log(req.params);
@@ -323,7 +332,7 @@ app.post("/addReview?",(req,res,next)=>{
 })
 
 
-app.post("/accountType/:id",(req,res,next)=>{
+app.post('/accountType/:id',checkLogin,function(req,res,next){
     let id = mongoose.Types.ObjectId(req.params.id);
     console.log(req.body);
     User.findOne({_id: id}).exec((err, user) => {
@@ -335,11 +344,12 @@ app.post("/accountType/:id",(req,res,next)=>{
         user.save(function(err){
             if(err) throw err;
             console.log("updated account type")
+            res.redirect("/myProfile");
         })
     })
 })
 
-app.post("/followUser/:id",(req,res,next)=> {
+app.post('/followUser/:id',checkLogin,function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
 
@@ -357,7 +367,7 @@ app.post("/followUser/:id",(req,res,next)=> {
     })
 })
 
-app.post("/unfollowUser/:id",(req,res,next)=> {
+app.post('/unfollowUser/:id',checkLogin,function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
     let from = req.body.from;
@@ -381,7 +391,7 @@ app.post("/unfollowUser/:id",(req,res,next)=> {
     })
 })
 
-app.post("/followPerson/:id",(req,res,next)=> {
+app.post('/followPerson/:id',checkLogin,function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
 
@@ -407,7 +417,7 @@ app.post("/followPerson/:id",(req,res,next)=> {
     })
 })
 
-app.post("/unfollowPerson/:id",(req,res,next)=> {
+app.post('/unfollowPerson/:id',checkLogin,function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
     let from = req.body.from;
@@ -430,7 +440,7 @@ app.post("/unfollowPerson/:id",(req,res,next)=> {
     })
 })
 
-app.post("/watchMovie/:id",(req,res,next)=> {
+app.post('/watchMovie/:id',function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
 
@@ -449,28 +459,28 @@ app.post("/watchMovie/:id",(req,res,next)=> {
 })
 
 
-app.post("/unwatchMovie/:id",(req,res,next)=> {
+app.post('/unwatch/:id',function(req,res,next) {
     let userId = mongoose.Types.ObjectId(req.session.userId);
     let otherId = mongoose.Types.ObjectId(req.params.id);
     let from = req.body.from;
     console.log(`UserID ${userId} is attempting to unfollow ${otherId} from ${from}`);
     User.findOne({'_id': userId}).exec((err, user) => {
         Movie.findOne({'_id': otherId}).exec((err, other) => {
-            if(user&&other){
+            if (user && other) {
                 user["moviesWatched"].pull({_id: other._id});
                 console.log(user["moviesWatched"]);
             }
-            user.save(function(err){
+            user.save(function (err) {
                 if (err) throw err;
-                if(from === "profile"){
+                if (from === "profile") {
                     res.redirect("/myProfile");
-                }else{
+                } else {
                     res.redirect(`/movies/${otherId}`)
                 }
             })
         })
     })
-})
+});
 
 
 /**
