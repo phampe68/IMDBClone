@@ -1,6 +1,11 @@
 const movieData = require('../movie-data-10.json');
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+//import functions that generate suggestion fields
+
+const getSimilarMovies = require('../routers/movies/getSimilarMovies');
+const getFrequentCollaborators = require('../routers/persons/getFrequentCollaborators')
+
 
 //import data-models
 const Movie = require('../database/data-models/movie-model.js');
@@ -47,117 +52,137 @@ const addPersonToMovie = (personName, movie, position) => {
     movie[positionMap[position]].push(currPerson._id);
 }
 
-// generate database colelctions based off movie data:
-movieData.forEach(movie => {
-    //generate movie obj
-    let aMovie = new Movie();
-    aMovie.title = movie.Title;
-    aMovie.averageRating = 0;
-    aMovie.rated = movie.Rated;
-    aMovie.released = movie.Released;
-    aMovie.genre = movie.Genre;
-    aMovie.year = movie.Year;
+const generateMovies = async () => {
+    // generate database colelctions based off movie data:
+    for (let i = 0; i < movieData.length; i++) {
+        let movie = movieData[i];
+        //generate movie obj
+        let aMovie = new Movie();
+        aMovie.title = movie.Title;
+        aMovie.averageRating = 0;
+        aMovie.rated = movie.Rated;
+        aMovie.released = movie.Released;
+        aMovie.genre = movie.Genre;
+        aMovie.year = movie.Year;
 
 
-    movie.Director.forEach(directorName => {
-        addPersonToMovie(directorName, aMovie, "directorFor");
-    })
-    movie.Writer.forEach(writerName => {
-        addPersonToMovie(writerName, aMovie, "writerFor");
-    })
-    movie.Actors.forEach(actorName => {
-        addPersonToMovie(actorName, aMovie, "actorFor");
-    })
+        movie.Director.forEach(directorName => {
+            addPersonToMovie(directorName, aMovie, "directorFor");
+        })
+        movie.Writer.forEach(writerName => {
+            addPersonToMovie(writerName, aMovie, "writerFor");
+        })
+        movie.Actors.forEach(actorName => {
+            addPersonToMovie(actorName, aMovie, "actorFor");
+        })
 
-    aMovie.plot = movie.Plot;
-    aMovie.awards = movie.Awards;
-    aMovie.poster = movie.Poster;
-    aMovie.reviews = [];
-    aMovie.runtime = movie.Runtime;
-    aMovie.relatedMovies = [];
-    allMovies.push(aMovie);
-});
+        aMovie.plot = movie.Plot;
+        aMovie.awards = movie.Awards;
+        aMovie.poster = movie.Poster;
+        aMovie.reviews = [];
+        aMovie.runtime = movie.Runtime;
+        aMovie.relatedMovies = [];
+        allMovies.push(aMovie);
+    }
+}
 
-console.log("All movies generated", allMovies);
+
+const generateFrequentCollaborators = async () => {
+    //generate frequent collaborators for every person:
+    for (const person of allPersons) {
+        await getFrequentCollaborators(person).then(collaborators => {
+            console.log(collaborators);
+            person.frequentCollaborators = collaborators;
+        })
+    }
+}
+
+
+const initializeDB = async () => {
+    await generateMovies();
+    await generateFrequentCollaborators();
+
+
 //connect to database:
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+    mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-    console.log("Connected to IMDB Clone");
-    //drop database first
-    mongoose.connection.db.dropDatabase((err, results) => {
-        if (err) {
-            console.log("Error dropping collection. Likely case: collection did not exist (don't worry unless you get other errors...)")
-            return;
-        } else
-            console.log("Cleared movies collection");
-
-        //add movies
-        Movie.insertMany(allMovies, (err, result) => {
+    let db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'connection error:'));
+    db.once('open', () => {
+        console.log("Connected to IMDB Clone");
+        //drop database first
+        mongoose.connection.db.dropDatabase((err, results) => {
             if (err) {
-                console.log(err);
+                console.log("Error dropping collection. Likely case: collection did not exist (don't worry unless you get other errors...)")
                 return;
-            }
-            console.log("Successfully added movies");
+            } else
+                console.log("Cleared movies collection");
 
-            //add people
-            Person.insertMany(allPersons, (err, result) => {
+            //add movies
+            Movie.insertMany(allMovies, (err, result) => {
                 if (err) {
                     console.log(err);
                     return;
                 }
-                console.log("Successfully added people");
+                console.log("Successfully added movies");
 
-                //add some example users
-
-                //some example users:
-                let exampleUser1 = new User({
-                    username: "exampleUser1",
-                    password: "password",
-                    contributor: false,
-                    peopleFollowing: [],
-                    usersFollowing: [],
-                    moviesWatched: [],
-                    recommendedMovies: [],
-                    notifications: [],
-                    reviews: []
-                });
-
-                let exampleUser2 = new User({
-                    username: "exampleUser2",
-                    password: "password",
-                    contributor: false,
-                    peopleFollowing: [],
-                    usersFollowing: [exampleUser1.id],
-                    moviesWatched: [],
-                    recommendedMovies: [],
-                    notifications: [],
-                    reviews: []
-                });
-
-                exampleUser1.save(function (err) {
+                //add people
+                Person.insertMany(allPersons, (err, result) => {
                     if (err) {
                         console.log(err);
                         return;
                     }
-                    console.log("Saved example user 1.");
+                    console.log("Successfully added people");
 
-                    exampleUser2.save(function (err) {
+                    //add some example users
+
+                    //some example users:
+                    let exampleUser1 = new User({
+                        username: "exampleUser1",
+                        password: "password",
+                        contributor: false,
+                        peopleFollowing: [],
+                        usersFollowing: [],
+                        moviesWatched: [],
+                        recommendedMovies: [],
+                        notifications: [],
+                        reviews: []
+                    });
+
+                    let exampleUser2 = new User({
+                        username: "exampleUser2",
+                        password: "password",
+                        contributor: false,
+                        peopleFollowing: [],
+                        usersFollowing: [exampleUser1.id],
+                        moviesWatched: [],
+                        recommendedMovies: [],
+                        notifications: [],
+                        reviews: []
+                    });
+
+                    exampleUser1.save(function (err) {
                         if (err) {
                             console.log(err);
                             return;
                         }
-                        console.log("Saved example user 2.");
-                        console.log("Finished.");
-                        process.exit(0);
+                        console.log("Saved example user 1.");
+
+                        exampleUser2.save(function (err) {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            console.log("Saved example user 2.");
+                            console.log("Finished.");
+                            process.exit(0);
+                        });
                     });
-                });
+                })
             })
         })
-    })
-});
+    });
+}
 
-
+initializeDB();
 
