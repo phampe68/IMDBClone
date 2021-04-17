@@ -169,16 +169,16 @@ const login = async(req,res,next) => {
 }
 
 //log a user out of their session
-app.post('/logout',checkLogin,function (req,res,next) {
+app.get('/logout',function (req,res,next) {
     if(!req.session.loggedin){
-        res.status(200).send("Already logged out.");
+        res.status(200);
     }else{
         req.session.loggedin = false;
         req.session.username = false;
         req.session.userId = false;
         console.log("successfully logged out");
-        res.redirect("/loginPage");
     }
+    res.redirect("/loginPage");
     next();
 })
 
