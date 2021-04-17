@@ -64,7 +64,6 @@ const loadUser = async (req, res, next) => {
     })
 
 
-
     //get all relevant data to render page
     try {
         peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});

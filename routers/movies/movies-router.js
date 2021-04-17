@@ -161,7 +161,6 @@ const getMovie = (req, res, next) => {
     //find the movie in the db by its id
     Movie.findOne({
         _id: mongoose.Types.ObjectId(id)
-
     }).exec((err, movie) => {
         if (err || !movie) {
             res.status(404).send("Could not find movie.");

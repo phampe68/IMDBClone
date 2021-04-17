@@ -166,6 +166,8 @@ const initializeDB = async () => {
         reviews: []
     });
 
+    exampleUser1.followers = [exampleUser2._id];
+
     await exampleUser1.save().catch(err => {
         console.log("Error adding example user1", err);
     });

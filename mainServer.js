@@ -22,6 +22,7 @@ const User = require('./database/data-models/user-model.js');
 const Review = require("./database/data-models/review-model");
 const Movie = require("./database/data-models/movie-model");
 const Person = require("./database/data-models/person-model");
+const Notification = require("./database/data-models/notification-model");
 
 app.use(express.json())
 app.set("view engine", "pug");
@@ -280,7 +281,7 @@ app.post('/addPerson',checkLogin,function(req,res,next) {
 })
 
 
-app.post('/addReview?',checkLogin,function(req,res,next){
+const addReview = async (req, res, next) => {
     let review = new Review();
     console.log(req.body);
     console.log(req.params);
@@ -293,43 +294,73 @@ app.post('/addReview?',checkLogin,function(req,res,next){
     if(req.query.hasOwnProperty("id")){
         id = mongoose.Types.ObjectId(req.query.id);
     }
-    User.findOne({_id:req.session.userId}).exec((err,user)=> {
-        Movie.findOne({_id: id}).exec((err, movie) => {
-            review.author = user._id;
-            review.score = score;
-            review.movie = movie._id;
+    let user;
+    let movie;
 
-            console.log(`Score: ${review.score}`)
+    try{
+        user = await User.findOne({_id:req.session.userId});
+        movie = await Movie.findOne({_id: id});
+    }
+    catch(err){
+        res.status(404).send("ERROR 404: Could not find movie.");
+    }
 
-            review.summaryText = req.body.summaryText;
-            review.fullText = req.body.fullText;
+    review.author = user._id;
+    review.score = score;
+    review.movie = movie._id;
 
-            console.log(user);
-            console.log(movie);
+    console.log(`Score: ${review.score}`)
 
-            user["reviews"].push(review._id);
-            movie["reviews"].push(review._id);
+    review.summaryText = req.body.summaryText;
+    review.fullText = req.body.fullText;
 
-            user.save(function (err) {
-                if (err) throw err;
-                console.log("Updated user.");
-                console.log(user["reviews"]);
-                movie.save(function (err) {
-                    if (err) throw err;
-                    console.log("Updated movie.");
-                    console.log(movie["reviews"]);
-                    review.save(function (err) {
-                        if (err) throw err;
-                        console.log("Saved new review.");
-                        console.log(review);
-                        res.redirect(`/movies/${req.query.id}`);
-                    });
-                });
-            });
-        })
+    console.log(user);
+    console.log(movie);
 
+    user["reviews"].push(review._id);
+    movie["reviews"].push(review._id);
+
+    let notification = new Notification();
+    notification.text = user["username"]+" posted a review of " + movie["title"];
+    notification.link = `movies/${movie._id}/reviews/${review._id}`
+
+    let followers;
+    followers = await User.find({'_id': {$in: user.followers}});
+    let x;
+    for (x in followers){
+        console.log("Before:");
+        console.log(followers[x]);
+        followers[x]["notifications"].push(notification._id);
+        console.log("After:");
+        console.log(followers[x]);
+    }
+
+    await notification.save(function (err) {
+        if (err) throw err;
+        console.log("Saved new notification.");
+        console.log(notification);
+        console.log(followers);
     })
-})
+
+    await user.save(function (err) {
+        if (err) throw err;
+        console.log("Updated user.");
+        console.log(user["reviews"]);
+    })
+    await movie.save(function (err) {
+        if (err) throw err;
+        console.log("Updated movie.");
+        console.log(movie["reviews"]);
+    })
+    await review.save(function (err) {
+        if (err) throw err;
+        console.log("Saved new review.");
+        console.log(review);
+    })
+    res.redirect(`/movies/${req.query.id}`);
+}
+
+app.post('/addReview?',checkLogin,addReview);
 
 
 app.post('/accountType/:id',checkLogin,function(req,res,next){
@@ -357,6 +388,7 @@ app.post('/followUser/:id',checkLogin,function(req,res,next) {
         User.findOne({'_id': otherId}).exec((err, other) => {
             if(user&&other){
                 user["usersFollowing"].push(other._id);
+                other["followers"].push(user._id);
             }
             user.save(function(err){
                 if(err) throw err;
@@ -377,6 +409,7 @@ app.post('/unfollowUser/:id',checkLogin,function(req,res,next) {
         User.findOne({'_id': otherId}).exec((err, other) => {
             if(user&&other){
                 user["usersFollowing"].pull({_id: other._id});
+                other["followers"].pull({_id: user._id});
                 console.log(user["usersFollowing"]);
             }
             user.save(function(err){
@@ -405,6 +438,7 @@ app.post('/followPerson/:id',checkLogin,function(req,res,next) {
         Person.findOne({'_id': otherId}).exec((err, other) => {
             if(user&&other){
                 user["peopleFollowing"].push(other._id);
+                other["followers"].push(user._id);
             }
             user.save(function(err){
                 if(err){
@@ -426,6 +460,7 @@ app.post('/unfollowPerson/:id',checkLogin,function(req,res,next) {
         Person.findOne({'_id': otherId}).exec((err, other) => {
             if(user&&other){
                 user["peopleFollowing"].pull({_id: other._id});
+                other["followers"].pull({_id: user._id});
                 console.log(user["peopleFollowing"]);
             }
             user.save(function(err){
