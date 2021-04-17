@@ -19,10 +19,10 @@ html
                 h2#average-rating.display-4 Average Rating: #{movie.averageRating}
                 hr
                 if watched
-                    form(action=`/unwatchMovie/${movie.id}` method="POST")
+                    form(action=`/movies/unwatchMovie/${movie.id}` method="POST")
                         button.btn.btn-outline-danger(type="submit" name="from" value="other") Remove From Watched List
                 else
-                    form(action=`/watchMovie/${movie.id}` method="POST")
+                    form(action=`/movies/watchMovie/${movie.id}` method="POST")
                         button.btn.btn-outline-success(type="submit") Add to Watched List
 
                 h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} |
@@ -76,7 +76,7 @@ html
 
         div#add-review-container.container
             h1 Add Review
-            form(id="form" action=`/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
+            form(id="form" action=`/movies/${movie.id}/reviews/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
                 div#review-selector.mt-3.mb-3(style={display: "inline-block"})
                     i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick=`starMouseClick(0`)
                     i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick=`starMouseClick(1)`)
@@ -88,7 +88,6 @@ html
                     i#star-7.fa.fa-star.star-selector(onmouseover='starMouseOver(7)' onmouseleave='starMouseLeave(7)' onclick=`starMouseClick(7)`)
                     i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick=`starMouseClick(8)`)
                     i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick=`starMouseClick(9)`)
-
 
                 button.btn.btn-outline-primary.mt-2(type="submit" style={float: "right"})
                     | Submit Basic Review

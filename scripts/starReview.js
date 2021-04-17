@@ -33,7 +33,7 @@ const starMouseClick = (i) => {
     //add the score
     let score = i+1;
     //might have to rebuild the URL everytime
-    form.action = `/addReview?score=`
+    form.action = `/reviews/addReview?score=`
     //replace score param in action with actual score
     form.action += score;// (make sure to check if this is already in the form action)
     form.action += `&id=${id}`;

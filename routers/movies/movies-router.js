@@ -189,6 +189,12 @@ const loadMovies = async (req, res, next) => {
     relatedMovies = await Movie.find({'_id': {$in: similarMovieIDs}});
 
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
+    let i;
+    let total=0;
+    for(i in reviews){
+        total += reviews[i].score;
+    }
+    movie.averageRating = total/(Number(i)+1);
 
     //generate template with found data
     req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
@@ -203,8 +209,6 @@ const loadMovies = async (req, res, next) => {
         seeReviewsURL: req.seeReviewsURL
     };
     next();
-
-
 }
 
 /**
@@ -232,6 +236,60 @@ const sendMovie = (req, res, next) => {
     })
 }
 
+const addMovie = async (req,res,next) =>{
+    let title = req.body.title;
+    let runtime = req.body.runtime;
+    let releaseYear = req.body.releaseYear;
+    let writers = req.body.writers;
+    let directors = req.body.directors;
+    let actors = req.body.actors;
+
+    let movie = new Movie();
+    movie.title = title;
+    movie.runtime = runtime;
+    movie.year = releaseYear;
+    movie.writers = writers;
+    movie.directors = directors;
+    movie.actors = actors;
+
+    Movie.save(movie,(err,result)=>{
+        if(err) throw err;
+        console.log("Saved new movie.");
+    })
+}
+
+const watchMovie = async (req,res,next) => {
+    let user = req.user;
+    let other = req.other;
+    if(user&&other){
+        user["moviesWatched"].push(other._id);
+    }
+    user.save(function(err){
+        if(err) throw err;
+        console.log("updated watched movies list");
+        res.redirect(`/movies/${otherId}`);
+    })
+}
+
+const unwatchMovie = async (req,res,next) => {
+    let from = req.body.from;
+    let user = req.user;
+    let other = req.other;
+
+    if (user && other) {
+        user["moviesWatched"].pull({_id: other._id});
+        console.log(user["moviesWatched"]);
+    }
+    user.save(function (err) {
+        if (err) throw err;
+        if (from === "profile") {
+            res.redirect("/myProfile");
+        } else {
+            res.redirect(`/movies/${otherId}`)
+        }
+    })
+}
+
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
@@ -240,9 +298,17 @@ function checkLogin (req,res,next){
     next();
 }
 
+const getUserAndOther = async (req,res,next)=>{
+    req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
+    req.other = await Movie.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
+    next();
+}
+
 //specify handlers:
 router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
 router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
 router.use('/:id/reviews/', reviewRouter);
-
+router.post('/addMovie',checkLogin,addMovie);
+router.post('/watchMovie/:id',checkLogin,getUserAndOther, watchMovie);
+router.post('/unwatchMovie/:id',checkLogin,unwatchMovie);
 module.exports = router;

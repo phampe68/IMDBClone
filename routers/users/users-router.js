@@ -183,6 +183,56 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
+const changeAccountType = (req,res,next)=>{
+    let id = mongoose.Types.ObjectId(req.params.id);
+    console.log(req.body);
+    let user;
+    user = User.findOne({_id: id});
+    if(req.body.accountTypeRadio === "true"){
+        user.contributor = true;
+    }else{
+        user.contributor = false;
+    }
+    user.save(function(err){
+        if(err) throw err;
+        console.log("updated account type")
+        res.redirect("/myProfile");
+    })
+}
+
+const followUser=async(req,res,next) =>{
+    let user = req.user;
+    let other = req.other;
+    if(user&&other){
+        user["usersFollowing"].push(other._id);
+        other["followers"].push(user._id);
+    }
+    user.save(function(err){
+        if(err) throw err;
+        console.log("updated user following list");
+        res.redirect(`/users/${other._id}`);
+    })
+}
+
+const unfollowUser=async(req,res,next) =>{
+    let user = req.user;
+    let other = req.other;
+    let from = req.body.from;
+    if(user&&other){
+        user["usersFollowing"].pull({_id: other._id});
+        other["followers"].pull({_id: user._id});
+        console.log(user["usersFollowing"]);
+    }
+    user.save(function(err){
+        if (err) throw err;
+        if(from === "profile"){
+            res.redirect("/myProfile");
+        }else{
+            res.redirect(`/users/${other._id}`)
+        }
+    })
+}
+
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
@@ -191,7 +241,15 @@ function checkLogin (req,res,next){
     next();
 }
 
-router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
-router.get('/:id/',checkLogin, getUser, loadUser, sendUser);
+const getUserAndOther = async (req,res,next)=>{
+    req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
+    req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
+    next();
+}
 
+router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
+router.get('/:id/',checkLogin, getUser, checkLogin, loadUser, sendUser);
+router.post('/followUser/:id',checkLogin,getUserAndOther,followUser);
+router.post('/unfollowUser/:id',checkLogin,getUserAndOther,unfollowUser);
+router.post('/accountType/:id',checkLogin,changeAccountType);
 module.exports = router;

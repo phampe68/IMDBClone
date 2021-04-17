@@ -20,11 +20,11 @@ html
 
             if !following
                 div(id="follow")
-                    form(action=`/followUser/${user._id}`, method='POST')
+                    form(action=`/users/followUser/${user._id}`, method='POST')
                         button.btn.btn-primary.mt-2.ms-3(type="submit") Follow
             else
                 div(id="unfollow")
-                    form(action=`/unfollowUser/${user._id}`, method='POST')
+                    form(action=`/users/unfollowUser/${user._id}`, method='POST')
                         button.btn.btn-danger.mt-2.ms-3(name="from" value="other" type="submit") Unfollow
 
             div.mt-5(id="PersonFollowDiv")
@@ -47,4 +47,4 @@ html
                 ul.list-group
                     each review in reviews
                         li.list-group-item
-                            a(href=`/reviews/${review.id}`) #{review.summaryText}
+                            a(href=`/movies/${review.movie}/reviews/${review.id}`) #{review.summaryText}

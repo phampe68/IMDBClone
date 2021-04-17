@@ -13,10 +13,10 @@ html
         div#personNameSection.container.mt-5
             h1.mb-3 #{person.name}
             if !following
-                form(action=`/followPerson/${person._id}`, method='POST')
+                form(action=`/people/followPerson/${person._id}`, method='POST')
                     button.btn.btn-outline-primary.mb-5(name="from" value="other" type="submit") Follow
             else
-                form(action=`/unfollowPerson/${person._id}`, method='POST')
+                form(action=`/people/unfollowPerson/${person._id}`, method='POST')
                     button.btn.btn-outline-danger.mb-2(name="from" value="other" type="submit") Unfollow
 
         div#personCollaborators.container.mb-3

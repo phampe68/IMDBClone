@@ -35,7 +35,7 @@ html
                 ul.list-group
                     each person in peopleFollowing
                         li.list-group-item
-                            form(action=`/unfollowPerson/${person._id}`, method='POST')
+                            form(action=`/people/unfollowPerson/${person._id}`, method='POST')
                                 button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/people/${person._id}`) #{person.name}
             if peopleFollowing.length === 0
@@ -48,7 +48,7 @@ html
                 ul.list-group
                     each user in usersFollowing
                         li.list-group-item
-                            form(action=`/unfollowUser/${user._id}`, method='POST')
+                            form(action=`/users/unfollowUser/${user._id}`, method='POST')
                                 button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
                                 a(href=`/users/${user._id}`) #{user.username}
             if usersFollowing.length === 0
@@ -86,7 +86,7 @@ html
                     each notif in notifications
                         li.list-group-item
                             button.btn.btn-danger.me-2 Delete
-                            a.btn.btn-info.me-2(href=`/${notif.type}s/${notif.relatedID}`) View
+                            a.btn.btn-info.me-2(href=`/${notif["link"]}`) View
                             p.ms-2(style={display: "inline-block"}) #{notif.text}
 
             if notifications.length === 0

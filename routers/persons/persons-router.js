@@ -126,6 +126,64 @@ const sendPerson = (req, res, next) => {
     })
 }
 
+
+const addPerson = async (req,res,next) => {
+    let name = req.body.personName;
+    console.log(name);
+    let person;
+    person = await Person.findOne({name:name});
+    if(!person){
+        let newPerson = new Person;
+        newPerson.name = name;
+        newPerson.save(function (err) {
+            if(err) throw err;
+            console.log("Saved new person");
+        })
+    }
+}
+
+const followPerson = async (req,res,next)=>{
+    let user = req.user;
+    let other = req.other;
+
+    if (!user) {
+        console.log("Couldn't find user");
+        res.redirect("back");
+        return;
+    }
+    if(user&&other){
+        user["peopleFollowing"].push(other._id);
+        other["followers"].push(user._id);
+    }
+    user.save(function(err){
+        if(err){
+            res.send(err);
+        }
+        console.log("updated person following list");
+        res.redirect(`/people/${other._id}`);
+    })
+}
+
+const unfollowPerson = async (req,res,next)=>{
+    let user = req.user;
+    let other = req.other;
+    let from = req.body.from;
+
+    if(user&&other){
+        user["peopleFollowing"].pull({_id: other._id});
+        other["followers"].pull({_id: user._id});
+        console.log(user["peopleFollowing"]);
+    }
+    user.save(function(err){
+        if (err) throw err;
+        if(from === "profile"){
+            res.redirect("/myProfile");
+        }else{
+            res.redirect(`/people/${other._id}`)
+        }
+    })
+}
+
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
@@ -134,10 +192,18 @@ function checkLogin (req,res,next){
     next();
 }
 
+const getUserAndOther = async (req,res,next)=>{
+    req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
+    req.other = await Person.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
+    next();
+}
+
 //specify handlers:
 router.get('/:id', [checkLogin, getPerson, loadPerson, sendPerson]);
 router.get('/?', queryParser);
 router.get('/?', searchPeople);
-
+router.post('/followPerson/:id',checkLogin,getUserAndOther,followPerson);
+router.post('/unfollowPerson/:id',checkLogin,getUserAndOther,unfollowPerson);
+router.post('/addPerson',checkLogin,addPerson);
 
 module.exports = router;
