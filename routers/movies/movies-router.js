@@ -177,23 +177,19 @@ const loadMovies = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
 
     let movie = req.movie;
+    let similarMovieIDs = movie.similarMovies;
+    let currUser, actors, directors, writers, reviews, relatedMovies;
 
-    let currUser, actors, directors, writers, reviews, similarMovies, relatedMovies;
+
 
     currUser = await User.findOne({'_id': currUserId});
     actors = await Person.find({'_id': {$in: movie.actor}});
     directors = await Person.find({'_id': {$in: movie.director}});
     writers = await Person.find({'_id': {$in: movie.writer}});
     reviews = await Review.find({'_id': {$in: movie.reviews}}).limit(5);
+    relatedMovies = await Movie.find({'_id': {$in: similarMovieIDs}});
 
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
-
-    await getSimilarMovies(req.movie, 10).then(simMovies => {
-        console.log(simMovies);
-        similarMovies = simMovies;
-    })
-
-    relatedMovies = await Movie.find({'_id': {$in: similarMovies}});
 
     //generate template with found data
     req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
