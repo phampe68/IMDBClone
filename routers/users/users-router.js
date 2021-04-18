@@ -69,24 +69,24 @@ const loadUser = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let user = req.user;
 
-    let peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews, recommendedMovieIDs;
-
+    let recommendedMovieIDs = [];
     await getRecommendedMovies(user, req.session.viewedMovies).then(movieIDs => {
         recommendedMovieIDs = movieIDs;
     })
+    const [peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews]
+            = await Promise.all([
+            Person.find({'_id': {$in: user.peopleFollowing}}),
+            User.find({'_id': {$in: user.usersFollowing}}),
+            Movie.find({'_id': {$in: user.moviesWatched}}),
+            Movie.find({'_id': {$in: recommendedMovieIDs}}),
+            Notification.find({'_id': {$in: user.notifications}}),
+            Review.find({'_id': {$in: user.reviews}}),
+        ])
+    ;
 
 
-    //get all relevant data to render page
-    try {
-        peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});
-        usersFollowing = await User.find({'_id': {$in: user.usersFollowing}});
-        moviesWatched = await Movie.find({'_id': {$in: user.moviesWatched}});
-        recommendedMovies = await Movie.find({'_id': {$in: recommendedMovieIDs}}) // change this
-        notifications = await Notification.find({'_id': {$in: user.notifications}});
-        reviews = await Review.find({'_id': {$in: user.reviews}})
-    } catch (err) {
-        res.status(404).send("Error loading user");
-    }
+
+
     // load options common for both types of users (logged in, or other)
     console.log("Notifications:");
     console.log(notifications);

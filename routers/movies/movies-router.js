@@ -8,7 +8,6 @@ const Review = require('../../database/data-models/review-model.js');
 const User = require("../../database/data-models/user-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
-
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
 router.use(express.urlencoded({extended:true}));
@@ -92,10 +91,19 @@ const searchMovie = async (req, res, next) => {
     let offset = limit * (page - 1);
 
 
-    req.searchResults = await Movie.find(query).skip(offset).limit(limit).catch(err => {
+    let searchResults = await Movie.find(query).skip(offset).limit(limit).catch(err => {
         console.log(err);
         res.status(404).send("Couldn't find search results.");
     });
+
+    req.searchResults = searchResults.map(movie => {
+        return (
+            {
+                "_id": movie._id,
+                "title": movie.title
+            })
+    })
+
     let count = await Movie.find(query).count().catch(err => {
         console.log(err);
         res.status(404).send("Couldn't find search results.");
@@ -184,8 +192,14 @@ const loadMovies = async (req, res, next) => {
 
     let movie = req.movie;
     let similarMovieIDs = movie.similarMovies;
-    let currUser, actors, directors, writers, reviews, relatedMovies;
-
+    let [currUser, actors, directors, writers, reviews, relatedMovies] = await Promise.all([
+        User.findOne({'_id': currUserId}),
+        Person.find({'_id': {$in: movie.actor}}),
+        Person.find({'_id': {$in: movie.director}}),
+        Person.find({'_id': {$in: movie.writer}}),
+        Review.find({'_id': {$in: movie.reviews}}).limit(5),
+        Movie.find({'_id': {$in: similarMovieIDs}})]
+    );
 
 
     currUser = await User.findOne({'_id': currUserId});
@@ -197,11 +211,11 @@ const loadMovies = async (req, res, next) => {
 
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
     let i;
-    let total=0;
-    for(i in reviews){
+    let total = 0;
+    for (i in reviews) {
         total += reviews[i].score;
     }
-    movie.averageRating = total/(Number(i)+1);
+    movie.averageRating = total / (Number(i) + 1);
 
     //generate template with found data
     req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
@@ -279,6 +293,7 @@ const addMovie = async (req,res,next) =>{
         if(err) throw err;
         console.log("Saved new movie.");
         res.status(200);
+        res.send(movie);
         res.redirect("back");
     })
 }

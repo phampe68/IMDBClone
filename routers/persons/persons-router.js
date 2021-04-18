@@ -55,11 +55,19 @@ const searchPeople = (req, res, next) => {
     Person.find(query).limit(limit).exec((err, results) => {
         if (results === undefined)
             results = [];
-        res.send(results);
+        req.peopleFound = results.map(person => person.name);
+        next();
     });
 }
 
+const sendSearchResults = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.peopleFound);
+        },
 
+    })
+}
 /**
  * Gets a single person object by its ID
  */
@@ -93,13 +101,13 @@ const loadPerson = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let collaboratorIDs = person.frequentCollaborators;
 
-    let currUser, moviesWritten, moviesDirected, moviesActed, collaborators;
-
-    currUser = await User.findOne({'_id': currUserId});
-    moviesWritten = await Movie.find({'_id': {$in: person.writerFor}});
-    moviesDirected = await Movie.find({'_id': {$in: person.directorFor}});
-    moviesActed = await Movie.find({'_id': {$in: person.actorFor}});
-    collaborators = await Person.find({'_id': {$in: collaboratorIDs}});
+    let [currUser, moviesWritten, moviesDirected, moviesActed, collaborators] = await Promise.all([
+        User.findOne({'_id': currUserId}),
+        Movie.find({'_id': {$in: person.writerFor}}),
+        Movie.find({'_id': {$in: person.directorFor}}),
+        Movie.find({'_id': {$in: person.actorFor}}),
+        Person.find({'_id': {$in: collaboratorIDs}})
+    ])
 
     let following = currUser['peopleFollowing'].includes(person._id) === true;
 
@@ -206,7 +214,7 @@ const getUserAndOther = async (req,res,next)=>{
 //specify handlers:
 router.get('/:id', [checkLogin, getPerson, loadPerson, sendPerson]);
 router.get('/?', queryParser);
-router.get('/?', searchPeople);
+router.get('/?', [searchPeople, sendSearchResults]);
 router.post('/followPerson/:id',checkLogin,getUserAndOther,followPerson);
 router.post('/unfollowPerson/:id',checkLogin,getUserAndOther,unfollowPerson);
 router.post('/addPerson',checkLogin,addPerson);
