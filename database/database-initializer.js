@@ -17,7 +17,6 @@ const User = require('../database/data-models/user-model.js');
 let allMovies = [];
 let allPersons = [];
 
-
 /**
  * Creates a new person with personName and default values if the person isn't in the allPersons collection
  * - Updates references to that person in movie object (ex: if the person wrote the movie, add their id to the movie obj)
@@ -141,7 +140,6 @@ const initializeDB = async () => {
     })
 
 
-
     let exampleUser1 = new User({
         username: "exampleUser1",
         password: "password",
@@ -182,6 +180,7 @@ const initializeDB = async () => {
     console.log("Finished.");
     process.exit(0);
 }
+
 
 initializeDB();
 

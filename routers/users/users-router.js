@@ -252,6 +252,17 @@ const unfollowUser=async(req,res,next) =>{
     })
 }
 
+const deleteNotification = async (req,res,next)=>{
+    let user,notification;
+    user = await User.findOne({_id:req.session.userId});
+    notification = await Notification.findOne({_id:req.params.id});
+    user["notifications"].pull(notification.id);
+    user.save(function(err){
+        if(err) throw err;
+        res.redirect("/myProfile");
+    })
+}
+
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
@@ -276,7 +287,7 @@ const setToFalse = (req,res,next)=>{
     next();
 }
 
-
+router.post('/deleteNotification/:id',checkLogin,deleteNotification);
 router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/',checkLogin, getUser, checkLogin, loadUser, sendUser);
 router.post('/followUser/:id',checkLogin,getUserAndOther,followUser);

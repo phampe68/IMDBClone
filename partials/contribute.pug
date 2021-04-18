@@ -14,7 +14,9 @@ html
     body
         include ./navbar.pug
 
+
         div.container
+
             h1.display-5.mt-3 Contribute:
             hr
             form(action="/people/addPerson" method="POST")
@@ -23,28 +25,41 @@ html
                 input.form-control.mb-3(type="text" id="inputActorName" name="personName")
 
                 button.btn.btn-outline-primary.mt-3(type="submit") Add Person
-            form.mt-5
+            div.mt-5
+                br
                 h2 Add a Movie:
+                    input.form-control.mb-3(list="writersAutoList" placeholder="Writer Name" aria-label="Search" onkeypress="personSelectKeyPress(1)" autocomplete="off")#writerNameSearch
+                    datalist#writersAutoList
+                    button.btn.btn-outline-primary.btn.mt-3(onclick=`addItem("writer")`) Add Writer To Movie
 
-                label.form-label.text-white(for="inputTitle") Title
-                input.form-control.mb-3(type="text" name="title" id="inputTitle")
+                    br
+                    input.form-control.mb-3(list="directorsAutoList" placeholder="Director Name" aria-label="Search" onkeypress="personSelectKeyPress(2)" autocomplete="off")#directorNameSearch
+                    datalist#directorsAutoList
+                    button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('director')") Add Director To Movie
+                    br
+                    input.form-control.mb-3( list="actorAutoList" placeholder="Actor Name" aria-label="Search" onkeypress="personSelectKeyPress(3)" autocomplete="off")#actorNameSearch
+                    datalist#actorAutoList
+                    button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('actor')") Add Actor To Movie
 
-                label.form-label.text-white(for="inputRuntime") Runtime
-                input.form-control.mb-3(type="text" name="runtime" id="inputRuntime")
+            div.mt-5
+                form.mt-5(action="/movies/addMovie" method="POST")
+                    label.form-label.text-white(for="inputTitle") Title
+                    input.form-control.mb-3(type="text" name="title" id="inputTitle")
 
-                label.form-label.text-white(for="inputReleaseYear") Release Year
-                input.form-control.mb-3(type="text" name="releaseYear" id="inputReleaseYear")
+                    label.form-label.text-white(for="inputRuntime") Runtime
+                    input.form-control.mb-3(type="text" name="runtime" id="inputRuntime")
 
-                label.form-label.text-white(for="writersAutoList") Writers
-                input.form-control.mb-3(list="writersAutoList" type="search" placeholder="Writer Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(1)" autocomplete="off")#writerNameSearch
-                datalist#writersAutoList
+                    label.form-label.text-white(for="inputReleaseYear") Release Year
+                    input.form-control.mb-3(type="text" name="releaseYear" id="inputReleaseYear")
 
-                label.form-label.text-white(for="directorsAutoList") Directors
-                input.form-control.mb-3(list="directorsAutoList" type="search" placeholder="Director Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(2)" autocomplete="off")#directorNameSearch
-                datalist#directorsAutoList
+                    label.form-label.text-white(for="inputGenre") Genre
+                    input.form-control.mb-3(type="text" name="inputGenre" id="inputGenre")
 
-                label.form-label.text-white(for="actorAutoList") Actors
-                input.form-control.mb-3(list="actorAutoList" type="search" placeholder="Actor Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(3)" autocomplete="off")#actorNameSearch
-                datalist#actorAutoList
+                    h3 Writers
+                        ul.list-group(id="writerList" class="wList" style={color:"black"})
+                    h3 Directors
+                        ul.list-group(id="directorList" class="dList" style={color:"black"})
+                    h1 Actors
+                        ul.list-group(id="actorList" class="aList" style={color:"black"})
 
-                button.btn.btn-outline-primary.btn.mt-3(onClick=sendMovieData) Add Movie
+                    button.btn.btn-outline-primary.btn.mt-3(type="submit") Add Movie

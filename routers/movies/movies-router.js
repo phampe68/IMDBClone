@@ -8,8 +8,10 @@ const Review = require('../../database/data-models/review-model.js');
 const User = require("../../database/data-models/user-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
+
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
+router.use(express.urlencoded({extended:true}));
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
@@ -244,26 +246,39 @@ const sendMovie = (req, res, next) => {
 const addMovie = async (req,res,next) =>{
     console.log("addMovie request body");
     console.log(req.body);
-    let title = req.body.title;
-    let runtime = req.body.runtime;
-    let releaseYear = req.body.releaseYear;
-    let writers = req.body.writer;
-    let directors = req.body.director;
-    let actors = req.body.actor;
+
+    let writerNames = [req.body.writerName];
+    let directorNames = [req.body.directorName];
+    let actorNames = [req.body.actorName];
 
     let movie = new Movie();
-    movie.title = title;
-    movie.runtime = runtime;
-    movie.year = releaseYear;
-    movie.writers = writers;
-    movie.directors = directors;
-    movie.actors = actors;
 
-    Movie.save(movie,(err)=>{
+    movie.title = req.body.title;
+    movie.runtime = req.body.runtime;
+    movie.year = req.body.releaseYear;
+
+    for(let i in directorNames){
+        await addPersonToMovie(directorNames[i], movie, "directorFor");
+    }
+
+    for(let i in writerNames){
+        await addPersonToMovie(writerNames[i], movie, "writerFor");
+    }
+
+    for(let i in directorNames){
+        await addPersonToMovie(actorNames[i], movie, "actorFor");
+    }
+
+    movie.plot = "";
+    movie.averageRating = 0;
+    await getSimilarMovies(movie).then(similarMovies =>{
+        movie.similarMovies = similarMovies;
+    })
+
+    movie.save(function(err){
         if(err) throw err;
         console.log("Saved new movie.");
         res.status(200);
-        res.send(movie);
         res.redirect("back");
     })
 }
@@ -277,7 +292,7 @@ const watchMovie = async (req,res,next) => {
     user.save(function(err){
         if(err) throw err;
         console.log("updated watched movies list");
-        res.redirect(`/movies/${otherId}`);
+        res.redirect(`/movies/${other._id}`);
     })
 }
 
@@ -295,9 +310,23 @@ const unwatchMovie = async (req,res,next) => {
         if (from === "profile") {
             res.redirect("/myProfile");
         } else {
-            res.redirect(`/movies/${otherId}`)
+            res.redirect(`/movies/${other._id}`)
         }
     })
+}
+
+const getPersonByName = async (name) => {
+    return Person.findOne(
+        {
+            username: {$regex: `.*${name}.*`, $options: 'i'}
+        }
+    ).exec().then((result) => {
+        //console.log(`User found: ${result}`);
+        return result;
+    }).catch((err) => {
+        //console.log(`Error finding user by name: ${err}`);
+        return `Error finding user by name: ${err}`;
+    });
 }
 
 function checkLogin (req,res,next){
@@ -312,6 +341,50 @@ const getUserAndOther = async (req,res,next)=>{
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await Movie.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
+}
+
+/**
+ * Creates a new person with personName and default values if the person isn't in the allPersons collection
+ * - Updates references to that person in movie object (ex: if the person wrote the movie, add their id to the movie obj)
+ * - update reference to movie associated with person  (i.e. if the person wrote the movie, also add the movie to the person obj)
+ * @param personName: name of person to add
+ * @param movie: movie object to update with related person
+ * @param position: role person had in movie (i.e. writer, director, actor)
+ */
+const addPersonToMovie = async (personName, movie, position) => {
+    await getPersonByName(personName).then(currPerson=>{
+        console.log(currPerson);
+        if (!currPerson) {
+            console.log(`New person's name: ${personName}`)
+            let newPerson = new Person();
+            newPerson._id = mongoose.Types.ObjectId();
+            newPerson.name = personName;
+            newPerson.writerFor = [];
+            newPerson.actorFor = [];
+            newPerson.directorFor = [];
+            newPerson.frequentCollaborators = [];
+            newPerson.numFollowers = 0;
+            currPerson = newPerson;
+            console.log("new person added");
+        }
+
+
+        let positionMap = {
+            "writerFor": "writer",
+            "actorFor": "actor",
+            "directorFor": "director"
+        }
+
+        console.log(currPerson);
+        currPerson[position].push(movie._id);
+        console.log()
+        movie[positionMap[position]].push(currPerson._id);
+
+        currPerson.save(function(err){
+            if(err)throw err;
+        })
+    });
+
 }
 
 //specify handlers:

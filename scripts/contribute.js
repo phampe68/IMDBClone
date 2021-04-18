@@ -1,3 +1,7 @@
+let actors = [];
+let writers = [];
+let directors = [];
+
 const personSelectKeyPress = (i) => {
     let enteredText;
     if(i===1){
@@ -45,23 +49,68 @@ const personSelectKeyPress = (i) => {
     req.send();
 }
 
-const sendMovieData = () => {
-    let title = document.getElementById(inputTitle).value;
-    let runtime = document.getElementById(inputRuntime).value;
-    let releaseYear = document.getElementById(inputReleaseYear).value;
-    let writer = document.getElementById(writerNameSearch).value;
-    let director = document.getElementById(directorNameSearch).value;
-    let actor = document.getElementById(actorNameSearch).value;
-
-    let req = new XMLHttpRequest();
-    console.log("sending data");
-    req.onreadystatechange = () => {
-        if (req.readyState === 4 && req.status === 200) {
-            console.log(JSON.parse(req.response));
-        }
+function addItem(type){
+    console.log(`adding ${type}`);
+    let list;
+    if(type==="writer"){
+        list = writers;
     }
-    req.open("POST","/movies/addMovie");
-    req.send(JSON.stringify({
-        title,runtime,releaseYear,writer,director,actor
-    }))
+    else if(type==="director"){
+        list = directors;
+    }
+    else{
+        list = actors;
+    }
+    let text = document.getElementById(`${type}NameSearch`).value;
+    if(text.length===0){
+        return;
+    }
+    document.getElementById(`${type}NameSearch`).value ="";
+
+    list.push(text);
+
+    update(type);
+}
+
+function makeWriterListItem(type,x){
+    console.log(`making ${type} list item`);
+    let list;
+    if(type==="writer"){
+        list = writers;
+    }
+    else if(type==="director"){
+        list = directors;
+    }
+    else{
+        list = actors;
+    }
+    let listItem = document.createElement("li");
+    listItem.className = `${type}List`;
+    let input = document.createElement('input');
+    input.type = "text";
+    input.name = `${type}Name`;
+    input.style.color = "black";
+    console.log(list[x]);
+    input.value = list[x];
+    listItem.appendChild(input);
+    return listItem;
+}
+
+function update(type){
+    console.log(`updating ${type} list`);
+    let list;
+    if(type==="writer"){
+        list = writers;
+    }
+    else if(type==="director"){
+        list = directors;
+    }
+    else{
+        list = actors;
+    }
+    document.getElementById(`${type}List`).innerHTML = "";
+    for (let x = 0; x < list.length; x++) {
+        let listItem = makeWriterListItem(type,x);
+        document.getElementById(`${type}List`).appendChild(listItem);
+    }
 }

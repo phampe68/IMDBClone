@@ -6,7 +6,7 @@ window.onload = () => {
 }
 
 const actorSelectKeyPress = () => {
-    let enteredText = document.getElementById('actorNameSearch').value;
+    let enteredText = document.getElementById('actorSearch').value;
     //make request to find actors with name:
     let req = new XMLHttpRequest();
 
