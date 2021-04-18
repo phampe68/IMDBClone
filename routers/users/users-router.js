@@ -31,7 +31,6 @@ router.use(session({
 }))
 
 
-
 /**
  * Gets user by id in request
  */
@@ -59,7 +58,6 @@ const getUser = (req, res, next) => {
 }
 
 
-
 /**
  * use ids in user obj to find relevant data to render the page:
  * - if the user we're loading has a differnet ID than the logged in user, make sure to store that info
@@ -69,24 +67,24 @@ const loadUser = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let user = req.user;
 
-    let peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews, recommendedMovieIDs;
-
+    let recommendedMovieIDs = [];
     await getRecommendedMovies(user, req.session.viewedMovies).then(movieIDs => {
         recommendedMovieIDs = movieIDs;
     })
+    const [peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews]
+            = await Promise.all([
+            Person.find({'_id': {$in: user.peopleFollowing}}),
+            User.find({'_id': {$in: user.usersFollowing}}),
+            Movie.find({'_id': {$in: user.moviesWatched}}),
+            Movie.find({'_id': {$in: recommendedMovieIDs}}),
+            Notification.find({'_id': {$in: user.notifications}}),
+            Review.find({'_id': {$in: user.reviews}}),
+        ])
+    ;
 
 
-    //get all relevant data to render page
-    try {
-        peopleFollowing = await Person.find({'_id': {$in: user.peopleFollowing}});
-        usersFollowing = await User.find({'_id': {$in: user.usersFollowing}});
-        moviesWatched = await Movie.find({'_id': {$in: user.moviesWatched}});
-        recommendedMovies = await Movie.find({'_id': {$in: recommendedMovieIDs}}) // change this
-        notifications = await Notification.find({'_id': {$in: user.notifications}});
-        reviews = await Review.find({'_id': {$in: user.reviews}})
-    } catch (err) {
-        res.status(404).send("Error loading user");
-    }
+
+
     // load options common for both types of users (logged in, or other)
     console.log("Notifications:");
     console.log(notifications);
@@ -195,7 +193,7 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
-const changeAccountType = async (req,res,next)=>{
+const changeAccountType = async (req, res, next) => {
     let id = mongoose.Types.ObjectId(req.session.userId);
     let user;
 
@@ -203,57 +201,57 @@ const changeAccountType = async (req,res,next)=>{
 
     user.contributor = req.contributor;
 
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         console.log("updated account type")
         console.log(req.body);
         res.redirect("/myProfile");
     })
 }
 
-const followUser=async(req,res,next) =>{
+const followUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
-    if(user&&other){
+    if (user && other) {
         user["usersFollowing"].push(other._id);
         other["followers"].push(user._id);
     }
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
     })
-    other.save(function(err){
-        if(err) throw err;
+    other.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
         res.redirect(`/users/${other._id}`);
     })
 }
 
-const unfollowUser=async(req,res,next) =>{
+const unfollowUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
     let from = req.body.from;
-    if(user&&other){
+    if (user && other) {
         user["usersFollowing"].pull({_id: other._id});
         other["followers"].pull({_id: user._id});
         console.log(user["usersFollowing"]);
     }
-    user.save(function(err){
+    user.save(function (err) {
         if (err) throw err;
     })
-    other.save(function(err){
-        if(err) throw err;
+    other.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
-        if(from === "profile"){
+        if (from === "profile") {
             res.redirect("/myProfile");
-        }else{
+        } else {
             res.redirect(`/users/${other._id}`)
         }
     })
 }
 
-function checkLogin (req,res,next){
-    if(!req.session.userId){
+function checkLogin(req, res, next) {
+    if (!req.session.userId) {
         console.log("checking");
         res.redirect("/loginPage");
         return;
@@ -261,27 +259,27 @@ function checkLogin (req,res,next){
     next();
 }
 
-const getUserAndOther = async (req,res,next)=>{
+const getUserAndOther = async (req, res, next) => {
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
 }
 
-const setToTrue = (req,res,next)=>{
+const setToTrue = (req, res, next) => {
     req.contributor = true;
     next();
 }
 
-const setToFalse = (req,res,next)=>{
+const setToFalse = (req, res, next) => {
     req.contributor = false;
     next();
 }
 
 
-router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
-router.get('/:id/',checkLogin, getUser, checkLogin, loadUser, sendUser);
-router.post('/followUser/:id',checkLogin,getUserAndOther,followUser);
-router.post('/unfollowUser/:id',checkLogin,getUserAndOther,unfollowUser);
-router.post('/accountType/true/:id',checkLogin,setToTrue,changeAccountType);
-router.post('/accountType/false/:id',checkLogin,setToFalse,changeAccountType);
+router.get('/:id/notifications/', checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
+router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
+router.post('/followUser/:id', checkLogin, getUserAndOther, followUser);
+router.post('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);
+router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
+router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 module.exports = router;
