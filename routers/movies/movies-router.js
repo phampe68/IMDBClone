@@ -110,10 +110,12 @@ const searchMovie = async (req, res, next) => {
     });
 
     //make sure user can only navigate to next if there are more results
-    if (count <= DEFAULT_LIMIT)
-        req.nextURL = `/movies?${req.queryString}&page=${page - 1}`;
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/movies?${req.queryString}&page=${page}`;
     else
         req.nextURL = `/movies?${req.queryString}&page=${page + 1}`;
+
 
     next();
 }

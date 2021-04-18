@@ -154,7 +154,7 @@ const notificationsPageParser = (req, res, next) => {
 /**
  * Gets all the reviews associated with movieID in URL
  */
-const getNotifications = (req, res, next) => {
+const getNotifications = async (req, res, next) => {
     let urlParts = req.originalUrl.split('/');
     let userID = urlParts[urlParts.indexOf('users') + 1];
 
@@ -162,17 +162,24 @@ const getNotifications = (req, res, next) => {
     let page = req.query.page;
     let offset = limit * (page - 1);
 
-    Notification.find({
+    let notifs = await Notification.find({
         user: userID
-    }).limit(limit).skip(offset).exec((err, notifs) => {
-        if (err) {
-            console.log(err);
-            res.status(404).send("Couldn't find notifications." + err);
-        }
-        req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page + 1}`;
-        req.notifs = notifs;
-        next();
+    }).limit(limit).skip(offset).catch(err => {
+        res.status(404).send("Couldn't find notification.");
     });
+
+    let count = await Notification.find({user:userID}).count();
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page}`;
+    else
+        req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page + 1}`;
+
+
+    req.notifs = notifs;
+    next();
+
+
 }
 
 const sendNotificationsPage = (req, res, next) => {

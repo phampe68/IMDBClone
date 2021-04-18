@@ -10,7 +10,8 @@ const Review = require('../../database/data-models/review-model.js');
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {})
+db.once('open', () => {
+})
 
 let router = express.Router();
 
@@ -41,20 +42,34 @@ const getReview = (req, res, next) => {
     })
 }
 
-
+const MAX_ITEMS = 50;
+const DEFAULT_LIMIT = 10;
 
 const reviewsPageParser = (req, res, next) => {
+    //parse limit param
+    try {
+        if (req.query.hasOwnProperty("limit")) {
+            let limit = Number(req.query.limit);
+            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
+        } else {
+            req.query.limit = DEFAULT_LIMIT;
+        }
+    } catch {
+        req.query.limit = DEFAULT_LIMIT;
+    }
+
     //parse page param
     try {
         if (req.query.hasOwnProperty("page")) {
             let page = Number(req.query.page);
-            req.query.page = (page > 1) ? page : 1; // if page <= 1, set to 1, o.w. set to page
+            req.query.page = (page > 1) ? page : 1;
         } else {
             req.query.page = 1;
         }
     } catch {
         req.query.page = 1;
     }
+
 
     //save the query string
     let queryString = "";
@@ -70,7 +85,7 @@ const reviewsPageParser = (req, res, next) => {
 /**
  * Gets all the reviews associated with movieID in URL
  */
-const getReviews = (req, res, next) => {
+const getReviews = async (req, res, next) => {
     let urlParts = req.originalUrl.split('/');
     let movieID = urlParts[urlParts.indexOf('movies') + 1];
 
@@ -78,29 +93,27 @@ const getReviews = (req, res, next) => {
     let page = req.query.page;
     let offset = limit * (page - 1);
 
-    Review.find({
-        movie: movieID
-    }).limit(limit).skip(offset).exec((err, reviews) => {
-        if (err) {
-            console.log(err);
-            res.status(404).send("Couldn't find review." + err);
-        }
 
+    let reviews = await Review.find({movie: movieID}).limit(limit).skip(offset);
+    let count = await Review.find({movie: movieID}).count();
 
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/movies/${movieID}/reviews?${req.queryString}&page=${page}`;
+    else
         req.nextURL = `/movies/${movieID}/reviews?${req.queryString}&page=${page + 1}`;
-        req.reviews = reviews;
-        next();
-    });
+
+    req.reviews = reviews;
+    next();
 
 }
 const sendReviewPage = (req, res, next) => {
-    console.log(req.nextURL);
+    //console.log(req.nextURL);
     res.format({
         "application/json": () => {
             res.status(200).json(req.reviews);
         },
         "text/html": () => {
-            console.log(req.reviews);
             let data = pug.renderFile("./partials/reviewPage.pug", {
                 reviews: req.reviews,
                 nextURL: req.nextURL
@@ -113,10 +126,12 @@ const sendReviewPage = (req, res, next) => {
 const addReview = async (req, res, next) => {
     let review = new Review();
     let score;
-    if(req.query.hasOwnProperty("score")){
+    if (req.query.hasOwnProperty("score")) {
         score = Number(req.query.score);
-    }else{req.redirect("back");}
-    if(!score){
+    } else {
+        req.redirect("back");
+    }
+    if (!score) {
         req.redirect("back");
     }
 
@@ -140,19 +155,21 @@ const addReview = async (req, res, next) => {
 
 
     let notification = new Notification();
-    notification.text = user["username"]+" posted a review of " + req.other["title"];
+    notification.text = user["username"] + " posted a review of " + req.other["title"];
     notification.link = `/movies/${req.other._id}/reviews/${review._id}`;
 
     let followers;
     followers = await User.find({'_id': {$in: user.followers}});
     let x;
-    for (x in followers){
+    for (x in followers) {
         console.log("Before:");
         console.log(followers[x]);
         followers[x]["notifications"].push(notification._id);
         console.log("After:");
         console.log(followers[x]);
-        await followers[x].save(function(err){if(err)throw err;})
+        await followers[x].save(function (err) {
+            if (err) throw err;
+        })
     }
 
     await notification.save(function (err) {
@@ -182,43 +199,45 @@ const addReview = async (req, res, next) => {
     res.redirect(`/movies/${req.query.id}`);
 }
 
-function checkLogin (req,res,next){
-    if(!req.session.userId){
+function checkLogin(req, res, next) {
+    if (!req.session.userId) {
         console.log("checking")
         res.redirect("/loginPage");
     }
     next();
 }
 
-const getUserAndOther = async (req,res,next)=>{
-    if(req.query.hasOwnProperty("id")){
+const getUserAndOther = async (req, res, next) => {
+    if (req.query.hasOwnProperty("id")) {
         req.other = await Movie.findOne({'_id': mongoose.Types.ObjectId(req.query.id)});
     }
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     next();
 }
 
-function calcAverage(req){
+function calcAverage(req) {
     let total
-    if(req.score){
+    if (req.score) {
         total = req.score;
     }
     let i;
-    Review.find({'_id': {$in: req.other.reviews}}).exec((err,reviews)=>{
-        for(i in reviews){
+    Review.find({'_id': {$in: req.other.reviews}}).exec((err, reviews) => {
+        for (i in reviews) {
             total += reviews[i].score;
-            console.log(`Rating #${i+1}: ${reviews[i].score}`);
+            console.log(`Rating #${i + 1}: ${reviews[i].score}`);
         }
-        if(total){
-            req.other.averageRating = total/(Number(i)+1);
-        }else{req.other.averageRating = 0}
+        if (total) {
+            req.other.averageRating = total / (Number(i) + 1);
+        } else {
+            req.other.averageRating = 0
+        }
         console.log("Average Rating:");
         console.log(req.other.averageRating);
     })
 }
 
 
-router.post('/addReview?',checkLogin,getUserAndOther,addReview);
-router.get('/:id', checkLogin,getReview);
-router.get('/', [checkLogin,reviewsPageParser, getReviews, sendReviewPage]);
+router.post('/addReview?', checkLogin, getUserAndOther, addReview);
+router.get('/:id', checkLogin, getReview);
+router.get('/', [checkLogin, reviewsPageParser, getReviews, sendReviewPage]);
 module.exports = router;
