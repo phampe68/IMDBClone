@@ -12,10 +12,8 @@ let getRecommendedMovies = async (user, viewedMovies) => {
     let reviews = await Review.find({
         author: user._id,
         score: {"$gte": 7}
-    });
+    }).limit(5);
 
-    console.log(user._id);
-    console.log(reviews);
     //STEP 2: get 2 similar movies for each highly rated movie
     for (const review of reviews) {
         let movie = await Movie.findById(review.movie);
@@ -27,13 +25,18 @@ let getRecommendedMovies = async (user, viewedMovies) => {
 
     if (viewedMovies) {
         //STEP 3: find similar movies to previously viewed movies
-        for (const movieID of viewedMovies) {
+        for (let i = 0;  i < viewedMovies.length; i++){
+            const movieID = viewedMovies[i];
             let movie = await Movie.findById(movieID);
 
             await getSimilarMovies(movie, 4).then(similarMovies => {
                 recommendedMovies = recommendedMovies.concat(similarMovies);
             })
+
+            if (i === 4)
+                break;
         }
+
     }
 
 

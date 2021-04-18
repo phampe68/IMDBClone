@@ -254,8 +254,9 @@ const unfollowUser=async(req,res,next) =>{
 
 function checkLogin (req,res,next){
     if(!req.session.userId){
-        console.log("checking")
+        console.log("checking");
         res.redirect("/loginPage");
+        return;
     }
     next();
 }
