@@ -10,7 +10,7 @@ const express = require('express');
 
 const session = require('express-session');
 let router = express.Router();
-
+router.use(express.urlencoded({extended:true}));
 router.use(express.static("public"));
 router.use(express.json());
 

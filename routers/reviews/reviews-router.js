@@ -14,6 +14,9 @@ db.once('open', () => {
 })
 
 let router = express.Router();
+router.use(express.urlencoded({extended:true}));
+router.use(express.static("public"));
+router.use(express.json());
 
 const getReview = (req, res, next) => {
     let id;

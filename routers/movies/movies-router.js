@@ -11,6 +11,8 @@ const getSimilarMovies = require('./getSimilarMovies');
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
 router.use(express.urlencoded({extended:true}));
+router.use(express.static("public"));
+router.use(express.json());
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
@@ -333,7 +335,7 @@ const unwatchMovie = async (req,res,next) => {
 }
 
 const getPersonByName = async (name) => {
-    return Person.findOne(
+    Person.findOne(
         {
             username: {$regex: `.*${name}.*`, $options: 'i'}
         }

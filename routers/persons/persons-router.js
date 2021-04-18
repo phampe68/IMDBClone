@@ -11,6 +11,9 @@ const express = require('express');
 const session = require('express-session');
 
 let router = express.Router();
+router.use(express.urlencoded({extended:true}));
+router.use(express.static("public"));
+router.use(express.json());
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
@@ -153,6 +156,8 @@ const addPerson = async (req,res,next) => {
             console.log("Saved new person");
         })
     }
+    res.redirect("back");
+
 }
 
 const followPerson = async (req,res,next)=>{
