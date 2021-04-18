@@ -1,13 +1,5 @@
-/**
- * STEP 1: Find all movies that user reviewed with 7 or more stars and get top similar movies for each
- * STEP 2:
- */
 
-const pug = require('pug');
-const User = require('../../database/data-models/user-model.js');
 const Movie = require('../../database/data-models/movie-model.js');
-const Person = require('../../database/data-models/person-model.js');
-const Notification = require('../../database/data-models/notification-model.js');
 const Review = require('../../database/data-models/review-model');
 const getSimilarMovies = require("../movies/getSimilarMovies.js");
 
@@ -33,9 +25,7 @@ let getRecommendedMovies = async (user, viewedMovies) => {
         })
     }
 
-
     if (viewedMovies) {
-
         //STEP 3: find similar movies to previously viewed movies
         for (const movieID of viewedMovies) {
             let movie = await Movie.findById(movieID);
@@ -51,4 +41,6 @@ let getRecommendedMovies = async (user, viewedMovies) => {
     recommendedMovies = recommendedMovies.slice(0,10); //limit to 10 movies
     return recommendedMovies;
 }
+
+
 module.exports = getRecommendedMovies;
