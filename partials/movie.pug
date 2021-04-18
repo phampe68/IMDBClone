@@ -16,7 +16,10 @@ html
         div#movie-info-container.container.mt-5
             div#movie-info
                 h1#movie-title.display-1 Title: #{movie.title} (#{movie.rated})
-                h2#average-rating.display-4 Average Rating: #{movie.averageRating}
+                if movie.averageRating === 0
+                    h2#average-rating.display-4 No reviews yet.
+                else
+                    h2#average-rating.display-4 Average Rating: #{movie.averageRating}/10
                 hr
                 if watched
                     form(action=`/movies/unwatchMovie/${movie.id}` method="POST")
