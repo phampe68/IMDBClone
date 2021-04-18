@@ -192,14 +192,15 @@ const loadMovies = async (req, res, next) => {
 
     let movie = req.movie;
     let similarMovieIDs = movie.similarMovies;
-    let currUser, actors, directors, writers, reviews, relatedMovies;
+    let [currUser, actors, directors, writers, reviews, relatedMovies] = await Promise.all([
+        User.findOne({'_id': currUserId}),
+        Person.find({'_id': {$in: movie.actor}}),
+        Person.find({'_id': {$in: movie.director}}),
+        Person.find({'_id': {$in: movie.writer}}),
+        Review.find({'_id': {$in: movie.reviews}}).limit(5),
+        Movie.find({'_id': {$in: similarMovieIDs}})]
+    );
 
-    currUser = await User.findOne({'_id': currUserId});
-    actors = await Person.find({'_id': {$in: movie.actor}});
-    directors = await Person.find({'_id': {$in: movie.director}});
-    writers = await Person.find({'_id': {$in: movie.writer}});
-    reviews = await Review.find({'_id': {$in: movie.reviews}}).limit(5);
-    relatedMovies = await Movie.find({'_id': {$in: similarMovieIDs}});
 
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
     let i;

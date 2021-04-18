@@ -101,13 +101,13 @@ const loadPerson = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let collaboratorIDs = person.frequentCollaborators;
 
-    let currUser, moviesWritten, moviesDirected, moviesActed, collaborators;
-
-    currUser = await User.findOne({'_id': currUserId});
-    moviesWritten = await Movie.find({'_id': {$in: person.writerFor}});
-    moviesDirected = await Movie.find({'_id': {$in: person.directorFor}});
-    moviesActed = await Movie.find({'_id': {$in: person.actorFor}});
-    collaborators = await Person.find({'_id': {$in: collaboratorIDs}});
+    let [currUser, moviesWritten, moviesDirected, moviesActed, collaborators] = await Promise.all([
+        User.findOne({'_id': currUserId}),
+        Movie.find({'_id': {$in: person.writerFor}}),
+        Movie.find({'_id': {$in: person.directorFor}}),
+        Movie.find({'_id': {$in: person.actorFor}}),
+        Person.find({'_id': {$in: collaboratorIDs}})
+    ])
 
     let following = currUser['peopleFollowing'].includes(person._id) === true;
 
