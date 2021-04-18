@@ -72,17 +72,14 @@ const loadUser = async (req, res, next) => {
         recommendedMovieIDs = movieIDs;
     })
     const [peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews]
-            = await Promise.all([
-            Person.find({'_id': {$in: user.peopleFollowing}}),
-            User.find({'_id': {$in: user.usersFollowing}}),
-            Movie.find({'_id': {$in: user.moviesWatched}}),
-            Movie.find({'_id': {$in: recommendedMovieIDs}}),
-            Notification.find({'_id': {$in: user.notifications}}),
-            Review.find({'_id': {$in: user.reviews}}),
-        ])
-    ;
-
-
+        = await Promise.all([
+        Person.find({'_id': {$in: user.peopleFollowing}}),
+        User.find({'_id': {$in: user.usersFollowing}}),
+        Movie.find({'_id': {$in: user.moviesWatched}}),
+        Movie.find({'_id': {$in: recommendedMovieIDs}}),
+        Notification.find({'_id': {$in: user.notifications}}),
+        Review.find({'_id': {$in: user.reviews}}),
+    ]);
 
 
     // load options common for both types of users (logged in, or other)
