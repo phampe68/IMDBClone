@@ -13,10 +13,7 @@ const actorSelectKeyPress = () => {
     //update autocomplete suggestions using person search api
     req.onreadystatechange = () => {
         if (req.readyState === 4 && req.status === 200) {
-            // response is array of person objects, exctract their names
-            let peopleFound = JSON.parse(req.responseText);
-            let actors = peopleFound.filter(person => person.actorFor.length > 0);
-            let actorNames = actors.map(actor => actor.name);
+            let actorNames = JSON.parse(req.responseText);
 
             let actorList = document.getElementById('actorAutoList');
 
