@@ -221,6 +221,10 @@ const followUser=async(req,res,next) =>{
     user.save(function(err){
         if(err) throw err;
         console.log("updated user following list");
+    })
+    other.save(function(err){
+        if(err) throw err;
+        console.log("updated user following list");
         res.redirect(`/users/${other._id}`);
     })
 }
@@ -236,6 +240,10 @@ const unfollowUser=async(req,res,next) =>{
     }
     user.save(function(err){
         if (err) throw err;
+    })
+    other.save(function(err){
+        if(err) throw err;
+        console.log("updated user following list");
         if(from === "profile"){
             res.redirect("/myProfile");
         }else{
