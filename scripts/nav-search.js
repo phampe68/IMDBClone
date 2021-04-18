@@ -7,7 +7,6 @@ window.onload = () => {
 
 const actorSelectKeyPress = () => {
     let enteredText = document.getElementById('actorNameSearch').value;
-
     //make request to find actors with name:
     let req = new XMLHttpRequest();
 
@@ -18,6 +17,7 @@ const actorSelectKeyPress = () => {
             let peopleFound = JSON.parse(req.responseText);
             let actors = peopleFound.filter(person => person.actorFor.length > 0);
             let actorNames = actors.map(actor => actor.name);
+
             let actorList = document.getElementById('actorAutoList');
 
             console.log(actorNames);

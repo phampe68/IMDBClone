@@ -7,8 +7,19 @@ const Person = require('../../database/data-models/person-model.js');
 const Notification = require('../../database/data-models/notification-model.js');
 const Review = require('../../database/data-models/review-model');
 const express = require('express');
+
 const session = require('express-session');
 let router = express.Router();
+
+router.use(express.static("public"));
+router.use(express.json());
+
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {
+    console.log("User router connected");
+})
 
 const getRecommendedMovies = require("./getRecommendedMovies");
 
@@ -18,6 +29,7 @@ router.use(session({
     saveUninitialized: true,
     //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
 }))
+
 
 
 /**
@@ -183,19 +195,18 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
-const changeAccountType = (req,res,next)=>{
-    let id = mongoose.Types.ObjectId(req.params.id);
-    console.log(req.body);
+const changeAccountType = async (req,res,next)=>{
+    let id = mongoose.Types.ObjectId(req.session.userId);
     let user;
-    user = User.findOne({_id: id});
-    if(req.body.accountTypeRadio === "true"){
-        user.contributor = true;
-    }else{
-        user.contributor = false;
-    }
+
+    user = await User.findOne({_id: id});
+
+    user.contributor = req.contributor;
+
     user.save(function(err){
         if(err) throw err;
         console.log("updated account type")
+        console.log(req.body);
         res.redirect("/myProfile");
     })
 }
@@ -247,9 +258,21 @@ const getUserAndOther = async (req,res,next)=>{
     next();
 }
 
+const setToTrue = (req,res,next)=>{
+    req.contributor = true;
+    next();
+}
+
+const setToFalse = (req,res,next)=>{
+    req.contributor = false;
+    next();
+}
+
+
 router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/',checkLogin, getUser, checkLogin, loadUser, sendUser);
 router.post('/followUser/:id',checkLogin,getUserAndOther,followUser);
 router.post('/unfollowUser/:id',checkLogin,getUserAndOther,unfollowUser);
-router.post('/accountType/:id',checkLogin,changeAccountType);
+router.post('/accountType/true/:id',checkLogin,setToTrue,changeAccountType);
+router.post('/accountType/false/:id',checkLogin,setToFalse,changeAccountType);
 module.exports = router;

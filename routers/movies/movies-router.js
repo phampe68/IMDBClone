@@ -14,6 +14,11 @@ let router = express.Router();
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
 
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {})
+
 /**
  * build a query object based off of query paramaters that will be used to search the database
  *  make sure params are good
@@ -237,12 +242,14 @@ const sendMovie = (req, res, next) => {
 }
 
 const addMovie = async (req,res,next) =>{
+    console.log("addMovie request body");
+    console.log(req.body);
     let title = req.body.title;
     let runtime = req.body.runtime;
     let releaseYear = req.body.releaseYear;
-    let writers = req.body.writers;
-    let directors = req.body.directors;
-    let actors = req.body.actors;
+    let writers = req.body.writer;
+    let directors = req.body.director;
+    let actors = req.body.actor;
 
     let movie = new Movie();
     movie.title = title;
@@ -252,9 +259,12 @@ const addMovie = async (req,res,next) =>{
     movie.directors = directors;
     movie.actors = actors;
 
-    Movie.save(movie,(err,result)=>{
+    Movie.save(movie,(err)=>{
         if(err) throw err;
         console.log("Saved new movie.");
+        res.status(200);
+        res.send(movie);
+        res.redirect("back");
     })
 }
 

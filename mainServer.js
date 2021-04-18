@@ -64,7 +64,7 @@ let exampleNotification = {
 }
 
 function checkLogin (req,res,next){
-    console.log("checking");
+    console.log("checking login");
     console.log(req.session.userId);
     if(!req.session.userId){
         console.log("going to login page")

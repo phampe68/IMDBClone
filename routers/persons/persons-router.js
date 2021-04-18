@@ -12,6 +12,11 @@ const session = require('express-session');
 
 let router = express.Router();
 
+mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {})
+
 router.use(session({
     name: "session",
     secret: 'a super duper secret secret',

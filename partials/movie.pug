@@ -78,7 +78,7 @@ html
             h1 Add Review
             form(id="form" action=`/movies/${movie.id}/reviews/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
                 div#review-selector.mt-3.mb-3(style={display: "inline-block"})
-                    i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick=`starMouseClick(0`)
+                    i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick=`starMouseClick(0)`)
                     i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick=`starMouseClick(1)`)
                     i#star-2.fa.fa-star.star-selector(onmouseover='starMouseOver(2)' onmouseleave='starMouseLeave(2)' onclick=`starMouseClick(2)`)
                     i#star-3.fa.fa-star.star-selector(onmouseover='starMouseOver(3)' onmouseleave='starMouseLeave(3)' onclick=`starMouseClick(3)`)

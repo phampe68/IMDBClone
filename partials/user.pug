@@ -8,6 +8,10 @@ html
         include ../stylesheets/user.css
 
 
+    script
+        include ../scripts/saveAccountType.js
+
+
     title User Page
     body
         include ./navbar.pug
@@ -20,12 +24,12 @@ html
                     button.btn.btn-primary.mt-2.ms-3(type="submit") Logout
 
             div(id="AccountTypeDiv")
-                form(action=`/accountType/${user._id}` method="POST") Account Type:
+                form(id="form" action=`/users/accountType/${user._id}` method="POST" text=`${user.id}`) Account Type:
                     div.form-check.ms-4
-                        input.form-check-input(type="radio" name="accountTypeRadio" value="true" id="radContributor" checked=user.contributor)
+                        input.form-check-input(onclick='saveAccountType(true)' type="radio" name="accountTypeRadio" value="true" id="radContributor" checked=user.contributor)
                         label.form-check-label(for="radContributor") Contributor
                     div.form-check.ms-4
-                        input.form-check-input(type="radio" name="accountTypeRadio" value="false" id="radRegular" checked=!user.contributor)
+                        input.form-check-input(onclick='saveAccountType(false)' type="radio" name="accountTypeRadio" value="false" id="radRegular" checked=!user.contributor)
                         label.form-check-label(for="radRegular") Regular
                     button.btn.btn-primary.mt-2.ms-3(type="submit") Save
 

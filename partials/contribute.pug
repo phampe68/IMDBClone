@@ -7,6 +7,8 @@ html
     style
         include ../stylesheets/index.css
 
+    script
+        include ../scripts/contribute.js
 
     title Contribute Page
     body
@@ -15,7 +17,7 @@ html
         div.container
             h1.display-5.mt-3 Contribute:
             hr
-            form(action="/addPerson" method="POST")
+            form(action="/people/addPerson" method="POST")
                 h2 Add a Person:
                 label.form-label.text-white(for="inputActorName") Person Name
                 input.form-control.mb-3(type="text" id="inputActorName" name="personName")
@@ -33,13 +35,16 @@ html
                 label.form-label.text-white(for="inputReleaseYear") Release Year
                 input.form-control.mb-3(type="text" name="releaseYear" id="inputReleaseYear")
 
-                label.form-label.text-white(for="inputWriters") Writers
-                input.form-control.mb-3(type="text" name="writers" id="inputWriters")
+                label.form-label.text-white(for="writersAutoList") Writers
+                input.form-control.mb-3(list="writersAutoList" type="search" placeholder="Writer Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(1)" autocomplete="off")#writerNameSearch
+                datalist#writersAutoList
 
-                label.form-label.text-white(for="inputDirectors") Directors
-                input.form-control.mb-3(type="text" name="directors" id="inputDirectors")
+                label.form-label.text-white(for="directorsAutoList") Directors
+                input.form-control.mb-3(list="directorsAutoList" type="search" placeholder="Director Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(2)" autocomplete="off")#directorNameSearch
+                datalist#directorsAutoList
 
-                label.form-label.text-white(for="inputActors") Actors
-                input.form-control.mb-3(type="text" name="actors" id="inputActors")
+                label.form-label.text-white(for="actorAutoList") Actors
+                input.form-control.mb-3(list="actorAutoList" type="search" placeholder="Actor Name" aria-label="Search" name="actorName" onkeypress="personSelectKeyPress(3)" autocomplete="off")#actorNameSearch
+                datalist#actorAutoList
 
-                button.btn.btn-outline-primary.btn.mt-3 Add Movie
+                button.btn.btn-outline-primary.btn.mt-3(onClick=sendMovieData) Add Movie
