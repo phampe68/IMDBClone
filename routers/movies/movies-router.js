@@ -387,7 +387,17 @@ const addPersonToMovie = async (personName, movie, position) => {
         console.log("new person added");
     }else{
         let notification = new Notification();
-        notification.text = currPerson["name"] + " was included in: " + movie["title"];
+        let text;
+        if(position === "writerFor"){
+            text = "a writer";
+        }
+        else if(position === "directorFor"){
+            text = "a director";
+        }
+        else{
+            text = "an actor";
+        }
+        notification.text = currPerson["name"] + " was included as " +text+ " in " + movie["title"];
         notification.link = `/movies/${movie._id}`;
 
         let followers;

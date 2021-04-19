@@ -182,12 +182,40 @@ const addReview = async (req, res, next) => {
     review.author = user._id;
     review.score = score;
 
+    let total = score;
+
+    let i,reviews;
+    reviews = await Review.find({'_id': {$in: req.other.reviews}});
+    console.log("reviews:");
+    console.log(reviews);
+    for (i in reviews) {
+        total += reviews[i].score;
+        console.log(`Rating #${i + 1}: ${reviews[i].score}`);
+    }
+
+    console.log("Total:");
+    console.log(total);
+    console.log("Number:");
+    console.log((Number(i) + 2));
+
+    if(Number(i)+1){
+        req.other.averageRating = total / (Number(i) + 2);
+    }else{
+        req.other.averageRating = total
+    }
+
+    console.log("Average Rating:");
+    console.log(req.other.averageRating);
+
+
     review.movie = req.other._id;
 
     console.log(`Score: ${review.score}`)
 
-    review.summaryText = req.body.summaryText;
-    review.fullText = req.body.fullText;
+    if(req.body.type==="full"){
+        review.summaryText = req.body.summaryText;
+        review.fullText = req.body.fullText;
+    }
 
     console.log(user);
     console.log(req.other);
@@ -226,8 +254,7 @@ const addReview = async (req, res, next) => {
         console.log("Updated user.");
         console.log(user["reviews"]);
     })
-    //req.score = score;
-    //calcAverage(req);
+
     await req.other.save(function (err) {
         if (err) throw err;
         console.log("Updated movie.");
@@ -257,26 +284,6 @@ const getUserAndOther = async (req, res, next) => {
     next();
 }
 
-function calcAverage(req) {
-    let total
-    if (req.score) {
-        total = req.score;
-    }
-    let i;
-    Review.find({'_id': {$in: req.other.reviews}}).exec((err, reviews) => {
-        for (i in reviews) {
-            total += reviews[i].score;
-            console.log(`Rating #${i + 1}: ${reviews[i].score}`);
-        }
-        if (total) {
-            req.other.averageRating = total / (Number(i) + 1);
-        } else {
-            req.other.averageRating = 0
-        }
-        console.log("Average Rating:");
-        console.log(req.other.averageRating);
-    })
-}
 
 
 router.post('/addReview?', checkLogin, getUserAndOther, addReview);
