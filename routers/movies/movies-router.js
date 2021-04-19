@@ -219,7 +219,7 @@ const loadMovies = async (req, res, next) => {
     for (i in reviews) {
         total += reviews[i].score;
     }
-    movie.averageRating = total / (Number(i) + 1);
+    //movie.averageRating = total / (Number(i) + 1);
 
     //generate template with found data
     req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
@@ -409,7 +409,7 @@ const addPersonToMovie = async (personName, movie, position) => {
 //specify handlers:
 router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
 router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
-router.use('/:id/reviews/', reviewRouter);
+router.use('/:movieID/reviews/', reviewRouter);
 router.post('/addMovie',checkLogin,addMovie);
 router.post('/watchMovie/:id',checkLogin,getUserAndOther, watchMovie);
 router.post('/unwatchMovie/:id',checkLogin,unwatchMovie);

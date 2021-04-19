@@ -13,8 +13,8 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
 })
 
-let router = express.Router();
-router.use(express.urlencoded({extended:true}));
+let router = express.Router({mergeParams: true});
+router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
@@ -47,6 +47,7 @@ const getReview = (req, res, next) => {
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
+
 
 const reviewsPageParser = (req, res, next) => {
     //parse limit param
@@ -85,12 +86,13 @@ const reviewsPageParser = (req, res, next) => {
     req.queryString = queryString;
     next();
 }
+
+
 /**
- * Gets all the reviews associated with movieID in URL
+ * Gets all the reviews associated with movieID in param
  */
-const getReviews = async (req, res, next) => {
-    let urlParts = req.originalUrl.split('/');
-    let movieID = urlParts[urlParts.indexOf('movies') + 1];
+const getMovieReviews = async (req, res, next) => {
+    let movieID = req.params.movieID;
 
     let limit = req.query.limit;
     let page = req.query.page;
@@ -108,8 +110,43 @@ const getReviews = async (req, res, next) => {
 
     req.reviews = reviews;
     next();
+}
+
+
+/**
+ * Gets all the reviews associated with userID in param
+ */
+const getUserReviews = async (req, res, next) => {
+    let userID = req.params.userID;
+
+
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page - 1);
+
+    let reviews = await Review.find({author: userID}).limit(limit).skip(offset);
+    let count = await Review.find({author: userID}).count();
+
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/users/${userID}/reviews?${req.queryString}&page=${page}`;
+    else
+        req.nextURL = `/users/${userID}/reviews?${req.queryString}&page=${page + 1}`;
+
+
+
+    req.reviews = reviews;
+    next();
+}
+
+const determineType = (req, res, next) => {
+    if (req.params.movieID)
+        getMovieReviews(req, res, next);
+    else if(req.params.userID)
+        getUserReviews(req, res, next);
 
 }
+
 const sendReviewPage = (req, res, next) => {
     //console.log(req.nextURL);
     res.format({
@@ -132,10 +169,10 @@ const addReview = async (req, res, next) => {
     if (req.query.hasOwnProperty("score")) {
         score = Number(req.query.score);
     } else {
-        req.redirect("back");
+        res.redirect("back");
     }
     if (!score) {
-        req.redirect("back");
+        res.redirect("back");
     }
 
     let user = req.user;
@@ -242,5 +279,8 @@ function calcAverage(req) {
 
 router.post('/addReview?', checkLogin, getUserAndOther, addReview);
 router.get('/:id', checkLogin, getReview);
-router.get('/', [checkLogin, reviewsPageParser, getReviews, sendReviewPage]);
+
+router.get('/', [checkLogin, reviewsPageParser, determineType, sendReviewPage]);
+
+
 module.exports = router;

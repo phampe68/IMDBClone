@@ -8,9 +8,10 @@ const Notification = require('../../database/data-models/notification-model.js')
 const Review = require('../../database/data-models/review-model');
 const express = require('express');
 
+let reviewRouter = require('../reviews/reviews-router.js');
 const session = require('express-session');
 let router = express.Router();
-router.use(express.urlencoded({extended:true}));
+router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
@@ -29,7 +30,6 @@ router.use(session({
     saveUninitialized: true,
     //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
 }))
-
 
 
 /**
@@ -59,7 +59,6 @@ const getUser = (req, res, next) => {
 }
 
 
-
 /**
  * use ids in user obj to find relevant data to render the page:
  * - if the user we're loading has a differnet ID than the logged in user, make sure to store that info
@@ -80,7 +79,7 @@ const loadUser = async (req, res, next) => {
         Movie.find({'_id': {$in: user.moviesWatched}}),
         Movie.find({'_id': {$in: recommendedMovieIDs}}),
         Notification.find({'_id': {$in: user.notifications}}),
-        Review.find({'_id': {$in: user.reviews}}),
+        Review.find({'_id': {$in: user.reviews}}).limit(10),
     ]);
 
 
@@ -106,6 +105,7 @@ const loadUser = async (req, res, next) => {
         next();
     } else {
         req.loadType = "otherUser"
+        req.options.seeReviewsURL = `/users/${user._id}/revi`
         User.findOne({'_id': currUserId}).exec((err, currUser) => {
             //make note if the logged in user is following this user
             req.options.following = currUser['usersFollowing'].includes(user._id) === true;
@@ -164,13 +164,16 @@ const getNotifications = async (req, res, next) => {
     let page = req.query.page;
     let offset = limit * (page - 1);
 
+    let user = await User.findById(userID);
+
+
     let notifs = await Notification.find({
-        user: userID
+        _id: {$in: user.notifications}
     }).limit(limit).skip(offset).catch(err => {
         res.status(404).send("Couldn't find notification.");
     });
 
-    let count = await Notification.find({user:userID}).count();
+    let count = await Notification.find({_id: {$in: user.notifications}}).count();
     let resultsLeft = count - ((page - 1) * limit);
     if (resultsLeft <= limit)
         req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page}`;
@@ -199,7 +202,7 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
-const changeAccountType = async (req,res,next)=>{
+const changeAccountType = async (req, res, next) => {
     let id = mongoose.Types.ObjectId(req.session.userId);
     let user;
 
@@ -207,96 +210,108 @@ const changeAccountType = async (req,res,next)=>{
 
     user.contributor = req.contributor;
 
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         console.log("updated account type")
         console.log(req.body);
         res.redirect("/myProfile");
     })
 }
 
-const followUser=async(req,res,next) =>{
+const followUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
-    if(user&&other){
+    if (user && other) {
         user["usersFollowing"].push(other._id);
         other["followers"].push(user._id);
     }
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
     })
-    other.save(function(err){
-        if(err) throw err;
+    other.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
         res.redirect(`/users/${other._id}`);
     })
 }
 
-const unfollowUser=async(req,res,next) =>{
+const unfollowUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
     let from = req.body.from;
-    if(user&&other){
+    if (user && other) {
         user["usersFollowing"].pull({_id: other._id});
         other["followers"].pull({_id: user._id});
         console.log(user["usersFollowing"]);
     }
-    user.save(function(err){
+    user.save(function (err) {
         if (err) throw err;
     })
-    other.save(function(err){
-        if(err) throw err;
+    other.save(function (err) {
+        if (err) throw err;
         console.log("updated user following list");
-        if(from === "profile"){
+        if (from === "profile") {
             res.redirect("/myProfile");
-        }else{
+        } else {
             res.redirect(`/users/${other._id}`)
         }
     })
 }
 
-const deleteNotification = async (req,res,next)=>{
-    let user,notification;
-    user = await User.findOne({_id:req.session.userId});
-    notification = await Notification.findOne({_id:req.params.id});
+const deleteNotification = async (req, res, next) => {
+    let user, notification;
+    user = await User.findOne({_id: req.session.userId});
+    notification = await Notification.findOne({_id: req.params.id});
     user["notifications"].pull(notification.id);
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         res.redirect("/myProfile");
     })
 }
 
-function checkLogin (req,res,next){
+function checkLogin(req, res, next) {
 
-    if(!req.session.userId){
+    if (!req.session.userId) {
         console.log("checking")
         res.redirect("/loginPage");
     }
     next();
 }
 
-const getUserAndOther = async (req,res,next)=>{
+const getUserAndOther = async (req, res, next) => {
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
 }
 
-const setToTrue = (req,res,next)=>{
+const setToTrue = (req, res, next) => {
     req.contributor = true;
     next();
 }
 
-const setToFalse = (req,res,next)=>{
+const setToFalse = (req, res, next) => {
     req.contributor = false;
     next();
 }
 
-router.post('/deleteNotification/:id',checkLogin,deleteNotification);
-router.get('/:id/notifications/',checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
-router.get('/:id/',checkLogin, getUser, checkLogin, loadUser, sendUser);
-router.post('/followUser/:id',checkLogin,getUserAndOther,followUser);
-router.post('/unfollowUser/:id',checkLogin,getUserAndOther,unfollowUser);
-router.post('/accountType/true/:id',checkLogin,setToTrue,changeAccountType);
-router.post('/accountType/false/:id',checkLogin,setToFalse,changeAccountType);
+
+
+
+const sendUserReviewsPage = (req, res, next) => {
+
+}
+
+
+
+
+
+router.post('/deleteNotification/:id', checkLogin, deleteNotification);
+router.get('/:id/notifications/', checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
+router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
+router.post('/followUser/:id', checkLogin, getUserAndOther, followUser);
+router.post('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);
+router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
+router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
+router.use('/:userID/reviews/', reviewRouter);
 module.exports = router;

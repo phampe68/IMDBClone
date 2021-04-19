@@ -18,4 +18,11 @@ html
             hr
 
 
+            ul.list-group
+                each notif in notifications
+                    li.list-group-item.list-group-item-info
+                        a(href=`${notif.link}`) #{notif.text}
+
+
+
             a(href=nextURL style={color:"white"}) next
