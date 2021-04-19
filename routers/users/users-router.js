@@ -198,7 +198,7 @@ const changeAccountType = async (req, res, next) => {
     user.save(function (err) {
         if (err) throw err;
         console.log("updated account type")
-        res.status(200).redirect("/myProfile");
+        res.status(204).redirect("/myProfile");
     })
 }
 
@@ -228,7 +228,7 @@ const followUser = async (req, res, next) => {
             return;
         }
         console.log("updated other user following list");
-        res.status(200).redirect(`/users/${other._id}`);
+        res.status(200).send();
     })
 }
 
@@ -253,7 +253,7 @@ const unfollowUser = async (req, res, next) => {
             res.status(500).send("Error saving user.");
             return;
         }
-        res.status(204);
+        res.status(200).send();
 
     })
 }

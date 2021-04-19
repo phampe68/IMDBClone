@@ -21,10 +21,10 @@ html
 
             if !following
                 div(id="follow")
-                    button.btn.btn-primary.mt-3.me-3(value="profile" type="submit" onclick='followHandler("'+ user._id +'")') Follow
+                    button.btn.btn-primary.mt-3.me-3(value="profile" onclick='followHandler("'+ user._id +'")') Follow
             else
                 div(id="unfollow")
-                    button.btn.btn-primary.mt-3.me-3(value="profile" type="submit" onclick='unfollowHandler("'+ user._id +'")') Unfollow
+                    button.btn.btn-primary.mt-3.me-3(value="profile" onclick='unfollowHandler("'+ user._id +'")') Unfollow
 
             div.mt-5(id="PersonFollowDiv")
                 p People Following:

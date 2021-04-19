@@ -2,13 +2,16 @@ const unfollowHandler = (userID) => {
     let req = new XMLHttpRequest();
 
     req.onreadystatechange = () => {
-        if (req.readyState === 4 && req.status === 204) {
+        console.log(req.status);
+
+        if (req.readyState === 4 && req.status === 200) {
+            console.log("HERE");
             window.location.reload();
         }
     }
 
 
-    req.open("PUT", `/users/unfollowUser/`);
+    req.open("PUT", `/users/unfollowUser`);
     req.setRequestHeader("Content-Type", "application/json");
 
     req.send(JSON.stringify(
@@ -21,12 +24,15 @@ const followHandler = (userID) => {
     let req = new XMLHttpRequest();
 
     req.onreadystatechange = () => {
-        if (req.readyState === 4 && req.status === 204) {
+        console.log(req.status);
+        if (req.readyState === 4 && req.status === 200) {
+            console.log("HERE");
             window.location.reload();
         }
     }
 
-    req.open("PUT", `/users/followUser/`);
+
+    req.open("PUT", `/users/followUser`);
     req.setRequestHeader("Content-Type", "application/json");
 
     req.send(JSON.stringify(
