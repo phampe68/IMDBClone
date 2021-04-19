@@ -5,7 +5,10 @@ html
         link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css')
 
     style
-        include ../stylesheets/index.css
+        include ../../stylesheets/index.css
+
+    script
+        include ../../scripts/verifyLogin.js
 
     title Login Page
     //include ./navbar.pug
@@ -13,7 +16,7 @@ html
     body
         div.bg-dark.p-5
             h1.text-white Login
-            form(action='/login', method='POST')
+            form(onsubmit="return submitLogin()" action='/login', method='POST')
                 div.mt-5
                     label.form-label.text-white(for="inputUsername") Username
                     input.form-control(type="text" name="username" id="inputUsername" aria-describedby="usernameHelp")

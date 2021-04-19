@@ -136,7 +136,7 @@ const sendPerson = (req, res, next) => {
             res.status(200).json(req.person);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/person.pug", req.options);
+            let data = pug.renderFile("./templates/screens/person.pug", req.options);
             res.status(200).send(data);
         },
     })
@@ -156,7 +156,7 @@ const addPerson = async (req,res,next) => {
             console.log("Saved new person");
         })
     }
-    res.redirect("back");
+    res.status(201).redirect("back");
 
 }
 
@@ -180,7 +180,7 @@ const followPerson = async (req,res,next)=>{
         if (err) throw err;
     })
     console.log("updated person following list");
-    res.redirect(`/people/${other._id}`);
+    res.status(201).redirect(`/people/${other._id}`);
 }
 
 const unfollowPerson = async (req,res,next)=>{
@@ -200,16 +200,16 @@ const unfollowPerson = async (req,res,next)=>{
         if (err) throw err;
     })
     if(from === "profile"){
-        res.redirect("/myProfile");
+        res.status(204).redirect("/myProfile");
     }else{
-        res.redirect(`/people/${other._id}`)
+        res.status(204).redirect(`/people/${other._id}`);
     }
 }
 
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }
     next();
 }

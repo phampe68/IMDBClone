@@ -129,7 +129,7 @@ let sendUser = (req, res, next) => {
             res.status(200).json(req.user);
         },
         "text/html": () => {
-            let data = (req.loadType === "currentUser") ? pug.renderFile('./partials/user.pug', req.options) : pug.renderFile("./partials/otherUser.pug", req.options);
+            let data = (req.loadType === "currentUser") ? pug.renderFile('./templates/screens/user.pug', req.options) : pug.renderFile("./templates/screens/otherUser.pug", req.options);
             res.status(200).send(data);
         },
     })
@@ -170,43 +170,51 @@ const getNotifications = async (req, res, next) => {
     next();
 }
 
+//send a user's notification list as html, or as json.
 const sendNotificationsPage = (req, res, next) => {
     res.format({
         "application/json": () => {
             res.status(200).json(req.notifs);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/notifications.pug", {
+            let data = pug.renderFile("./templates/screens/notifications.pug", {
                 notifications: req.notifs,
                 nextURL: req.nextURL
             })
-            res.send(data);
+            res.status(200).send(data);
         },
     })
 }
 
+//change a user's account type(to/from contributor)
 const changeAccountType = async (req, res, next) => {
     let id = mongoose.Types.ObjectId(req.session.userId);
     let user;
 
     user = await User.findOne({_id: id});
-
+    if(!user){
+        res.status(401).redirect("/loginPage");
+    }
     user.contributor = req.contributor;
 
     user.save(function (err) {
         if (err) throw err;
         console.log("updated account type")
         console.log(req.body);
-        res.redirect("/myProfile");
+        res.status(200).redirect("/myProfile");
     })
 }
 
+//add user x to user y's following list, add user y to user x's followers
 const followUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
     if (user && other) {
         user["usersFollowing"].push(other._id);
         other["followers"].push(user._id);
+    }
+    else{
+        res.status(400).redirect("back");
     }
     user.save(function (err) {
         if (err) throw err;
@@ -215,10 +223,12 @@ const followUser = async (req, res, next) => {
     other.save(function (err) {
         if (err) throw err;
         console.log("updated user following list");
-        res.redirect(`/users/${other._id}`);
+        res.status(200).redirect(`/users/${other._id}`);
     })
 }
 
+
+//remove a user from following list, and remove from other user's followers
 const unfollowUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
@@ -235,13 +245,14 @@ const unfollowUser = async (req, res, next) => {
         if (err) throw err;
         console.log("updated user following list");
         if (from === "profile") {
-            res.redirect("/myProfile");
+            res.status(204).redirect("/myProfile");
         } else {
-            res.redirect(`/users/${other._id}`)
+            res.status(204).redirect(`/users/${other._id}`);
         }
     })
 }
 
+//remove a notification from a user's notification list
 const deleteNotification = async (req, res, next) => {
     let user, notification;
     user = await User.findOne({_id: req.session.userId});
@@ -249,43 +260,44 @@ const deleteNotification = async (req, res, next) => {
     user["notifications"].pull(notification.id);
     user.save(function (err) {
         if (err) throw err;
-        res.redirect("/myProfile");
+        res.status(204).redirect("/myProfile");
     })
 }
 
+//middleware to ensure user is logged in
 function checkLogin(req, res, next) {
-
     if (!req.session.userId) {
         console.log("checking")
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }
     next();
 }
 
+//search database to find user x and user y
 const getUserAndOther = async (req, res, next) => {
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
 }
 
+//These functions are unnecessary, but they have sentimental value
 const setToTrue = (req, res, next) => {
     req.contributor = true;
     next();
 }
-
 const setToFalse = (req, res, next) => {
     req.contributor = false;
     next();
 }
 
-
+//load a user's own profile
 const loadUsersPage = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
     let userID = req.params.id;
 
-
+    //make sure user is who they say they are
     if (!currUserId.equals(userID)) {
-        res.redirect("back");
+        res.status(403).redirect("back");
     }
 
 
@@ -311,23 +323,23 @@ const loadUsersPage = async (req, res, next) => {
     next();
 }
 
-
+//send the users following list, as json or html
 const sendUsersPage = (req, res, next) => {
     res.format({
         "application/json": () => {
             res.status(200).json(req.followingUsers);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/usersFollowing.pug", {
+            let data = pug.renderFile("./templates/screens/usersFollowing.pug", {
                 users: req.followingUsers,
                 nextURL: req.nextURL
             })
-            res.send(data);
+            res.status(200).send(data);
         },
     })
 }
 
-
+//retrieve user's followed people
 const loadPeoplePage = async (req, res, next) => {
     let userID = req.params.id;
 
@@ -354,22 +366,23 @@ const loadPeoplePage = async (req, res, next) => {
     next();
 }
 
+//send user's followed people as json or html
 const sendPeoplePage = (req, res, next) => {
     res.format({
         "application/json": () => {
             res.status(200).json(req.peopleFollowing);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/peopleFollowing.pug", {
+            let data = pug.renderFile("./templates/screens/peopleFollowing.pug", {
                 peopleFollowing: req.peopleFollowing,
                 nextURL: req.nextURL
             })
-            res.send(data);
+            res.status(200).send(data);
         },
     })
 }
 
-
+//retrieve user's watched movies list
 const loadWatchedPage = async (req, res, next) => {
     let userID = req.params.id;
 
@@ -395,18 +408,18 @@ const loadWatchedPage = async (req, res, next) => {
 }
 
 
-
+//send user's watched movies list as json/html
 const sendWatchedPage = (req, res, next) => {
     res.format({
         "application/json": () => {
             res.status(200).json(req.moviesWatched);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/moviesWatched.pug", {
+            let data = pug.renderFile("./templates/screens/moviesWatched.pug", {
                 moviesWatched: req.moviesWatched,
                 nextURL: req.nextURL
             })
-            res.send(data);
+            res.status(200).send(data);
         },
     })
 }

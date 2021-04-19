@@ -5,13 +5,13 @@ html
         script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous")
 
         style
-            include ../stylesheets/index.css
-            include ../stylesheets/star.css
+            include ../../stylesheets/index.css
+            include ../../stylesheets/star.css
         script
-            include ../scripts/starReview.js
+            include ../../scripts/starReview.js
     title Card Info Page
     body
-        include ./navbar.pug
+        include ../partials/navbar
 
         div#movie-info-container.container.mt-5
             div#movie-info
@@ -69,7 +69,7 @@ html
 
                 -let cardIndex = 0;
                 each review in reviews
-                    include ./singleReview.pug
+                    include ../partials/singleReview
                     - cardIndex++
                 a(href=seeReviewsURL) see All Reviews
                 hr
@@ -79,7 +79,7 @@ html
 
         div#add-review-container.container
             h1 Add Review
-            form(id="form" action=`/movies/${movie.id}/reviews/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
+            form(onsubmit="return submitReview()" id="form" action=`/movies/${movie.id}/reviews/addReview?score=0&id=${movie.id}` method='POST' text=`${movie.id}`)
                 div#review-selector.mt-3.mb-3(style={display: "inline-block"})
                     i#star-0.fa.fa-star.star-selector(onmouseover='starMouseOver(0)' onmouseleave='starMouseLeave(0)' onclick=`starMouseClick(0)`)
                     i#star-1.fa.fa-star.star-selector(onmouseover='starMouseOver(1)' onmouseleave='starMouseLeave(1)' onclick=`starMouseClick(1)`)
@@ -92,7 +92,7 @@ html
                     i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick=`starMouseClick(8)`)
                     i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick=`starMouseClick(9)`)
 
-                button.btn.btn-outline-primary.mt-2(type="submit" name="type" value="basic" style={float: "right"})
+                button.btn.btn-outline-primary.mt-2(id="basicButton" onclick="setReviewType(1)" name="type" value="basic" disabled="true" style={float: "right"})
                     | Submit Basic Review
 
                 div.mb-3
@@ -102,7 +102,7 @@ html
                     label.form-label(for='review') Review
                     textarea#review.form-control(type='text' name="fullText" rows='5' style='resize: none')
 
-                button.btn.btn-outline-primary.btn-block(type='submit' name="type" value="full")
-                    | Add Review
+                button.btn.btn-outline-primary.btn-block(id="fullButton" onclick="setReviewType(0)" name="type" value="full" disabled="true")
+                    | Add a Full-Text Review
             hr.my-4
             #review-deck.card-deck

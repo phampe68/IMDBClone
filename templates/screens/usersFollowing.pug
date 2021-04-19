@@ -5,19 +5,18 @@ html
         script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous")
 
         style
-            include ../stylesheets/index.css
+            include ../../stylesheets/index.css
 
-    title Movies Watched
+    title Users
     body
-        include ./navbar.pug
+        include ../partials/navbar
 
         div.container.mt-3
-            h1.display-2 Movies Watched:
+            h1.display-2 Users Following:
             hr
             ul.list-group
-                each movie in moviesWatched
+                each user in users
                     li.list-group-item.list-group-item-info
-                        a(href=`/movies/${movie._id}`) #{movie.title}
-
+                        a(href=`/users/${user._id}`) #{user.username}
 
             a(href=nextURL style={color:"white"}) next

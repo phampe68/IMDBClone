@@ -136,7 +136,7 @@ const sendSearchResults = (req, res, next) => {
             res.status(200).json(req.searchResults);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/movieSearch.pug", {
+            let data = pug.renderFile("./templates/screens/movieSearch.pug", {
                 movies: req.searchResults,
                 nextURL: req.nextURL
             });
@@ -247,7 +247,7 @@ const sendMovie = (req, res, next) => {
             res.status(200).json(req.movie);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/movie.pug", req.options);
+            let data = pug.renderFile("./templates/screens/movie.pug", req.options);
 
             //keep track of which movies have been viewed so far
             if(req.session.viewedMovies)
@@ -284,7 +284,7 @@ const addMovie = async (req,res,next) =>{
         await addPersonToMovie(writerNames[i], movie, "writerFor");
     }
 
-    for(let i in directorNames){
+    for(let i in actorNames){
         await addPersonToMovie(actorNames[i], movie, "actorFor");
     }
 
@@ -297,8 +297,7 @@ const addMovie = async (req,res,next) =>{
     movie.save(function(err){
         if(err) throw err;
         console.log("Saved new movie.");
-        res.status(200);
-        res.redirect("back");
+        res.status(201).redirect("back");
     })
 }
 
@@ -311,7 +310,7 @@ const watchMovie = async (req,res,next) => {
     user.save(function(err){
         if(err) throw err;
         console.log("updated watched movies list");
-        res.redirect(`/movies/${other._id}`);
+        res.status(201).redirect(`/movies/${other._id}`);
     })
 }
 
@@ -327,9 +326,9 @@ const unwatchMovie = async (req,res,next) => {
     user.save(function (err) {
         if (err) throw err;
         if (from === "profile") {
-            res.redirect("/myProfile");
+            res.status(204).redirect("/myProfile");
         } else {
-            res.redirect(`/movies/${other._id}`)
+            res.status(204).redirect(`/movies/${other._id}`);
         }
     })
 }
@@ -350,7 +349,7 @@ const getPersonByName = async (name) => {
 function checkLogin (req,res,next){
     if(!req.session.userId){
         console.log("checking")
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }
     next();
 }

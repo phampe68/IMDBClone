@@ -114,3 +114,43 @@ function update(type){
         document.getElementById(`${type}List`).appendChild(listItem);
     }
 }
+
+const submitMovie = () => {
+    if(document.getElementById("inputTitle").value === "") {
+        alert("Please enter a title.");
+        return false;
+    }
+    if(document.getElementById("inputRuntime").value === "") {
+        alert("Please enter a runtime.");
+        return false;
+    }
+    if(document.getElementById("inputReleaseYear").value === "") {
+        alert("Please enter a release year.");
+        return false;
+    }
+    if(document.getElementById("inputGenre").value === "") {
+        alert("Please enter a genre.");
+        return false;
+    }
+    if(actors.length === 0) {
+        alert("Please enter an actor.");
+        return false;
+    }
+    if(directors.length === 0) {
+        alert("Please enter a director.");
+        return false;
+    }
+    if(writers.length === 0) {
+        alert("Please enter a writer.");
+        return false;
+    }
+    return true;
+}
+
+const submitPerson = () => {
+    if(document.getElementById("inputActorName").value === ""){
+        alert("Please enter a name.");
+        return false;
+    }
+    return true;
+}

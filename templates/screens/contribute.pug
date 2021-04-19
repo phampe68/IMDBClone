@@ -5,21 +5,21 @@ html
         link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css')
 
     style
-        include ../stylesheets/index.css
+        include ../../stylesheets/index.css
 
     script
-        include ../scripts/contribute.js
+        include ../../scripts/contribute.js
 
     title Contribute Page
     body
-        include ./navbar.pug
+        include ../partials/navbar
 
 
         div.container
 
             h1.display-5.mt-3 Contribute:
             hr
-            form(action="/people/addPerson" method="POST")
+            form(onsubmit="return submitPerson()" action="/people/addPerson" method="POST")
                 h2 Add a Person:
                 label.form-label.text-white(for="inputActorName") Person Name
                 input.form-control.mb-3(type="text" id="inputActorName" name="personName")
@@ -42,7 +42,7 @@ html
                     button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('actor')") Add Actor To Movie
 
             div.mt-5
-                form.mt-5(action="/movies/addMovie" method="POST")
+                form.mt-5(onsubmit="return submitMovie()" action="/movies/addMovie" method="POST")
                     label.form-label.text-white(for="inputTitle") Title
                     input.form-control.mb-3(type="text" name="title" id="inputTitle")
 

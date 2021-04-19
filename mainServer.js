@@ -56,74 +56,65 @@ app.use(express.urlencoded({extended:true}));
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 
-let exampleNotification = {
-    id: 0,
-    text: "Jean meadows is part of a new movie!",
-    type: "movie",
-    relatedID: 0
-}
 
+//Middleware to ensure that the user is logged in before doing pretty much anything
 function checkLogin (req,res,next){
     console.log("checking login");
     console.log(req.session.userId);
     if(!req.session.userId){
         console.log("going to login page")
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }else{
         next();
     }
 }
 
-//Start adding route handlers here
-//handler for adding recipe
-
 //home page route:
 app.get('/', checkLogin,function(req, res) {
     let data
     if(req.session.loggedin === true){
-        data = pug.renderFile('./partials/index.pug');
+        data = pug.renderFile('./templates/screens/index.pug');
     }else{
         console.log("Redirecting to login page")
         //res.redirect("/loginPage");
     }
-    res.send(data);
+    res.status(200).send(data);
 })
 
 //page displaying a single user
 app.get('/myProfile',checkLogin, function (req, res) {
-    //console.log("ayo");
     if(req.session.loggedin===true){
         console.log(req.session.loggedin);
         console.log(req.session.username);
         console.log(req.session.userId);
-        res.redirect(`/users/${req.session.userId}/`);
+        res.status(200).redirect(`/users/${req.session.userId}/`);
     }
     else{
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }
 })
 
 
 //page displaying login form
 app.get('/loginPage/', (req, res) => {
-    let data = pug.renderFile("./partials/login.pug");
-    res.send(data);
+    let data = pug.renderFile("./templates/screens/login.pug");
+    res.status(200).send(data);
 })
 
 //page for contribution form
 app.get('/contribute', checkLogin, function(req,res){
     User.findOne({_id: req.session.userId}).exec((err, user) => {
         if(!user){
-            //res.redirect("/loginPage");
+            res.status(401).redirect("/loginPage");
         }
         if(user.contributor === true){
-            let data = pug.renderFile("./partials/contribute.pug");
-            res.send(data);
-        }else{res.redirect("back");}
+            let data = pug.renderFile("./templates/screens/contribute.pug");
+            res.status(200).send(data);
+        }else{res.status(403).redirect("back");}
     })
 })
 
-
+//checks whether a user is signing up or logging in, then passes to respective function
 app.post('/login',function(req,res,next){
     //determine which button was used on login form
     if(req.body.action==="login"){
@@ -140,7 +131,7 @@ const login = async(req,res,next) => {
     let password = req.body.password;
 
     if (req.session.loggedin) {
-        res.redirect("/logout");
+        res.status(401).redirect("/logout");
     }
     console.log("Logging in with credentials:");
     console.log("Username: " + req.body.username);
@@ -151,7 +142,7 @@ const login = async(req,res,next) => {
     await getUserByName(req.body.username).then(result => {
         if (!result) {
             console.log("Username does not exist");
-            res.status(200);
+            res.status(401).redirect("back");
         }
         else{
             user = result;
@@ -161,11 +152,10 @@ const login = async(req,res,next) => {
         req.session.username = username;
         req.session.loggedin = true;
         req.session.userId = user.id;
-        res.redirect(`/users/${user.id}`);
+        res.status(200).redirect(`/users/${user.id}`);
         console.log(`Logged in with user id ${req.session.userId}`);
-        //res.status(200).send("Logged in");
     } else {
-        console.log("Login unauthorized. Invalid password");
+        res.status(401).redirect("back");
     }
 }
 
@@ -173,12 +163,12 @@ const login = async(req,res,next) => {
 //log a user out of their session
 app.get('/logout',function (req,res,next) {
     if(!req.session.loggedin){
-        res.status(200);
+        res.status(401);
     }else{
         req.session.loggedin = false;
         req.session.username = false;
         req.session.userId = false;
-        console.log("successfully logged out");
+        res.status(200);
     }
     res.redirect("/loginPage");
     next();
@@ -191,7 +181,7 @@ const signup = async(req,res,next) => {
     let password = req.body.password;
 
     if (req.session.loggedin) {
-        res.status(200).send("Already logged in.");
+        res.status(401).send("Already logged in.");
         return;
     }
 
@@ -221,7 +211,7 @@ const signup = async(req,res,next) => {
                 req.session.username = username;
                 req.session.loggedin = true;
                 req.session.userId = newUser.id;
-                res.redirect(`/myProfile`);
+                res.status(201).redirect(`/myProfile`);
             });
         } else {
             res.status(401).send("Username already exists.")
@@ -229,6 +219,7 @@ const signup = async(req,res,next) => {
     });
 }
 
+//returns a user object by searching for its username in the database
 const getUserByName = async (userName) => {
     return User.findOne(
         {

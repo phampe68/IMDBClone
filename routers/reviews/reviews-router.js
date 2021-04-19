@@ -23,6 +23,7 @@ router.use(express.json());
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
 
+
 const getReview = (req, res, next) => {
     let id;
 
@@ -41,11 +42,11 @@ const getReview = (req, res, next) => {
             return;
         }
         User.findOne({'_id': review.author}).exec((err, author) => {
-            let data = pug.renderFile("./partials/review.pug", {
+            let data = pug.renderFile("./templates/screens/review.pug", {
                 author: author,
                 review: review
             });
-            res.send(data);
+            res.status(200).send(data);
         })
     })
 }
@@ -116,15 +117,16 @@ const sendReviewPage = (req, res, next) => {
             res.status(200).json(req.reviews);
         },
         "text/html": () => {
-            let data = pug.renderFile("./partials/reviewPage.pug", {
+            let data = pug.renderFile("./templates/screens/reviewPage.pug", {
                 reviews: req.reviews,
                 nextURL: req.nextURL
             })
-            res.send(data);
+            res.status(200).send(data);
         },
     })
 }
 
+//post a review and add it to the user's and movie's review lists
 const addReview = async (req, res, next) => {
     let review = new Review();
     let score;
@@ -175,6 +177,10 @@ const addReview = async (req, res, next) => {
     if(req.body.type==="full"){
         review.summaryText = req.body.summaryText;
         review.fullText = req.body.fullText;
+        if(review.summaryText ===""||review.fullText===""){
+            res.status(400).redirect("back");
+            return;
+        }
     }
 
     console.log(user);
@@ -225,13 +231,13 @@ const addReview = async (req, res, next) => {
         console.log("Saved new review.");
         console.log(review);
     })
-    res.redirect(`/movies/${req.query.id}`);
+    res.status(201).redirect(`/movies/${req.query.id}`);
 }
 
 function checkLogin(req, res, next) {
     if (!req.session.userId) {
         console.log("checking")
-        res.redirect("/loginPage");
+        res.status(401).redirect("/loginPage");
     }
     next();
 }

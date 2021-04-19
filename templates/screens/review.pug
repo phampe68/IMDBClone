@@ -5,18 +5,13 @@ html
         script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous")
 
         style
-            include ../stylesheets/index.css
-
-    title Users
+            include ../../stylesheets/index.css
+            include ../../stylesheets/star.css
+        script
+            include ../../scripts/starReview.js
+    title Card Info Page
     body
-        include ./navbar.pug
+        include ../partials/navbar
 
-        div.container.mt-3
-            h1.display-2 People Following:
-            hr
-            ul.list-group
-                each person in peopleFollowing
-                    li.list-group-item.list-group-item-info
-                        a(href=`/people/${person._id}`) #{person.name}
-
-            a(href=nextURL style={color:"white"}) next
+        div.container-fluid
+            include ../partials/singleReview
