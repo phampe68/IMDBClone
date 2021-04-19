@@ -97,10 +97,9 @@ html
                 ul.list-group
                     each notif in notifications
                         li.list-group-item
-                            form(action=`/users/deleteNotification/${notif.id}` method="POST")
-                                button.btn.btn-danger.me-2(type="submit") Delete
-                                a.btn.btn-info.me-2(href=`${notif["link"]}`) View
-                                p.ms-2(style={display: "inline-block"}) #{notif.text}
+                            button.btn.btn-danger.me-2(onclick='updateNotificationHandler("'+ user._id +'", "'+ notif._id +'")') Delete
+                            a.btn.btn-info.me-2(href=`${notif["link"]}`) View
+                            p.ms-2(style={display: "inline-block"}) #{notif.text}
 
             if notifications.length === 0
                 ul.list-group.mb-3

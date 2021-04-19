@@ -5,7 +5,6 @@ const unfollowHandler = (userID) => {
         console.log(req.status);
 
         if (req.readyState === 4 && req.status === 200) {
-            console.log("HERE");
             window.location.reload();
         }
     }
@@ -26,7 +25,6 @@ const followHandler = (userID) => {
     req.onreadystatechange = () => {
         console.log(req.status);
         if (req.readyState === 4 && req.status === 200) {
-            console.log("HERE");
             window.location.reload();
         }
     }
@@ -37,6 +35,31 @@ const followHandler = (userID) => {
 
     req.send(JSON.stringify(
         {userId: userID,}
+    ));
+}
+
+
+const updateNotificationHandler = (userID, notificationID) => {
+    let req = new XMLHttpRequest();
+
+    req.onreadystatechange = () => {
+        console.log(req.status);
+        if (req.readyState === 4 && req.status === 200) {
+            window.location.reload();
+        }
+    }
+
+
+    req.open("PUT", `/users/${userID}/notifications`);
+    req.setRequestHeader("Content-Type", "application/json");
+
+    console.log(userID, notificationID);
+
+    req.send(JSON.stringify(
+        {
+            userId: userID,
+            notificationId: notificationID
+        },
     ));
 }
 

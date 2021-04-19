@@ -261,12 +261,26 @@ const unfollowUser = async (req, res, next) => {
 //remove a notification from a user's notification list
 const deleteNotification = async (req, res, next) => {
     let user, notification;
-    user = await User.findOne({_id: req.session.userId});
-    notification = await Notification.findOne({_id: req.params.id});
+    user = await User.findOne({_id: req.body.userId});
+
+    if(req.session.userId !==(req.body.userId + "")){
+        res.status(401).send("ERROR 401: Unauthorized.");
+        return;
+    }
+
+
+    notification = await Notification.findOne({_id: req.body.notificationId});
+
+    if(!notification){
+        res.status(404).send("ERROR 404: Notification not found.");
+    }
+
+
+
     user["notifications"].pull(notification.id);
     user.save(function (err) {
         if (err) throw err;
-        res.status(204).redirect("/myProfile");
+        res.status(200).send();
     })
 }
 
@@ -434,6 +448,12 @@ router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUs
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
 router.post('/deleteNotification/:id', checkLogin, deleteNotification);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
+
+
+router.put('/:id/notifications', [checkLogin, deleteNotification]);
+
+
+
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
 router.put('/followUser', checkLogin, getUserAndOther, followUser);
 router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
