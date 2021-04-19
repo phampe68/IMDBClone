@@ -190,7 +190,7 @@ const changeAccountType = async (req, res, next) => {
     let user;
 
     user = await User.findOne({_id: id});
-    if(!user){
+    if (!user) {
         res.status(401).redirect("/loginPage");
     }
     user.contributor = req.contributor;
@@ -209,17 +209,25 @@ const followUser = async (req, res, next) => {
     if (user && other) {
         user["usersFollowing"].push(other._id);
         other["followers"].push(user._id);
+    } else {
+        res.status(404).send("Required users not found.")
+        return;
     }
-    else{
-        res.status(400).redirect("back");
-    }
+
     user.save(function (err) {
-        if (err) throw err;
+        if (err){
+            res.status(500).send("Couldn't save user.")
+            return;
+        }
+
         console.log("updated user following list");
     })
     other.save(function (err) {
-        if (err) throw err;
-        console.log("updated user following list");
+        if (err){
+            res.status(500).send("Couldn't save user.")
+            return;
+        }
+        console.log("updated other user following list");
         res.status(200).redirect(`/users/${other._id}`);
     })
 }
@@ -229,23 +237,24 @@ const followUser = async (req, res, next) => {
 const unfollowUser = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
-    let from = req.body.from;
     if (user && other) {
         user["usersFollowing"].pull({_id: other._id});
         other["followers"].pull({_id: user._id});
         console.log(user["usersFollowing"]);
     }
+
     user.save(function (err) {
-        if (err) throw err;
+        if (err) {
+            res.status(500).send("Error saving user.");
+        }
     })
     other.save(function (err) {
-        if (err) throw err;
-        console.log("updated user following list");
-        if (from === "profile") {
-            res.status(204).redirect("/myProfile");
-        } else {
-            res.status(204).redirect(`/users/${other._id}`);
+        if (err) {
+            res.status(500).send("Error saving user.");
+            return;
         }
+        res.status(204);
+
     })
 }
 
@@ -272,10 +281,10 @@ function checkLogin(req, res, next) {
 
 //search database to find user x and user y
 const getUserAndOther = async (req, res, next) => {
-    console.log(req.body);
-
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
-    req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
+    req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.body.userId)});
+
+    //console.log(req.user, req.other);
     next();
 }
 
@@ -309,7 +318,6 @@ const loadUsersPage = async (req, res, next) => {
 
     let followingUsers = await User.find({_id: {$in: followingUserIDs}}).limit(limit).skip(offset);
     let count = await User.find({_id: {$in: followingUserIDs}}).limit(limit).skip(offset).count();
-
 
 
     let resultsLeft = count - ((page - 1) * limit);
@@ -352,7 +360,6 @@ const loadPeoplePage = async (req, res, next) => {
 
     let peopleFollowing = await Person.find({_id: {$in: peopleFollowingIDs}}).limit(limit).skip(offset);
     let count = await Person.find({_id: {$in: peopleFollowingIDs}}).limit(limit).skip(offset).count();
-
 
 
     let resultsLeft = count - ((page - 1) * limit);
@@ -428,9 +435,29 @@ router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, send
 router.post('/deleteNotification/:id', checkLogin, deleteNotification);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
-router.post('/followUser/:id', checkLogin, getUserAndOther, followUser);
-router.put('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);
+router.put('/followUser', checkLogin, getUserAndOther, followUser);
+router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
 router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
 router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 router.use('/:userID/reviews/', reviewRouter);
+
+
+/*
+router.put('/followUser', (req, res, next) => {
+    console.log("METHOD", req.method);
+    console.log("BODY", req.body);
+})
+
+
+
+router.put('/unfollowUser', (req, res, next) => {
+    console.log("METHOD", req.method);
+    console.log("BODY", req.body);
+})
+*/
+
+
+
+
+
 module.exports = router;

@@ -6,7 +6,8 @@ html
     style
         include ../../stylesheets/index.css
         include ../../stylesheets/user.css
-
+    script
+        include ../../scripts/user.js
 
     title User Page
     body
@@ -20,12 +21,10 @@ html
 
             if !following
                 div(id="follow")
-                    form(action=`/users/followUser/${user._id}`, method='POST')
-                        button.btn.btn-primary.mt-2.ms-3(type="submit") Follow
+                    button.btn.btn-primary.mt-3.me-3(value="profile" type="submit" onclick='followHandler("'+ user._id +'")') Follow
             else
                 div(id="unfollow")
-                    form(action=`/users/unfollowUser/${user._id}`, method='POST')
-                        button.btn.btn-danger.mt-2.ms-3(name="from" value="other" type="submit") Unfollow
+                    button.btn.btn-primary.mt-3.me-3(value="profile" type="submit" onclick='unfollowHandler("'+ user._id +'")') Unfollow
 
             div.mt-5(id="PersonFollowDiv")
                 p People Following:
