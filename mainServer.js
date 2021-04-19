@@ -214,7 +214,7 @@ const signup = async(req,res,next) => {
                 res.status(201).redirect(`/myProfile`);
             });
         } else {
-            res.status(401).send("Username already exists.")
+            res.status(409).send("Username already exists.")
         }
     });
 }
