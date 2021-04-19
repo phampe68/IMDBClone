@@ -465,19 +465,32 @@ const sendWatchedPage = (req, res, next) => {
         },
     })
 }
+
+
+const adjustFollowing = (req, res, next) => {
+    if(req.body.followAction === "follow"){
+        followUser(req, res, next);
+    } else if(req.body.followAction === "unfollow"){
+        unfollowUser(req, res, next);
+    }
+
+}
+
 router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
 router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.put('/:id/notifications', [checkLogin, deleteNotification]);
-router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
-router.put('/:id', [checkLogin, changeAccountType])
 
-router.put('/:id/usersFollowing');
+router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
+router.put('/:id', [checkLogin, changeAccountType]);
+
+router.put('/:id/usersFollowing', [checkLogin, getUserAndOther, adjustFollowing]);
+
+
+
 router.put('/followUser', checkLogin, getUserAndOther, followUser);
 router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
-router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
-router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 router.use('/:userID/reviews/', reviewRouter);
 
 

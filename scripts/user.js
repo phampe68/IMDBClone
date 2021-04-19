@@ -10,11 +10,14 @@ const unfollowHandler = (userID) => {
     }
 
 
-    req.open("PUT", `/users/unfollowUser`);
+    req.open("PUT", `/users/${userID}/usersFollowing`);
     req.setRequestHeader("Content-Type", "application/json");
 
     req.send(JSON.stringify(
-        {userId: userID,}
+        {
+            userId: userID,
+            followAction: "unfollow"
+        }
     ));
 }
 
@@ -29,12 +32,14 @@ const followHandler = (userID) => {
         }
     }
 
-
-    req.open("PUT", `/users/followUser`);
+    req.open("PUT", `/users/${userID}/usersFollowing`);
     req.setRequestHeader("Content-Type", "application/json");
 
     req.send(JSON.stringify(
-        {userId: userID,}
+        {
+            userId: userID,
+            followAction: "follow"
+        }
     ));
 }
 
