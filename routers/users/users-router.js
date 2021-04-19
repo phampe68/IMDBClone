@@ -208,7 +208,7 @@ const changeAccountType = async (req, res, next) => {
         res.status(401).send("ERROR 401: Unauthorized.");
         return;
     }
-    
+
     //check if contributor property exists and if it's a boolean
     if(req.body.hasOwnProperty('contributor') === false || typeof req.body.contributor !== "boolean"){
         res.status(400).send("ERROR 400: Bad Request");
@@ -428,7 +428,6 @@ const sendPeoplePage = (req, res, next) => {
 //retrieve user's watched movies list
 const loadWatchedPage = async (req, res, next) => {
     let userID = req.params.id;
-
     let limit = req.query.limit;
     let page = req.query.page;
     let offset = limit * (page - 1);
@@ -471,14 +470,12 @@ router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUs
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.put('/:id/notifications', [checkLogin, deleteNotification]);
-
-
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
-
 router.put('/:id', [checkLogin, changeAccountType])
+
+router.put('/:id/usersFollowing');
 router.put('/followUser', checkLogin, getUserAndOther, followUser);
 router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
-
 router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
 router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 router.use('/:userID/reviews/', reviewRouter);
