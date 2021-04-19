@@ -240,6 +240,6 @@ router.get('/?', queryParser);
 router.get('/?', [searchPeople, sendSearchResults]);
 router.post('/followPerson/:id',checkLogin,getUserAndOther,followPerson);
 router.post('/unfollowPerson/:id',checkLogin,getUserAndOther,unfollowPerson);
-router.post('/addPerson',checkLogin,addPerson);
+router.post('/',checkLogin,addPerson);
 
 module.exports = router;

@@ -19,7 +19,7 @@ html
 
             h1.display-5.mt-3 Contribute:
             hr
-            form(onsubmit="return submitPerson()" action="/people/addPerson" method="POST")
+            form(onsubmit="return submitPerson()" action="/people/" method="POST")
                 h2 Add a Person:
                 label.form-label.text-white(for="inputActorName") Person Name
                 input.form-control.mb-3(type="text" id="inputActorName" name="personName")
@@ -42,7 +42,7 @@ html
                     button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('actor')") Add Actor To Movie
 
             div.mt-5
-                form.mt-5(onsubmit="return submitMovie()" action="/movies/addMovie" method="POST")
+                form.mt-5(onsubmit="return submitMovie()" action="/movies/" method="POST")
                     label.form-label.text-white(for="inputTitle") Title
                     input.form-control.mb-3(type="text" name="title" id="inputTitle")
 

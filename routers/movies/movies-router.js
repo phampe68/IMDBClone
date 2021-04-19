@@ -184,6 +184,7 @@ const getMovie = (req, res, next) => {
     }).exec((err, movie) => {
         if (err || !movie) {
             res.status(404).send("Could not find movie.");
+            return;
         }
 
         req.movie = movie;
@@ -444,7 +445,7 @@ const addPersonToMovie = async (personName, movie, position) => {
 router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
 router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
 router.use('/:movieID/reviews/', reviewRouter);
-router.post('/addMovie',checkLogin,addMovie);
+router.post('/',checkLogin,addMovie);
 router.post('/watchMovie/:id',checkLogin,getUserAndOther, watchMovie);
 router.post('/unwatchMovie/:id',checkLogin,unwatchMovie);
 module.exports = router;
