@@ -160,6 +160,7 @@ const getPersonIDByName = async (personName) => {
     ).exec().then((result) => {
         return result._id;
     }).catch((err) => {
+        res.status(500).send("Internal server error");
         return `Error finding person ID by name: ${err}`;
     });
 }
@@ -186,13 +187,12 @@ const getMovie = (req, res, next) => {
             res.status(404).send("Could not find movie.");
             return;
         }
-
         req.movie = movie;
         next();
     })
 }
 
-
+//find objects associated with ids stored in movie
 const loadMovies = async (req, res, next) => {
     let currUserId = mongoose.Types.ObjectId(req.session.userId);
 
@@ -207,13 +207,6 @@ const loadMovies = async (req, res, next) => {
         Movie.find({'_id': {$in: similarMovieIDs}})]
     );
 
-
-    currUser = await User.findOne({'_id': currUserId});
-    actors = await Person.find({'_id': {$in: movie.actor}});
-    directors = await Person.find({'_id': {$in: movie.director}});
-    writers = await Person.find({'_id': {$in: movie.writer}});
-    reviews = await Review.find({'_id': {$in: movie.reviews}}).limit(5);
-    relatedMovies = await Movie.find({'_id': {$in: similarMovieIDs}});
 
     let watched = currUser['moviesWatched'].includes(movie._id) === true;
     let i;
@@ -263,13 +256,14 @@ const sendMovie = (req, res, next) => {
     })
 }
 
+//use form data to create a new movie on the server
 const addMovie = async (req,res,next) =>{
     console.log("addMovie request body");
     console.log(req.body);
 
-    let writerNames = [req.body.writerName];
-    let directorNames = [req.body.directorName];
-    let actorNames = [req.body.actorName];
+    let writerNames = req.body.writerName;
+    let directorNames = req.body.directorName;
+    let actorNames = req.body.actorName;
 
     let movie = new Movie();
 
@@ -277,18 +271,30 @@ const addMovie = async (req,res,next) =>{
     movie.runtime = req.body.runtime;
     movie.year = req.body.releaseYear;
 
-    for(let i in directorNames){
-        await addPersonToMovie(directorNames[i], movie, "directorFor");
+    if(directorNames.type===String){
+        await addPersonToMovie(directorNames, movie, "directorFor");
     }
-
-    for(let i in writerNames){
-        await addPersonToMovie(writerNames[i], movie, "writerFor");
+    else{
+        for(let a in directorNames){
+            await addPersonToMovie(directorNames[a], movie, "directorFor");
+        }
     }
-
-    for(let i in actorNames){
-        await addPersonToMovie(actorNames[i], movie, "actorFor");
+    if(writerNames.type === String){
+        await addPersonToMovie(writerNames, movie, "writerFor");
     }
-
+    else {
+        for (let b in writerNames) {
+            await addPersonToMovie(writerNames[b], movie, "writerFor");
+        }
+    }
+    if(actorNames.type===String){
+        await addPersonToMovie(actorNames, movie, "actorFor");
+    }
+    else {
+        for (let c in actorNames) {
+            await addPersonToMovie(actorNames[c], movie, "actorFor");
+        }
+    }
     movie.plot = "";
     movie.averageRating = 0;
     await getSimilarMovies(movie).then(similarMovies =>{
@@ -302,6 +308,7 @@ const addMovie = async (req,res,next) =>{
     })
 }
 
+//add movie to their watched list
 const watchMovie = async (req,res,next) => {
     let user = req.user;
     let other = req.other;
@@ -309,12 +316,16 @@ const watchMovie = async (req,res,next) => {
         user["moviesWatched"].push(other._id);
     }
     user.save(function(err){
-        if(err) throw err;
+        if(err) {
+            res.status(500).send("Could not save user");
+            return;
+        }
         console.log("updated watched movies list");
         res.status(201).redirect(`/movies/${other._id}`);
     })
 }
 
+//remove a movie from user's watched list
 const unwatchMovie = async (req,res,next) => {
     let from = req.body.from;
     let user = req.user;
@@ -323,9 +334,15 @@ const unwatchMovie = async (req,res,next) => {
     if (user && other) {
         user["moviesWatched"].pull({_id: other._id});
         console.log(user["moviesWatched"]);
+    }else{
+        res.status(404).send("Request not found");
+        return;
     }
     user.save(function (err) {
-        if (err) throw err;
+        if (err) {
+            res.status(500).send("Could not save user");
+            return;
+        }
         if (from === "profile") {
             res.status(204).redirect("/myProfile");
         } else {
@@ -334,6 +351,7 @@ const unwatchMovie = async (req,res,next) => {
     })
 }
 
+//find a person based on their name
 const getPersonByName = async (name) => {
     let result;
     result = await Person.findOne(
@@ -354,6 +372,8 @@ function checkLogin (req,res,next){
     }
     next();
 }
+
+
 
 const getUserAndOther = async (req,res,next)=>{
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
@@ -415,7 +435,8 @@ const addPersonToMovie = async (personName, movie, position) => {
         }
 
         await notification.save(function (err) {
-            if (err) throw err;
+            if (err) { throw err;
+            }
             console.log("Saved new notification.");
             console.log(notification);
             console.log(followers);
