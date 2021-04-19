@@ -92,7 +92,7 @@ html
                     i#star-8.fa.fa-star.star-selector(onmouseover='starMouseOver(8)' onmouseleave='starMouseLeave(8)' onclick=`starMouseClick(8)`)
                     i#star-9.fa.fa-star.star-selector(onmouseover='starMouseOver(9)' onmouseleave='starMouseLeave(9)' onclick=`starMouseClick(9)`)
 
-                button.btn.btn-outline-primary.mt-2(type="submit" style={float: "right"})
+                button.btn.btn-outline-primary.mt-2(type="submit" name="type" value="basic" style={float: "right"})
                     | Submit Basic Review
 
                 div.mb-3
@@ -102,7 +102,7 @@ html
                     label.form-label(for='review') Review
                     textarea#review.form-control(type='text' name="fullText" rows='5' style='resize: none')
 
-                button.btn.btn-outline-primary.btn-block(type='submit')
+                button.btn.btn-outline-primary.btn-block(type='submit' name="type" value="full")
                     | Add Review
             hr.my-4
             #review-deck.card-deck

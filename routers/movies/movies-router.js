@@ -6,6 +6,7 @@ const Movie = require('../../database/data-models/movie-model.js');
 const Person = require('../../database/data-models/person-model.js');
 const Review = require('../../database/data-models/review-model.js');
 const User = require("../../database/data-models/user-model");
+const Notification = require("../../database/data-models/notification-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
 let reviewRouter = require('../reviews/reviews-router.js');
@@ -297,7 +298,6 @@ const addMovie = async (req,res,next) =>{
         if(err) throw err;
         console.log("Saved new movie.");
         res.status(200);
-        res.send(movie);
         res.redirect("back");
     })
 }
@@ -335,17 +335,16 @@ const unwatchMovie = async (req,res,next) => {
 }
 
 const getPersonByName = async (name) => {
-    Person.findOne(
+    let result;
+    result = await Person.findOne(
         {
-            username: {$regex: `.*${name}.*`, $options: 'i'}
+            name: {$regex: `.*${name}.*`, $options: 'i'}
         }
-    ).exec().then((result) => {
-        //console.log(`User found: ${result}`);
-        return result;
-    }).catch((err) => {
+    ).catch((err) => {
         //console.log(`Error finding user by name: ${err}`);
         return `Error finding user by name: ${err}`;
     });
+    return result;
 }
 
 function checkLogin (req,res,next){
@@ -371,38 +370,64 @@ const getUserAndOther = async (req,res,next)=>{
  * @param position: role person had in movie (i.e. writer, director, actor)
  */
 const addPersonToMovie = async (personName, movie, position) => {
-    await getPersonByName(personName).then(currPerson=>{
-        console.log(currPerson);
-        if (!currPerson) {
-            console.log(`New person's name: ${personName}`)
-            let newPerson = new Person();
-            newPerson._id = mongoose.Types.ObjectId();
-            newPerson.name = personName;
-            newPerson.writerFor = [];
-            newPerson.actorFor = [];
-            newPerson.directorFor = [];
-            newPerson.frequentCollaborators = [];
-            newPerson.numFollowers = 0;
-            currPerson = newPerson;
-            console.log("new person added");
+    let currPerson;
+    currPerson = await getPersonByName(personName);
+    console.log(currPerson);
+    if (!currPerson) {
+        console.log(`New person's name: ${personName}`)
+        let newPerson = new Person();
+        newPerson._id = mongoose.Types.ObjectId();
+        newPerson.name = personName;
+        newPerson.writerFor = [];
+        newPerson.actorFor = [];
+        newPerson.directorFor = [];
+        newPerson.frequentCollaborators = [];
+        newPerson.numFollowers = 0;
+        currPerson = newPerson;
+        console.log("new person added");
+    }else{
+        let notification = new Notification();
+        notification.text = currPerson["name"] + " was included in: " + movie["title"];
+        notification.link = `/movies/${movie._id}`;
+
+        let followers;
+        followers = await User.find({'_id': {$in: currPerson.followers}});
+        let x;
+        for (x in followers) {
+            console.log("Before:");
+            console.log(followers[x]);
+            followers[x]["notifications"].push(notification._id);
+            console.log("After:");
+            console.log(followers[x]);
+            await followers[x].save(function (err) {
+                if (err) throw err;
+            })
         }
 
-
-        let positionMap = {
-            "writerFor": "writer",
-            "actorFor": "actor",
-            "directorFor": "director"
-        }
-
-        console.log(currPerson);
-        currPerson[position].push(movie._id);
-        console.log()
-        movie[positionMap[position]].push(currPerson._id);
-
-        currPerson.save(function(err){
-            if(err)throw err;
+        await notification.save(function (err) {
+            if (err) throw err;
+            console.log("Saved new notification.");
+            console.log(notification);
+            console.log(followers);
         })
-    });
+    }
+
+
+    let positionMap = {
+        "writerFor": "writer",
+        "actorFor": "actor",
+        "directorFor": "director"
+    }
+
+    console.log(currPerson);
+    currPerson[position].push(movie._id);
+    console.log()
+    movie[positionMap[position]].push(currPerson._id);
+
+    currPerson.save(function(err){
+        if(err)throw err;
+    })
+
 
 }
 
