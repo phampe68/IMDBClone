@@ -72,9 +72,8 @@ html
                 ul.list-group
                     each movie in moviesWatched
                         li.list-group-item
-                            form(action=`/unwatchMovie/${movie.id}` method="POST")
-                                button.btn.btn-danger.mt-3.me-3(type="submit" name="from" value="profile") Remove
-                                a(href=`/movies/${movie._id}`) #{movie.title}
+                            button.btn.btn-outline-danger.mb-3.mt-3.me-3(onclick='removeFromWatchListHandler("' + movie._id + '", "' + user._id + '")') Remove
+                            a(href=`/movies/${movie._id}`) #{movie.title}
             if moviesWatched.length === 0
                 ul.list-group
                     li.list-group-item

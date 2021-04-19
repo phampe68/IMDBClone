@@ -210,7 +210,7 @@ const changeAccountType = async (req, res, next) => {
     }
 
     //check if contributor property exists and if it's a boolean
-    if(req.body.hasOwnProperty('contributor') === false || typeof req.body.contributor !== "boolean"){
+    if (req.body.hasOwnProperty('contributor') === false || typeof req.body.contributor !== "boolean") {
         res.status(400).send("ERROR 400: Bad Request");
         return;
     }
@@ -222,7 +222,7 @@ const changeAccountType = async (req, res, next) => {
     user.save(function (err) {
         if (err) throw err;
         console.log("updated account type")
-        res.status(204).send(user);
+        res.status(204).send();
     })
 }
 
@@ -252,7 +252,7 @@ const followUser = async (req, res, next) => {
             return;
         }
         console.log("updated other user following list");
-        res.status(200).send();
+        res.status(204).send();
     })
 }
 
@@ -277,7 +277,7 @@ const unfollowUser = async (req, res, next) => {
             res.status(500).send("Error saving user.");
             return;
         }
-        res.status(200).send();
+        res.status(204).send();
 
     })
 }
@@ -303,7 +303,7 @@ const deleteNotification = async (req, res, next) => {
     user["notifications"].pull(notification.id);
     user.save(function (err) {
         if (err) throw err;
-        res.status(200).send();
+        res.status(204).send();
     })
 }
 
@@ -409,6 +409,7 @@ const loadPeoplePage = async (req, res, next) => {
     next();
 }
 
+
 //send user's followed people as json or html
 const sendPeoplePage = (req, res, next) => {
     res.format({
@@ -424,6 +425,7 @@ const sendPeoplePage = (req, res, next) => {
         },
     })
 }
+
 
 //retrieve user's watched movies list
 const loadWatchedPage = async (req, res, next) => {
@@ -466,31 +468,112 @@ const sendWatchedPage = (req, res, next) => {
     })
 }
 
-
-const adjustFollowing = (req, res, next) => {
-    if(req.body.followAction === "follow"){
+//determines which action to take on PUT request for usersFollowing (follow or unfollow)
+const adjustUserFollowing = (req, res, next) => {
+    if (req.body.followAction === "follow") {
         followUser(req, res, next);
-    } else if(req.body.followAction === "unfollow"){
+    } else if (req.body.followAction === "unfollow") {
         unfollowUser(req, res, next);
+    } else {
+        res.status(400).send("ERROR 400: Bad Request");
+    }
+}
+
+
+//determines which action to take on PUT request for watchlist (add to or remove)
+const parseWatchListBody =  async (req, res, next) => {
+    //check if required body params exist
+    if (!req.body.userId) {
+        res.status(400).send("ERROR 400: Bad Request");
+        return;
+    }
+    if (!req.body.movieId) {
+        res.status(400).send("ERROR 400: Bad Request");
+        return;
     }
 
+    //get user and movie objects, catch errors while finding
+    let user = await User.findById(req.body.userId).catch(err => {
+        res.status(404).send("ERROR 404: User not found");
+        return;
+    });
+    // need to find movie to make sure the client is adding an existing movie
+    let movie = await Movie.findById(req.body.movieId).catch(err => {
+        res.status(404).send("ERROR 404: Movie not found");
+        return;
+    });
+
+    //check if search came back as undefined
+    if (!user)
+        res.status(404).send("ERROR 404: User not found");
+    if (!movie)
+        res.status(404).send("ERROR 404: Movie not found");
+
+
+    //check if user is the one logged in
+    if (req.session.userId !== (req.body.userId + "")) {
+        res.status(401).send("ERROR 401: Unauthorized.");
+        return;
+    }
+
+    req.user = user;
+
+    console.log(req.body.watchlistAction);
+    if (req.body.watchlistAction === "add") {
+        watchMovie(req, res, next);
+    } else if (req.body.watchlistAction === "remove") {
+        unwatchMovie(req, res, next);
+    } else {
+        res.status(400).send("ERROR 400: Bad Request");
+        return;
+    }
+}
+
+
+//add movie to their watched list
+const watchMovie = async (req, res, next) => {
+    let user = req.user;
+
+    user["moviesWatched"].push(req.body.movieId);
+
+    user.save(function (err) {
+        if (err) {
+            res.status(500).send("Could not save user");
+            return;
+        }
+        console.log("updated watched movies list");
+        res.status(204).send();
+    })
+}
+
+//remove a movie from user's watched list
+const unwatchMovie = async (req, res, next) => {
+    let user = req.user;
+
+    user["moviesWatched"].pull({_id: req.body.movieId});
+    user.save(function (err) {
+        if (err) {
+            res.status(500).send("Could not save user");
+            return;
+        }
+        console.log("updated watched movies list");
+        res.status(204).send();
+    })
 }
 
 router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
+router.put('/:id/moviesWatched', [checkLogin, parseWatchListBody]);
+
 router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
+router.put('/:id/usersFollowing', [checkLogin, getUserAndOther, adjustUserFollowing]);
+
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.put('/:id/notifications', [checkLogin, deleteNotification]);
 
-router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
+router.get('/:id/', [checkLogin, getUser, checkLogin, loadUser, sendUser]);
 router.put('/:id', [checkLogin, changeAccountType]);
 
-router.put('/:id/usersFollowing', [checkLogin, getUserAndOther, adjustFollowing]);
-
-
-
-router.put('/followUser', checkLogin, getUserAndOther, followUser);
-router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
 router.use('/:userID/reviews/', reviewRouter);
 
 

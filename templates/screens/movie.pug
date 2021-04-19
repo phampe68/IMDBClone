@@ -9,7 +9,8 @@ html
             include ../../stylesheets/star.css
         script
             include ../../scripts/starReview.js
-    title Card Info Page
+            include ../../scripts/movie.js
+    title #{movie.title}
     body
         include ../partials/navbar
 
@@ -22,11 +23,10 @@ html
                     h2#average-rating.display-4 Average Rating: #{movie.averageRating}/10
                 hr
                 if watched
-                    form(action=`/movies/unwatchMovie/${movie.id}` method="POST")
-                        button.btn.btn-outline-danger(type="submit" name="from" value="other") Remove From Watched List
+                    button.btn.btn-outline-danger(onclick='removeFromWatchListHandler("' + movie._id + '", "' + userId + '")') Remove From Watched List
                 else
-                    form(action=`/movies/watchMovie/${movie.id}` method="POST")
-                        button.btn.btn-outline-success(type="submit") Add to Watched List
+                    button.btn.btn-outline-success(onclick='addToWatchListHandler("' + movie._id + '", "' + userId + '")') Add To Watched List
+
 
                 h3#movie-subheadings.mt-4 Released: #{movie.released} | Runtime: #{movie.runtime} |
                 h3(style={whiteSpace: "nowrap"}) Genre:

@@ -219,6 +219,7 @@ const loadMovies = async (req, res, next) => {
     //generate template with found data
     req.seeReviewsURL = `/movies/${movie._id}/reviews?page=1`;
     req.options = {
+        userId: currUserId,
         movie: movie,
         watched: watched,
         directors: directors,
@@ -249,7 +250,6 @@ const sendMovie = (req, res, next) => {
             else
                 req.session.viewedMovies = [req.movie._id];
 
-            console.log(req.session.viewedMovies);
             res.status(200).send(data);
 
         },
@@ -259,7 +259,6 @@ const sendMovie = (req, res, next) => {
 //use form data to create a new movie on the server
 const addMovie = async (req,res,next) =>{
     console.log("addMovie request body");
-    console.log(req.body);
 
     let writerNames = req.body.writerName;
     let directorNames = req.body.directorName;
@@ -308,48 +307,6 @@ const addMovie = async (req,res,next) =>{
     })
 }
 
-//add movie to their watched list
-const watchMovie = async (req,res,next) => {
-    let user = req.user;
-    let other = req.other;
-    if(user&&other){
-        user["moviesWatched"].push(other._id);
-    }
-    user.save(function(err){
-        if(err) {
-            res.status(500).send("Could not save user");
-            return;
-        }
-        console.log("updated watched movies list");
-        res.status(201).redirect(`/movies/${other._id}`);
-    })
-}
-
-//remove a movie from user's watched list
-const unwatchMovie = async (req,res,next) => {
-    let from = req.body.from;
-    let user = req.user;
-    let other = req.other;
-
-    if (user && other) {
-        user["moviesWatched"].pull({_id: other._id});
-        console.log(user["moviesWatched"]);
-    }else{
-        res.status(404).send("Request not found");
-        return;
-    }
-    user.save(function (err) {
-        if (err) {
-            res.status(500).send("Could not save user");
-            return;
-        }
-        if (from === "profile") {
-            res.status(204).redirect("/myProfile");
-        } else {
-            res.status(204).redirect(`/movies/${other._id}`);
-        }
-    })
-}
 
 //find a person based on their name
 const getPersonByName = async (name) => {
@@ -392,7 +349,6 @@ const getUserAndOther = async (req,res,next)=>{
 const addPersonToMovie = async (personName, movie, position) => {
     let currPerson;
     currPerson = await getPersonByName(personName);
-    console.log(currPerson);
     if (!currPerson) {
         console.log(`New person's name: ${personName}`)
         let newPerson = new Person();
@@ -467,6 +423,5 @@ router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
 router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
 router.use('/:movieID/reviews/', reviewRouter);
 router.post('/',checkLogin,addMovie);
-router.post('/watchMovie/:id',checkLogin,getUserAndOther, watchMovie);
-router.post('/unwatchMovie/:id',checkLogin,unwatchMovie);
+
 module.exports = router;
