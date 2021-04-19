@@ -99,7 +99,9 @@ const loadUser = async (req, res, next) => {
         reviews: reviews,
         notifications: notifications,
         following: false,
-        seeReviewsURL: `/users/${user._id}/reviews?page=1`
+        seeReviewsURL: `/users/${user._id}/reviews?page=1`,
+        seePeopleFollowingURL: `/users/${user._id}/peopleFollowing?page=1`,
+        seeMoviesWatchedURL: `/users/${user._id}/moviesWatched?page=1`
     };
 
 
@@ -107,7 +109,7 @@ const loadUser = async (req, res, next) => {
     if (currUserId.equals(req.user._id)) {
         req.loadType = "currentUser";
         req.options.seeNotificationsURL = `/users/${user._id}/notifications?page=1`;
-        req.options.seeFollowersURL = `/users/${user._id}/following?page=1`
+        req.options.seeUsersFollowingURL = `/users/${user._id}/usersFollowing?page=1`
 
         next();
     } else {
@@ -166,8 +168,6 @@ const getNotifications = async (req, res, next) => {
 
     req.notifs = notifs;
     next();
-
-
 }
 
 const sendNotificationsPage = (req, res, next) => {
@@ -303,9 +303,9 @@ const loadUsersPage = async (req, res, next) => {
 
     let resultsLeft = count - ((page - 1) * limit);
     if (resultsLeft <= limit)
-        req.nextURL = `/users/${userID}/following?${req.queryString}&page=${page}`;
+        req.nextURL = `/users/${userID}/usersFollowing?${req.queryString}&page=${page}`;
     else
-        req.nextURL = `/users/${userID}/following?${req.queryString}&page=${page + 1}`;
+        req.nextURL = `/users/${userID}/usersFollowing?${req.queryString}&page=${page + 1}`;
 
     req.followingUsers = followingUsers;
     next();
@@ -315,7 +315,7 @@ const loadUsersPage = async (req, res, next) => {
 const sendUsersPage = (req, res, next) => {
     res.format({
         "application/json": () => {
-            res.status(200).json(req.reviews);
+            res.status(200).json(req.followingUsers);
         },
         "text/html": () => {
             let data = pug.renderFile("./partials/usersFollowing.pug", {
@@ -328,8 +328,91 @@ const sendUsersPage = (req, res, next) => {
 }
 
 
-router.get('/:id/following', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
+const loadPeoplePage = async (req, res, next) => {
+    let userID = req.params.id;
 
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page - 1);
+
+    let user = await User.findById(userID);
+
+    let peopleFollowingIDs = user.peopleFollowing;
+
+    let peopleFollowing = await Person.find({_id: {$in: peopleFollowingIDs}}).limit(limit).skip(offset);
+    let count = await Person.find({_id: {$in: peopleFollowingIDs}}).limit(limit).skip(offset).count();
+
+
+
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/users/${userID}/peopleFollowing?${req.queryString}&page=${page}`;
+    else
+        req.nextURL = `/users/${userID}/peopleFollowing?${req.queryString}&page=${page + 1}`;
+
+    req.peopleFollowing = peopleFollowing;
+    next();
+}
+
+const sendPeoplePage = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.peopleFollowing);
+        },
+        "text/html": () => {
+            let data = pug.renderFile("./partials/peopleFollowing.pug", {
+                peopleFollowing: req.peopleFollowing,
+                nextURL: req.nextURL
+            })
+            res.send(data);
+        },
+    })
+}
+
+
+const loadWatchedPage = async (req, res, next) => {
+    let userID = req.params.id;
+
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page - 1);
+
+    let user = await User.findById(userID);
+
+    let watchedIDs = user.moviesWatched;
+
+    let moviesWatched = await Movie.find({_id: {$in: watchedIDs}}).limit(limit).skip(offset);
+    let count = await Movie.find({_id: {$in: watchedIDs}}).limit(limit).skip(offset).count();
+
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/users/${userID}/moviesWatched?${req.queryString}&page=${page}`;
+    else
+        req.nextURL = `/users/${userID}/moviesWatched?${req.queryString}&page=${page + 1}`;
+
+    req.moviesWatched = moviesWatched;
+    next();
+}
+
+
+
+const sendWatchedPage = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.moviesWatched);
+        },
+        "text/html": () => {
+            let data = pug.renderFile("./partials/moviesWatched.pug", {
+                moviesWatched: req.moviesWatched,
+                nextURL: req.nextURL
+            })
+            res.send(data);
+        },
+    })
+}
+router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
+router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
+router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
 router.post('/deleteNotification/:id', checkLogin, deleteNotification);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);

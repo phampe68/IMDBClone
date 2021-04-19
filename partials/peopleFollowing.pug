@@ -12,11 +12,11 @@ html
         include ./navbar.pug
 
         div.container.mt-3
-            h1.display-2 Users Following:
+            h1.display-2 People Following:
             hr
             ul.list-group
-                each user in users
+                each person in peopleFollowing
                     li.list-group-item.list-group-item-info
-                        a(href=`/users/${user._id}`) #{user.username}
+                        a(href=`/people/${person._id}`) #{person.name}
 
             a(href=nextURL style={color:"white"}) next

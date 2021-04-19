@@ -7,16 +7,17 @@ html
         style
             include ../stylesheets/index.css
 
-    title Users
+    title Movies Watched
     body
         include ./navbar.pug
 
         div.container.mt-3
-            h1.display-2 Users Following:
+            h1.display-2 Movies Watched:
             hr
             ul.list-group
-                each user in users
+                each movie in moviesWatched
                     li.list-group-item.list-group-item-info
-                        a(href=`/users/${user._id}`) #{user.username}
+                        a(href=`/movies/${movie._id}`) #{movie.title}
+
 
             a(href=nextURL style={color:"white"}) next
