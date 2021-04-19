@@ -21,15 +21,17 @@ html
                 form(action="/logout", method='GET')
                     button.btn.btn-primary.mt-2.ms-3(type="submit") Logout
 
-            div(id="AccountTypeDiv")
-                form(id="form" action=`/users/accountType/${user._id}` method="POST" text=`${user.id}`) Account Type:
+            div(id="AccountTypeDiv").mt-5
+                form
                     div.form-check.ms-4
                         input.form-check-input(onclick='saveAccountType(true)' type="radio" name="accountTypeRadio" value="true" id="radContributor" checked=user.contributor)
                         label.form-check-label(for="radContributor") Contributor
                     div.form-check.ms-4
                         input.form-check-input(onclick='saveAccountType(false)' type="radio" name="accountTypeRadio" value="false" id="radRegular" checked=!user.contributor)
                         label.form-check-label(for="radRegular") Regular
-                    button.btn.btn-primary.mt-2.ms-3(type="submit") Save
+                    button.btn.btn-primary.mt-3.me-3(onclick='updateContributorHandler("' + user._id + '")') Save
+
+
 
 
             div.mt-5(id="PersonFollowDiv")
@@ -38,7 +40,7 @@ html
                     each person in peopleFollowing
                         li.list-group-item
                             form(action=`/people/unfollowPerson/${person._id}`, method='POST')
-                                button.btn.btn-danger.mt-3.me-3(name="from" value="profile" type="submit") Unfollow
+                                button.btn.btn-danger.mt-3.me-3(value="profile" type="submit") Unfollow
                                 a(href=`/people/${person._id}`) #{person.name}
             if peopleFollowing.length === 0
                 ul.list-group

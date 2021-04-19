@@ -184,21 +184,45 @@ const sendNotificationsPage = (req, res, next) => {
     })
 }
 
+
 //change a user's account type(to/from contributor)
 const changeAccountType = async (req, res, next) => {
-    let id = mongoose.Types.ObjectId(req.session.userId);
-    let user;
-
-    user = await User.findOne({_id: id});
-    if (!user) {
-        res.status(401).redirect("/loginPage");
+    //get id from request body
+    let id;
+    try { //check for valid id
+        id = mongoose.Types.ObjectId(req.body.userId);
+    } catch (err) {
+        res.status(404).send("ERROR 404: user with user ID not found.");
+        return;
     }
-    user.contributor = req.contributor;
 
+    //check if user can be found with valid id
+    let user = await User.findOne({_id: id});
+    if (!user) {
+        res.status(404).send("ERROR 404: Could not find user.");
+        return;
+    }
+
+    //check if user is the one logged in
+    if (req.session.userId !== (req.body.userId + "")) {
+        res.status(401).send("ERROR 401: Unauthorized.");
+        return;
+    }
+    
+    //check if contributor property exists and if it's a boolean
+    if(req.body.hasOwnProperty('contributor') === false || typeof req.body.contributor !== "boolean"){
+        res.status(400).send("ERROR 400: Bad Request");
+        return;
+    }
+
+    //make user contributor change
+    user.contributor = req.body.contributor;
+
+    //save changed user type and return updated object as json
     user.save(function (err) {
         if (err) throw err;
         console.log("updated account type")
-        res.status(204).redirect("/myProfile");
+        res.status(204).send(user);
     })
 }
 
@@ -215,7 +239,7 @@ const followUser = async (req, res, next) => {
     }
 
     user.save(function (err) {
-        if (err){
+        if (err) {
             res.status(500).send("Couldn't save user.")
             return;
         }
@@ -223,7 +247,7 @@ const followUser = async (req, res, next) => {
         console.log("updated user following list");
     })
     other.save(function (err) {
-        if (err){
+        if (err) {
             res.status(500).send("Couldn't save user.")
             return;
         }
@@ -263,7 +287,7 @@ const deleteNotification = async (req, res, next) => {
     let user, notification;
     user = await User.findOne({_id: req.body.userId});
 
-    if(req.session.userId !==(req.body.userId + "")){
+    if (req.session.userId !== (req.body.userId + "")) {
         res.status(401).send("ERROR 401: Unauthorized.");
         return;
     }
@@ -271,10 +295,9 @@ const deleteNotification = async (req, res, next) => {
 
     notification = await Notification.findOne({_id: req.body.notificationId});
 
-    if(!notification){
+    if (!notification) {
         res.status(404).send("ERROR 404: Notification not found.");
     }
-
 
 
     user["notifications"].pull(notification.id);
@@ -446,38 +469,19 @@ const sendWatchedPage = (req, res, next) => {
 router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
 router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
-router.post('/deleteNotification/:id', checkLogin, deleteNotification);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
-
-
 router.put('/:id/notifications', [checkLogin, deleteNotification]);
 
 
-
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
+
+router.put('/:id', [checkLogin, changeAccountType])
 router.put('/followUser', checkLogin, getUserAndOther, followUser);
 router.put('/unfollowUser', checkLogin, getUserAndOther, unfollowUser);
+
 router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
 router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 router.use('/:userID/reviews/', reviewRouter);
-
-
-/*
-router.put('/followUser', (req, res, next) => {
-    console.log("METHOD", req.method);
-    console.log("BODY", req.body);
-})
-
-
-
-router.put('/unfollowUser', (req, res, next) => {
-    console.log("METHOD", req.method);
-    console.log("BODY", req.body);
-})
-*/
-
-
-
 
 
 module.exports = router;

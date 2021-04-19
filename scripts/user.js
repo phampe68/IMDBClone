@@ -64,8 +64,26 @@ const updateNotificationHandler = (userID, notificationID) => {
 }
 
 
-const saveAccountType = (cont) => {
-    let form = document.getElementById("form");
-    let id = form.getAttribute("text");
-    form.action = `/users/accountType/${cont}/${id}`
+const updateContributorHandler = (userID) => {
+    let req = new XMLHttpRequest();
+
+    req.onreadystatechange = () => {
+        console.log(req.status);
+        if (req.readyState === 4 && req.status === 200) {
+            window.location.reload();
+        }
+    }
+
+    req.open("PUT", `/users/${userID}`);
+    req.setRequestHeader("Content-Type", "application/json");
+    let contributor = document.getElementById("radContributor").checked;
+
+    req.send(JSON.stringify(
+        {
+            userId: userID,
+            contributor: contributor
+        },
+    ));
 }
+
+
