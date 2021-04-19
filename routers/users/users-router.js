@@ -94,8 +94,10 @@ const loadUser = async (req, res, next) => {
         recommendedMovies: recommendedMovies,
         reviews: reviews,
         notifications: notifications,
-        following: false
+        following: false,
+        seeReviewsURL: `/users/${user._id}/reviews?page=1`
     };
+
 
     // specify loadType to determine which pug file to render
     if (currUserId.equals(req.user._id)) {
@@ -105,7 +107,6 @@ const loadUser = async (req, res, next) => {
         next();
     } else {
         req.loadType = "otherUser"
-        req.options.seeReviewsURL = `/users/${user._id}/revi`
         User.findOne({'_id': currUserId}).exec((err, currUser) => {
             //make note if the logged in user is following this user
             req.options.following = currUser['usersFollowing'].includes(user._id) === true;
@@ -295,12 +296,6 @@ const setToFalse = (req, res, next) => {
     next();
 }
 
-
-
-
-const sendUserReviewsPage = (req, res, next) => {
-
-}
 
 
 

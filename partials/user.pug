@@ -95,8 +95,17 @@ html
                                 p.ms-2(style={display: "inline-block"}) #{notif.text}
 
             if notifications.length === 0
-                ul.list-group.mb-5
+                ul.list-group.mb-3
                     li.list-group-item
                         p No notifications right now.
             else
                 a(href=seeNotificationsURL) view all notifications
+
+            div.mt-5(id="ReviewsWrittenDiv")
+                p Reviews Written:
+                ul.list-group.mb-3
+                    each review in reviews
+                        li.list-group-item
+                            a(href=`/movies/${review.movie}/reviews/${review.id}`) #{review.summaryText}
+                a(href=seeReviewsURL) see All Reviews
+
