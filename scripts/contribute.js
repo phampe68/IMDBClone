@@ -20,8 +20,8 @@ const personSelectKeyPress = (i) => {
     req.onreadystatechange = () => {
         if (req.readyState === 4 && req.status === 200) {
             // response is array of person objects, exctract their names
-            let peopleFound = JSON.parse(req.responseText);
-            let peopleNames = peopleFound.map(person => person.name);
+            let peopleNames = JSON.parse(req.responseText);
+
             let personList;
             if(i===1){
                 personList = document.getElementById('writersAutoList');

@@ -173,13 +173,14 @@ const followPerson = async (req,res,next)=>{
         user["peopleFollowing"].push(other._id);
         other["followers"].push(user._id);
     }
-    user.save(function(err){
-        if(err){
-            res.send(err);
-        }
-        console.log("updated person following list");
-        res.redirect(`/people/${other._id}`);
+    await user.save(function(err){
+        if (err) throw err;
     })
+    await other.save(function(err){
+        if (err) throw err;
+    })
+    console.log("updated person following list");
+    res.redirect(`/people/${other._id}`);
 }
 
 const unfollowPerson = async (req,res,next)=>{
@@ -192,14 +193,17 @@ const unfollowPerson = async (req,res,next)=>{
         other["followers"].pull({_id: user._id});
         console.log(user["peopleFollowing"]);
     }
-    user.save(function(err){
+    await user.save(function(err){
         if (err) throw err;
-        if(from === "profile"){
-            res.redirect("/myProfile");
-        }else{
-            res.redirect(`/people/${other._id}`)
-        }
     })
+    await other.save(function(err){
+        if (err) throw err;
+    })
+    if(from === "profile"){
+        res.redirect("/myProfile");
+    }else{
+        res.redirect(`/people/${other._id}`)
+    }
 }
 
 function checkLogin (req,res,next){
