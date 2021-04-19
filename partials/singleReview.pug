@@ -12,7 +12,8 @@ div.card.text-white.bg-dark.mb-3
             a(href=`/users/${author.id}`) #{ author.username}
         p.card-text #{review.summaryText}
 
-        button.btn.btn-outline-primary(type='button' data-bs-toggle='collapse' data-bs-target=`#review-details${cardIndex}` aria-expanded='false' aria-controls=`review-details${cardIndex}`) View Details
-        div.collapse.mt-3(id=`review-details${cardIndex}`)
-            p.card.card-body.bg-dark.border-light #{review.fullText}
+        if review.fullText
+            button.btn.btn-outline-primary(type='button' data-bs-toggle='collapse' data-bs-target=`#review-details${cardIndex}` aria-expanded='false' aria-controls=`review-details${cardIndex}`) View Details
+            div.collapse.mt-3(id=`review-details${cardIndex}`)
+                p.card.card-body.bg-dark.border-light #{review.fullText}
 
