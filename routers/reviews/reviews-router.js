@@ -18,6 +18,9 @@ router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
+const MAX_ITEMS = 50;
+const DEFAULT_LIMIT = 10;
+
 const getReview = (req, res, next) => {
     let id;
 
@@ -45,8 +48,7 @@ const getReview = (req, res, next) => {
     })
 }
 
-const MAX_ITEMS = 50;
-const DEFAULT_LIMIT = 10;
+
 
 
 const reviewsPageParser = (req, res, next) => {
