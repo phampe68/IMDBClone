@@ -23,7 +23,7 @@ router.use(express.json());
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
 
-
+//find a review based on a review's id. return review's
 const getReview = (req, res, next) => {
     let id;
 
@@ -31,6 +31,7 @@ const getReview = (req, res, next) => {
         id = mongoose.Types.ObjectId(req.params.id);
     } catch (err) {
         res.status(404).send("ERROR 404: Could not find review.");
+        return;
     }
 
     //find the review in the db by its id
@@ -65,6 +66,10 @@ const getMovieReviews = async (req, res, next) => {
     let reviews = await Review.find({movie: movieID}).limit(limit).skip(offset);
     let count = await Review.find({movie: movieID}).count();
 
+    if(!reviews||!count){
+        res.status(404).send("Request not found");
+        return;
+    }
     let resultsLeft = count - ((page - 1) * limit);
     if (resultsLeft <= limit)
         req.nextURL = `/movies/${movieID}/reviews?${req.queryString}&page=${page}`;
