@@ -33,7 +33,12 @@ html
                     each person in peopleFollowing
                         li.list-group-item
                             a(href=`/people/${person.id}`) #{person.name}
-
+            if peopleFollowing.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p No people followed yet!
+            else
+                a(href=seePeopleFollowingURL) see People Following
 
             div.mt-5(id="MoviesWatchedDiv")
                 p Movies watched:
@@ -41,6 +46,13 @@ html
                     each movie in moviesWatched
                         li.list-group-item
                             a(href=`/movies/${movie.id}`) #{movie.Title}
+            if moviesWatched.length === 0
+                ul.list-group
+                    li.list-group-item
+                        p No movies watched yet!
+            else
+                a(href=seeMoviesWatchedURL) view all watched movies
+
 
             div.mt-5(id="ReviewsWrittenDiv")
                 p Reviews Written:
@@ -48,4 +60,9 @@ html
                     each review in reviews
                         li.list-group-item
                             a(href=`/movies/${review.movie}/reviews/${review.id}`) #{review.summaryText}
-                a(href=seeReviewsURL) see All Reviews
+            if reviews.length === 0
+                ul.list-group.mb-3
+                    li.list-group-item
+                        p No Reviews Right Now
+            else
+                a(href=seeNotificationsURL) view all reviews

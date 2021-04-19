@@ -116,5 +116,9 @@ html
                     each review in reviews
                         li.list-group-item
                             a(href=`/movies/${review.movie}/reviews/${review.id}`) #{review.summaryText}
-                a(href=seeReviewsURL) view All Reviews
-
+            if reviews.length === 0
+                ul.list-group.mb-3
+                    li.list-group-item
+                        p No Reviews Right Now
+            else
+                a(href=seeNotificationsURL) view all reviews
