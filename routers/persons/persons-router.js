@@ -27,6 +27,7 @@ router.use(session({
     //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
 }))
 
+
 const queryParser = (req, res, next) => {
     let query = {};
 
@@ -43,9 +44,22 @@ const queryParser = (req, res, next) => {
     } catch (err) {
         req.query.limit = DEFAULT_LIMIT;
     }
+
+    //parse name param
     if (req.query.hasOwnProperty('name')) {
         query.name = {$regex: `.*${req.query.name}.*`, $options: 'i'};
     }
+
+
+    //parse role param
+    if (req.query.hasOwnProperty('role')){
+        if(["actorFor", "directorFor", "writerFor"].includes(req.query.role))
+            query[req.query.role] = { $exists: true, $not: {$size: 0} };
+        else
+            res.status(400).send("Error: Invalid value for query parameter: role.");
+    }
+
+    console.log(query);
     req.queryObj = query;
     req.next();
 }
@@ -79,7 +93,7 @@ const getPerson = (req, res, next) => {
     try {
         id = mongoose.Types.ObjectId(req.params.id);
     } catch {
-        res.status(404).send("Couldn't find person with id.");
+        res.status(404).send(`Couldn't find person with id.${id}`);
     }
 
     //find the Person in the db by its id
@@ -226,6 +240,6 @@ router.get('/?', queryParser);
 router.get('/?', [searchPeople, sendSearchResults]);
 router.post('/followPerson/:id',checkLogin,getUserAndOther,followPerson);
 router.post('/unfollowPerson/:id',checkLogin,getUserAndOther,unfollowPerson);
-router.post('/addPerson',checkLogin,addPerson);
+router.post('/',checkLogin,addPerson);
 
 module.exports = router;

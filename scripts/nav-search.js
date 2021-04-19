@@ -17,7 +17,6 @@ const actorSelectKeyPress = () => {
 
             let actorList = document.getElementById('actorAutoList');
 
-            console.log(actorNames);
 
             //reset actor list first:
             actorList.innerHTML = "";
@@ -29,7 +28,7 @@ const actorSelectKeyPress = () => {
             })
         }
     }
-    req.open("GET", `/people?name=${enteredText}&limit=${10}`);
+    req.open("GET", `/people?name=${enteredText}&limit=${10}&role=actorFor`);
     req.send();
 }
 

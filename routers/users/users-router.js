@@ -88,8 +88,6 @@ const loadUser = async (req, res, next) => {
 
 
     // load options common for both types of users (logged in, or other)
-    console.log("Notifications:");
-    console.log(notifications);
     req.options = {
         user: user,
         peopleFollowing: peopleFollowing,
@@ -200,7 +198,6 @@ const changeAccountType = async (req, res, next) => {
     user.save(function (err) {
         if (err) throw err;
         console.log("updated account type")
-        console.log(req.body);
         res.status(200).redirect("/myProfile");
     })
 }
@@ -275,6 +272,8 @@ function checkLogin(req, res, next) {
 
 //search database to find user x and user y
 const getUserAndOther = async (req, res, next) => {
+    console.log(req.body);
+
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
@@ -430,7 +429,7 @@ router.post('/deleteNotification/:id', checkLogin, deleteNotification);
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
 router.post('/followUser/:id', checkLogin, getUserAndOther, followUser);
-router.post('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);
+router.put('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);
 router.post('/accountType/true/:id', checkLogin, setToTrue, changeAccountType);
 router.post('/accountType/false/:id', checkLogin, setToFalse, changeAccountType);
 router.use('/:userID/reviews/', reviewRouter);

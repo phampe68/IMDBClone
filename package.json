@@ -2,6 +2,7 @@
   "name": "IMDBClone",
   "version": "1.0.0",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "connect-redis": "^5.1.0",
     "express": "^4.17.1",
     "mongo": "^0.1.0",
