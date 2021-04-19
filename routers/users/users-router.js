@@ -15,6 +15,9 @@ router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
+const MAX_ITEMS = 50;
+const DEFAULT_LIMIT = 10;
+
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
@@ -74,11 +77,11 @@ const loadUser = async (req, res, next) => {
     })
     const [peopleFollowing, usersFollowing, moviesWatched, recommendedMovies, notifications, reviews]
         = await Promise.all([
-        Person.find({'_id': {$in: user.peopleFollowing}}),
-        User.find({'_id': {$in: user.usersFollowing}}),
-        Movie.find({'_id': {$in: user.moviesWatched}}),
-        Movie.find({'_id': {$in: recommendedMovieIDs}}),
-        Notification.find({'_id': {$in: user.notifications}}),
+        Person.find({'_id': {$in: user.peopleFollowing}}).limit(10),
+        User.find({'_id': {$in: user.usersFollowing}}).limit(10),
+        Movie.find({'_id': {$in: user.moviesWatched}}).limit(10),
+        Movie.find({'_id': {$in: recommendedMovieIDs}}).limit(10),
+        Notification.find({'_id': {$in: user.notifications}}).limit(10),
         Review.find({'_id': {$in: user.reviews}}).limit(10),
     ]);
 
@@ -130,11 +133,23 @@ let sendUser = (req, res, next) => {
 
 
 const notificationsPageParser = (req, res, next) => {
+    //parse limit param
+    try {
+        if (req.query.hasOwnProperty("limit")) {
+            let limit = Number(req.query.limit);
+            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
+        } else {
+            req.query.limit = DEFAULT_LIMIT;
+        }
+    } catch {
+        req.query.limit = DEFAULT_LIMIT;
+    }
+
     //parse page param
     try {
         if (req.query.hasOwnProperty("page")) {
             let page = Number(req.query.page);
-            req.query.page = (page > 1) ? page : 1; // if page <= 1, set to 1, o.w. set to page
+            req.query.page = (page > 1) ? page : 1;
         } else {
             req.query.page = 1;
         }
@@ -175,6 +190,8 @@ const getNotifications = async (req, res, next) => {
     });
 
     let count = await Notification.find({_id: {$in: user.notifications}}).count();
+
+
     let resultsLeft = count - ((page - 1) * limit);
     if (resultsLeft <= limit)
         req.nextURL = `/users/${userID}/notifications?${req.queryString}&page=${page}`;
