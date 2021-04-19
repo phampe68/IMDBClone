@@ -6,6 +6,8 @@ const Movie = require('../../database/data-models/movie-model.js');
 const Person = require('../../database/data-models/person-model.js');
 const Notification = require('../../database/data-models/notification-model.js');
 const Review = require('../../database/data-models/review-model.js');
+const pageParser = require('../pageParser');
+
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
@@ -47,48 +49,6 @@ const getReview = (req, res, next) => {
         })
     })
 }
-
-
-
-
-const reviewsPageParser = (req, res, next) => {
-    //parse limit param
-    try {
-        if (req.query.hasOwnProperty("limit")) {
-            let limit = Number(req.query.limit);
-            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
-        } else {
-            req.query.limit = DEFAULT_LIMIT;
-        }
-    } catch {
-        req.query.limit = DEFAULT_LIMIT;
-    }
-
-    //parse page param
-    try {
-        if (req.query.hasOwnProperty("page")) {
-            let page = Number(req.query.page);
-            req.query.page = (page > 1) ? page : 1;
-        } else {
-            req.query.page = 1;
-        }
-    } catch {
-        req.query.page = 1;
-    }
-
-
-    //save the query string
-    let queryString = "";
-    for (let param in req.query) {
-        if (param === "page")
-            continue
-        queryString += `&${param}=${req.query[param]}`;
-    }
-
-    req.queryString = queryString;
-    next();
-}
-
 
 /**
  * Gets all the reviews associated with movieID in param
@@ -281,8 +241,7 @@ function calcAverage(req) {
 
 router.post('/addReview?', checkLogin, getUserAndOther, addReview);
 router.get('/:id', checkLogin, getReview);
-
-router.get('/', [checkLogin, reviewsPageParser, determineType, sendReviewPage]);
+router.get('/', [checkLogin, pageParser, determineType, sendReviewPage]);
 
 
 module.exports = router;

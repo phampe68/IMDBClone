@@ -8,6 +8,8 @@ const Notification = require('../../database/data-models/notification-model.js')
 const Review = require('../../database/data-models/review-model');
 const express = require('express');
 
+const pageParser = require('../pageParser');
+
 let reviewRouter = require('../reviews/reviews-router.js');
 const session = require('express-session');
 let router = express.Router();
@@ -39,7 +41,6 @@ router.use(session({
  * Gets user by id in request
  */
 const getUser = (req, res, next) => {
-
     let id;
     try {
         id = mongoose.Types.ObjectId(req.params.id);
@@ -106,6 +107,7 @@ const loadUser = async (req, res, next) => {
     if (currUserId.equals(req.user._id)) {
         req.loadType = "currentUser";
         req.options.seeNotificationsURL = `/users/${user._id}/notifications?page=1`;
+        req.options.seeFollowersURL = `/users/${user._id}/following?page=1`
 
         next();
     } else {
@@ -131,43 +133,6 @@ let sendUser = (req, res, next) => {
     })
 }
 
-
-const notificationsPageParser = (req, res, next) => {
-    //parse limit param
-    try {
-        if (req.query.hasOwnProperty("limit")) {
-            let limit = Number(req.query.limit);
-            req.query.limit = (limit < MAX_ITEMS) ? limit : MAX_ITEMS;
-        } else {
-            req.query.limit = DEFAULT_LIMIT;
-        }
-    } catch {
-        req.query.limit = DEFAULT_LIMIT;
-    }
-
-    //parse page param
-    try {
-        if (req.query.hasOwnProperty("page")) {
-            let page = Number(req.query.page);
-            req.query.page = (page > 1) ? page : 1;
-        } else {
-            req.query.page = 1;
-        }
-    } catch {
-        req.query.page = 1;
-    }
-
-    //save the query string
-    let queryString = "";
-    for (let param in req.query) {
-        if (param === "page")
-            continue
-        queryString += `&${param}=${req.query[param]}`;
-    }
-
-    req.queryString = queryString;
-    next();
-}
 
 /**
  * Gets all the reviews associated with movieID in URL
@@ -314,12 +279,59 @@ const setToFalse = (req, res, next) => {
 }
 
 
+const loadUsersPage = async (req, res, next) => {
+    let currUserId = mongoose.Types.ObjectId(req.session.userId);
+    let userID = req.params.id;
+
+
+    if (!currUserId.equals(userID)) {
+        res.redirect("back");
+    }
+
+
+    let limit = req.query.limit;
+    let page = req.query.page;
+    let offset = limit * (page - 1);
+
+    let user = await User.findById(userID);
+    let followingUserIDs = user.usersFollowing;
+
+    let followingUsers = await User.find({_id: {$in: followingUserIDs}}).limit(limit).skip(offset);
+    let count = await User.find({_id: {$in: followingUserIDs}}).limit(limit).skip(offset).count();
 
 
 
+    let resultsLeft = count - ((page - 1) * limit);
+    if (resultsLeft <= limit)
+        req.nextURL = `/users/${userID}/following?${req.queryString}&page=${page}`;
+    else
+        req.nextURL = `/users/${userID}/following?${req.queryString}&page=${page + 1}`;
+
+    req.followingUsers = followingUsers;
+    next();
+}
+
+
+const sendUsersPage = (req, res, next) => {
+    res.format({
+        "application/json": () => {
+            res.status(200).json(req.reviews);
+        },
+        "text/html": () => {
+            let data = pug.renderFile("./partials/usersFollowing.pug", {
+                users: req.followingUsers,
+                nextURL: req.nextURL
+            })
+            res.send(data);
+        },
+    })
+}
+
+
+router.get('/:id/following', [checkLogin, pageParser, loadUsersPage, sendUsersPage]);
 
 router.post('/deleteNotification/:id', checkLogin, deleteNotification);
-router.get('/:id/notifications/', checkLogin, notificationsPageParser, getNotifications, sendNotificationsPage);
+router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.get('/:id/', checkLogin, getUser, checkLogin, loadUser, sendUser);
 router.post('/followUser/:id', checkLogin, getUserAndOther, followUser);
 router.post('/unfollowUser/:id', checkLogin, getUserAndOther, unfollowUser);

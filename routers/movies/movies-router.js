@@ -8,9 +8,10 @@ const Review = require('../../database/data-models/review-model.js');
 const User = require("../../database/data-models/user-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
+
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
-router.use(express.urlencoded({extended:true}));
+router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
@@ -20,7 +21,8 @@ const DEFAULT_LIMIT = 10;
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {})
+db.once('open', () => {
+})
 
 /**
  * build a query object based off of query paramaters that will be used to search the database
@@ -249,7 +251,7 @@ const sendMovie = (req, res, next) => {
             let data = pug.renderFile("./partials/movie.pug", req.options);
 
             //keep track of which movies have been viewed so far
-            if(req.session.viewedMovies)
+            if (req.session.viewedMovies)
                 req.session.viewedMovies.push(req.movie);
             else
                 req.session.viewedMovies = [req.movie._id];
@@ -261,7 +263,7 @@ const sendMovie = (req, res, next) => {
     })
 }
 
-const addMovie = async (req,res,next) =>{
+const addMovie = async (req, res, next) => {
     console.log("addMovie request body");
     console.log(req.body);
 
@@ -275,26 +277,26 @@ const addMovie = async (req,res,next) =>{
     movie.runtime = req.body.runtime;
     movie.year = req.body.releaseYear;
 
-    for(let i in directorNames){
+    for (let i in directorNames) {
         await addPersonToMovie(directorNames[i], movie, "directorFor");
     }
 
-    for(let i in writerNames){
+    for (let i in writerNames) {
         await addPersonToMovie(writerNames[i], movie, "writerFor");
     }
 
-    for(let i in directorNames){
+    for (let i in directorNames) {
         await addPersonToMovie(actorNames[i], movie, "actorFor");
     }
 
     movie.plot = "";
     movie.averageRating = 0;
-    await getSimilarMovies(movie).then(similarMovies =>{
+    await getSimilarMovies(movie).then(similarMovies => {
         movie.similarMovies = similarMovies;
     })
 
-    movie.save(function(err){
-        if(err) throw err;
+    movie.save(function (err) {
+        if (err) throw err;
         console.log("Saved new movie.");
         res.status(200);
         res.send(movie);
@@ -302,20 +304,20 @@ const addMovie = async (req,res,next) =>{
     })
 }
 
-const watchMovie = async (req,res,next) => {
+const watchMovie = async (req, res, next) => {
     let user = req.user;
     let other = req.other;
-    if(user&&other){
+    if (user && other) {
         user["moviesWatched"].push(other._id);
     }
-    user.save(function(err){
-        if(err) throw err;
+    user.save(function (err) {
+        if (err) throw err;
         console.log("updated watched movies list");
         res.redirect(`/movies/${other._id}`);
     })
 }
 
-const unwatchMovie = async (req,res,next) => {
+const unwatchMovie = async (req, res, next) => {
     let from = req.body.from;
     let user = req.user;
     let other = req.other;
@@ -348,15 +350,15 @@ const getPersonByName = async (name) => {
     });
 }
 
-function checkLogin (req,res,next){
-    if(!req.session.userId){
+function checkLogin(req, res, next) {
+    if (!req.session.userId) {
         console.log("checking")
         res.redirect("/loginPage");
     }
     next();
 }
 
-const getUserAndOther = async (req,res,next)=>{
+const getUserAndOther = async (req, res, next) => {
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await Movie.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
@@ -371,7 +373,7 @@ const getUserAndOther = async (req,res,next)=>{
  * @param position: role person had in movie (i.e. writer, director, actor)
  */
 const addPersonToMovie = async (personName, movie, position) => {
-    await getPersonByName(personName).then(currPerson=>{
+    await getPersonByName(personName).then(currPerson => {
         console.log(currPerson);
         if (!currPerson) {
             console.log(`New person's name: ${personName}`)
@@ -399,18 +401,18 @@ const addPersonToMovie = async (personName, movie, position) => {
         console.log()
         movie[positionMap[position]].push(currPerson._id);
 
-        currPerson.save(function(err){
-            if(err)throw err;
+        currPerson.save(function (err) {
+            if (err) throw err;
         })
     });
 
 }
 
 //specify handlers:
-router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
-router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
+router.get('/:id', [checkLogin, getMovie, loadMovies, sendMovie]);
+router.get('/?', [checkLogin, queryParser, searchMovie, sendSearchResults]);
 router.use('/:movieID/reviews/', reviewRouter);
-router.post('/addMovie',checkLogin,addMovie);
-router.post('/watchMovie/:id',checkLogin,getUserAndOther, watchMovie);
-router.post('/unwatchMovie/:id',checkLogin,unwatchMovie);
+router.post('/addMovie', checkLogin, addMovie);
+router.post('/watchMovie/:id', checkLogin, getUserAndOther, watchMovie);
+router.post('/unwatchMovie/:id', checkLogin, unwatchMovie);
 module.exports = router;
