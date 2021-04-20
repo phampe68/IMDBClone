@@ -272,7 +272,11 @@ const addMovie = async (req,res,next) =>{
     movie.runtime = req.body.runtime;
     movie.year = req.body.releaseYear;
 
-    if(directorNames.type===String){
+    console.log(Array.isArray(directorNames));
+    console.log(Array.isArray(actorNames));
+    console.log(Array.isArray(writerNames));
+    if(!Array.isArray(directorNames)){
+        console.log(directorNames.type);
         await addPersonToMovie(directorNames, movie, "directorFor");
     }
     else{
@@ -280,7 +284,7 @@ const addMovie = async (req,res,next) =>{
             await addPersonToMovie(directorNames[a], movie, "directorFor");
         }
     }
-    if(writerNames.type === String){
+    if(!Array.isArray(writerNames)){
         await addPersonToMovie(writerNames, movie, "writerFor");
     }
     else {
@@ -288,10 +292,11 @@ const addMovie = async (req,res,next) =>{
             await addPersonToMovie(writerNames[b], movie, "writerFor");
         }
     }
-    if(actorNames.type===String){
+    if(!Array.isArray(actorNames)){
         await addPersonToMovie(actorNames, movie, "actorFor");
     }
     else {
+        console.log("array");
         for (let c in actorNames) {
             await addPersonToMovie(actorNames[c], movie, "actorFor");
         }
@@ -315,7 +320,7 @@ const getPersonByName = async (name) => {
     let result;
     result = await Person.findOne(
         {
-            name: {$regex: `.*${name}.*`, $options: 'i'}
+            name: name
         }
     ).catch((err) => {
         //console.log(`Error finding user by name: ${err}`);
@@ -372,8 +377,10 @@ const addPersonToMovie = async (personName, movie, position) => {
 
         let followers;
         followers = await User.find({'_id': {$in: currPerson.followers}});
-        let x;
-        for (x in followers) {
+        console.log("followers:")
+        console.log(followers);
+
+        for (let x in followers) {
             console.log("Before:");
             console.log(followers[x]);
             followers[x]["notifications"].push(notification._id);
