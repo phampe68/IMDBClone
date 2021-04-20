@@ -67,7 +67,9 @@ function addItem(type){
     }
     document.getElementById(`${type}NameSearch`).value ="";
 
-    list.push(text);
+    if(!list.includes(text)){
+        list.push(text);
+    }
 
     update(type);
 }
