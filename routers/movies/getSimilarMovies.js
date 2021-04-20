@@ -31,7 +31,7 @@ const getSimilarMovies = async (movie, limit) => {
             // i.e. divide number of genre similarities by total genres.
             {$project: {_id: 1, count: 1, score: {$divide: ["$count", movie.genre.length]}}},
             {$sort: {score: -1}},
-        ]).limit(50);
+        ]).limit(10);
 
 
     let movieIDs = simGenreMovieIDs.map(ele => ele._id);
