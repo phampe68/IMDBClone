@@ -259,7 +259,7 @@ const sendMovie = (req, res, next) => {
 //use form data to create a new movie on the server
 const addMovie = async (req,res,next) =>{
     console.log("addMovie request body");
-
+    console.log(req.body);
     let writerNames = req.body.writerName;
     let directorNames = req.body.directorName;
     let actorNames = req.body.actorName;

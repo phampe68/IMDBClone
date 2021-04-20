@@ -148,6 +148,7 @@ const addReview = async (req, res, next) => {
 
     review.author = user._id;
     review.score = score;
+    review.authorName = user.username;
 
     let total = score;
 
