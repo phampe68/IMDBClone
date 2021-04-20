@@ -28,18 +28,17 @@ html
             div.mt-5
                 br
                 h2 Add a Movie:
-                    input.form-control.mb-3(list="writersAutoList" placeholder="Writer Name" aria-label="Search" onkeypress="personSelectKeyPress(1)" autocomplete="off")#writerNameSearch
+                    input.form-control.mt-4(list="writersAutoList" placeholder="Writer Name" aria-label="Search" onkeypress="personSelectKeyPress(1)" autocomplete="off")#writerNameSearch
                     datalist#writersAutoList
                     button.btn.btn-outline-primary.btn.mt-3(onclick=`addItem("writer")`) Add Writer To Movie
 
-                    br
-                    input.form-control.mb-3(list="directorsAutoList" placeholder="Director Name" aria-label="Search" onkeypress="personSelectKeyPress(2)" autocomplete="off")#directorNameSearch
+                    input.form-control.mb-3.mt-4(list="directorsAutoList" placeholder="Director Name" aria-label="Search" onkeypress="personSelectKeyPress(2)" autocomplete="off")#directorNameSearch
                     datalist#directorsAutoList
-                    button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('director')") Add Director To Movie
-                    br
-                    input.form-control.mb-3( list="actorAutoList" placeholder="Actor Name" aria-label="Search" onkeypress="personSelectKeyPress(3)" autocomplete="off")#actorNameSearch
+                    button.btn.btn-outline-primary.btn(onclick="addItem('director')") Add Director To Movie
+
+                    input.form-control.mb-3.mt-4( list="actorAutoList" placeholder="Actor Name" aria-label="Search" onkeypress="personSelectKeyPress(3)" autocomplete="off")#actorNameSearch
                     datalist#actorAutoList
-                    button.btn.btn-outline-primary.btn.mt-3(onclick="addItem('actor')") Add Actor To Movie
+                    button.btn.btn-outline-primary.btn(onclick="addItem('actor')") Add Actor To Movie
 
             div.mt-5
                 form.mt-5(onsubmit="return submitMovie()" action="/movies/" method="POST")
@@ -55,11 +54,11 @@ html
                     label.form-label.text-white(for="inputGenre") Genre
                     input.form-control.mb-3(type="text" name="inputGenre" id="inputGenre")
 
-                    h3 Writers
-                        ul.list-group(id="writerList" class="wList" style={color:"black"})
-                    h3 Directors
-                        ul.list-group(id="directorList" class="dList" style={color:"black"})
-                    h1 Actors
-                        ul.list-group(id="actorList" class="aList" style={color:"black"})
+                    h3.display-6 Writers
+                        ul.list-group.wList(id="writerList")
+                    h3.display-6 Directors
+                        ul.list-group.dList(id="directorList")
+                    h3.display-6 Actors
+                        ul.list-group.aList(id="actorList")
 
                     button.btn.btn-outline-primary.btn.mt-3(type="submit") Add Movie

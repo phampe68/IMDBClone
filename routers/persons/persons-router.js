@@ -77,6 +77,7 @@ const searchPeople = (req, res, next) => {
     });
 }
 
+
 const sendSearchResults = (req, res, next) => {
     res.format({
         "application/json": () => {
@@ -85,6 +86,8 @@ const sendSearchResults = (req, res, next) => {
 
     })
 }
+
+
 /**
  * Gets a single person object by its ID
  */

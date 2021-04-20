@@ -86,7 +86,13 @@ function makeWriterListItem(type,x){
     }
     let listItem = document.createElement("li");
     listItem.className = `${type}List`;
+    listItem.classList.add('list-group-item');
+    listItem.classList.add("mt-3");
+
+
     let input = document.createElement('input');
+    input.readOnly = true;
+
     input.type = "text";
     input.name = `${type}Name`;
     input.style.color = "black";

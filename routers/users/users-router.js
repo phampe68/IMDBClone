@@ -312,6 +312,7 @@ function checkLogin(req, res, next) {
     if (!req.session.userId) {
         console.log("checking")
         res.status(401).redirect("/loginPage");
+        return;
     }
     next();
 }

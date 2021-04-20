@@ -36,9 +36,8 @@ html
                 ul.list-group
                     each person in peopleFollowing
                         li.list-group-item
-                            form(action=`/people/unfollowPerson/${person._id}`, method='POST')
-                                button.btn.btn-danger.mt-3.me-3(value="profile" type="submit") Unfollow
-                                a(href=`/people/${person._id}`) #{person.name}
+                            button.btn.btn-outline-danger.mb-3.mt-3.me-3(onclick='unfollowPersonHandler("' + userId + '", "' + person._id + '")') Unfollow
+                            a(href=`/people/${person._id}`) #{person.name}
             if peopleFollowing.length === 0
                 ul.list-group
                     li.list-group-item
@@ -52,7 +51,7 @@ html
                 ul.list-group
                     each user in usersFollowing
                         li.list-group-item
-                            button.btn.btn-danger.mt-3.me-3(value="profile" type="submit" onclick='unfollowHandler("'+ user._id +'")') Unfollow
+                            button.btn.btn-danger.mt-3.me-3.mb-3(value="profile" type="submit" onclick='unfollowHandler("'+ user._id +'")') Unfollow
                             a(href=`/users/${user._id}`) #{user.username}
 
 
