@@ -481,7 +481,7 @@ const adjustUserFollowing = (req, res, next) => {
 
 
 //determines which action to take on PUT request for watchlist (add to or remove)
-const parseWatchListBody =  async (req, res, next) => {
+const parseWatchListBody = async (req, res, next) => {
     //check if required body params exist
     if (!req.body.userId) {
         res.status(400).send("ERROR 400: Bad Request");
@@ -561,6 +561,90 @@ const unwatchMovie = async (req, res, next) => {
     })
 }
 
+
+/**
+ * Parses body params:
+ * - userId,
+ * - personId,
+ * - followAction
+ */
+const parsePeopleFollowingBody = async (req, res, next) => {
+    //check if required body params exist
+    if (!req.body.userId || !req.body.personId || !req.body.followAction) {
+        res.status(400).send("ERROR 400: Bad Request.");
+    }
+
+    //find user and person objects
+    req.user = await User.findById(req.body.userId).catch(err => {
+        res.status(404).send("ERROR 404: Could not find user.");
+        return;
+    });
+    //need to find person object to check if it exists
+    req.person = await Person.findById(req.body.personId).catch(err => {
+        res.status(404).send("ERROR 404: Could not find person.");
+        return;
+    })
+
+    //check if objects were found
+    if (!req.user || !req.person) {
+        res.status(404).send("ERROR 404: Could not find person.");
+        return;
+    }
+
+    //follow or unfollow a person based on body param
+    if (req.body.followAction === "follow") {
+        followPerson(req, res, next);
+    } else if (req.body.followAction === "unfollow") {
+        unfollowPerson(req, res, next);
+    } else {
+        res.status(400).send("ERROR 400: Bad Request");
+    }
+}
+
+/**
+ * updates a person's followers and user's people following for when user follows a person
+ */
+const followPerson = async (req, res, next) => {
+    let user = req.user;
+    let person = req.person;
+
+    //change following lists for user and person
+    user["peopleFollowing"].push(person._id);
+    person["followers"].push(user._id);
+
+    //save objects
+    await user.save(function (err) {
+        if (err) throw err;
+    });
+    await person.save(function (err) {
+        if (err) throw err;
+    });
+    res.status(204).send();
+}
+
+/**
+ * updates a person's followers and user's people following for when user unfollows a person
+ */
+const unfollowPerson = async (req, res, next) => {
+    let user = req.user;
+    let person = req.person;
+
+    //change following lists for user and person
+    user["peopleFollowing"].pull({_id: person._id});
+    person["followers"].pull({_id: user._id});
+
+    //save objects
+    await user.save(function (err) {
+        if (err) throw err;
+    });
+    await person.save(function (err) {
+        if (err) throw err;
+    });
+
+    res.status(204).send();
+}
+
+
 router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
 router.put('/:id/moviesWatched', [checkLogin, parseWatchListBody]);
 
@@ -568,6 +652,8 @@ router.get('/:id/usersFollowing', [checkLogin, pageParser, loadUsersPage, sendUs
 router.put('/:id/usersFollowing', [checkLogin, getUserAndOther, adjustUserFollowing]);
 
 router.get('/:id/peopleFollowing', [checkLogin, pageParser, loadPeoplePage, sendPeoplePage]);
+router.put('/:id/peopleFollowing', [checkLogin, parsePeopleFollowingBody])
+
 router.get('/:id/notifications/', checkLogin, pageParser, getNotifications, sendNotificationsPage);
 router.put('/:id/notifications', [checkLogin, deleteNotification]);
 

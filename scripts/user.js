@@ -4,7 +4,7 @@ const unfollowHandler = (userID) => {
     req.onreadystatechange = () => {
         console.log(req.status);
 
-        if (req.readyState === 4 && req.status === 200) {
+        if (req.readyState === 4 && req.status === 204) {
             window.location.reload();
         }
     }
@@ -27,7 +27,7 @@ const followHandler = (userID) => {
 
     req.onreadystatechange = () => {
         console.log(req.status);
-        if (req.readyState === 4 && req.status === 200) {
+        if (req.readyState === 4 && req.status === 204) {
             window.location.reload();
         }
     }
@@ -49,7 +49,7 @@ const updateNotificationHandler = (userID, notificationID) => {
 
     req.onreadystatechange = () => {
         console.log(req.status);
-        if (req.readyState === 4 && req.status === 200) {
+        if (req.readyState === 4 && req.status === 204) {
             window.location.reload();
         }
     }
@@ -74,7 +74,7 @@ const updateContributorHandler = (userID) => {
 
     req.onreadystatechange = () => {
         console.log(req.status);
-        if (req.readyState === 4 && req.status === 200) {
+        if (req.readyState === 4 && req.status === 204) {
             window.location.reload();
         }
     }
