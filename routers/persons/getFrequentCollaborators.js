@@ -39,8 +39,8 @@ const getFrequentCollaborators = async (person) => {
         collaborators = Object.keys(collaborators);
         //remove person we're looking at
         collaborators = collaborators.filter(collaborator => collaborator !== person._id + "");
+        collaborators = collaborators.filter(collaborator=>collaborator!=="0"&&collaborator!=="1"&&collaborator!=="2"&&collaborator!=="3"&&collaborator!=="4");
         collaborators = collaborators.slice(0, 5);
-
     });
     return collaborators;
 }

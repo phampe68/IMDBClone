@@ -8,7 +8,7 @@ let personSchema = Schema({
     directorFor: [{type: Schema.Types.ObjectId, ref: 'Movie'}],
     frequentCollaborators: [{type: Schema.Types.ObjectId, ref: 'Person'}],
     numFollowers: {type: Number},
-    followers: [{type: Schema.Types.ObjectId, ref: 'User', required: true}]
+    followers: [{type: Schema.Types.ObjectId, ref: 'User'}]
 });
 
 let Person = mongoose.model("Person", personSchema);
