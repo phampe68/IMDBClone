@@ -3,6 +3,7 @@ const pug = require('pug');
 const Movie = require('../../database/data-models/movie-model.js');
 const Person = require('../../database/data-models/person-model.js');
 const User = require('../../database/data-models/user-model.js');
+const checkLogin = require('../users/checkLogin');
 
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 50;
@@ -176,14 +177,6 @@ const addPerson = async (req,res,next) => {
     }
     res.status(201).redirect("back");
 
-}
-
-function checkLogin (req,res,next){
-    if(!req.session.userId){
-        console.log("checking")
-        res.status(401).redirect("/loginPage");
-    }
-    next();
 }
 
 const getUserAndOther = async (req,res,next)=>{

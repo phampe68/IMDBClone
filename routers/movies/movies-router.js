@@ -9,6 +9,8 @@ const User = require("../../database/data-models/user-model");
 const Notification = require("../../database/data-models/notification-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
+const checkLogin = require('../users/checkLogin');
+
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
 router.use(express.urlencoded({extended:true}));
@@ -320,14 +322,6 @@ const getPersonByName = async (name) => {
         return `Error finding user by name: ${err}`;
     });
     return result;
-}
-
-function checkLogin (req,res,next){
-    if(!req.session.userId){
-        console.log("checking")
-        res.status(401).redirect("/loginPage");
-    }
-    next();
 }
 
 
