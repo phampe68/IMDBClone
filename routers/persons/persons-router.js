@@ -28,7 +28,7 @@ router.use(session({
     //store: new redisStore({ host: 'localhost',port: 6379, client: client,ttl:260})
 }))
 
-
+//parse search query, then pass on to next function
 const queryParser = (req, res, next) => {
     let query = {};
 
@@ -65,7 +65,7 @@ const queryParser = (req, res, next) => {
     req.next();
 }
 
-
+//find people that match the query
 const searchPeople = (req, res, next) => {
     let query = req.queryObj;
     let limit = req.query.limit;
@@ -78,7 +78,7 @@ const searchPeople = (req, res, next) => {
     });
 }
 
-
+//send search results as json in response
 const sendSearchResults = (req, res, next) => {
     res.format({
         "application/json": () => {

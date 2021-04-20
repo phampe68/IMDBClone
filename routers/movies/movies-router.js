@@ -9,6 +9,7 @@ const User = require("../../database/data-models/user-model");
 const Notification = require("../../database/data-models/notification-model");
 
 const getSimilarMovies = require('./getSimilarMovies');
+const getFrequentCollaborators = require('../persons/getFrequentCollaborators');
 const checkLogin = require('../users/checkLogin');
 
 let reviewRouter = require('../reviews/reviews-router.js');
@@ -275,6 +276,8 @@ const addMovie = async (req,res,next) =>{
     console.log(Array.isArray(directorNames));
     console.log(Array.isArray(actorNames));
     console.log(Array.isArray(writerNames));
+
+    //determine whether input is an array, or a single person name
     if(!Array.isArray(directorNames)){
         console.log(directorNames.type);
         await addPersonToMovie(directorNames, movie, "directorFor");
@@ -361,6 +364,11 @@ const addPersonToMovie = async (personName, movie, position) => {
         currPerson = newPerson;
         console.log("new person added");
     }else{
+        let frequentCollaborators;
+        frequentCollaborators = await getFrequentCollaborators(currPerson);
+
+        currPerson.frequentCollaborators = frequentCollaborators;
+
         let notification = new Notification();
         let text;
         if(position === "writerFor"){
