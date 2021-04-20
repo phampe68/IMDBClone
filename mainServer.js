@@ -166,6 +166,7 @@ const login = async(req,res,next) => {
 app.get('/logout',function (req,res,next) {
     if(!req.session.loggedin){
         res.status(401);
+        return;
     }else{
         req.session.loggedin = false;
         req.session.username = false;
@@ -183,7 +184,7 @@ const signup = async(req,res,next) => {
     let password = req.body.password;
 
     if (req.session.loggedin) {
-        res.status(401).send("Already logged in.");
+        res.status(401).redirect("back");
         return;
     }
 
@@ -216,7 +217,7 @@ const signup = async(req,res,next) => {
                 res.status(201).redirect(`/myProfile`);
             });
         } else {
-            res.status(409).send("Username already exists.")
+            res.status(409).redirect("back");
         }
     });
 }

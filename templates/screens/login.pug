@@ -16,7 +16,7 @@ html
     body
         div.bg-dark.p-5
             h1.text-white Login
-            form(onsubmit="return submitLogin()" action='/login', method='POST')
+            form(id="form" onsubmit="return submitLogin()" action='/login', method='POST')
                 div.mt-5
                     label.form-label.text-white(for="inputUsername") Username
                     input.form-control(type="text" name="username" id="inputUsername" aria-describedby="usernameHelp")
@@ -25,5 +25,5 @@ html
                     label.form-label.text-white.mt-3(for="inputPassword") Password
                     input.form-control(type="password" name="password" id="inputPassword")
 
-                    button.btn.btn-outline-primary.btn-lg.mt-5(type="submit" name="action" value="login") Login
-                    button.btn.btn-outline-success.btn-lg.mt-5.ms-3(type="submit" name="action" value="signup") Sign Up
+                    button.btn.btn-outline-primary.btn-lg.mt-5(onclick="login()" name="action" value="login") Login
+                    button.btn.btn-outline-success.btn-lg.mt-5.ms-3(onclick="signup()" name="action" value="signup") Sign Up

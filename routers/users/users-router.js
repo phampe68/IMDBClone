@@ -636,6 +636,25 @@ const unfollowPerson = async (req, res, next) => {
     res.status(204).send();
 }
 
+//returns a user object by searching for its username in the database
+const getUserByName = async (req,res,next) => {
+    if (req.query.hasOwnProperty("name")) {
+        let user;
+        user = await User.findOne({
+            username: req.query.name
+        })
+        if(user){
+            //console.log(`User found: ${result}`);
+            res.status(200).send(user);
+            return;
+        }
+
+        //console.log(`Error finding user by name: ${err}`);
+        res.status(404);
+
+    }
+}
+
 
 router.get('/:id/moviesWatched', [checkLogin, pageParser, loadWatchedPage, sendWatchedPage]);
 router.put('/:id/moviesWatched', [checkLogin, parseWatchListBody]);
@@ -653,6 +672,6 @@ router.get('/:id/', [checkLogin, getUser, checkLogin, loadUser, sendUser]);
 router.put('/:id', [checkLogin, changeAccountType]);
 
 router.use('/:userID/reviews/', reviewRouter);
-
+router.get('/?',getUserByName);
 
 module.exports = router;
