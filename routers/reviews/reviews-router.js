@@ -7,6 +7,7 @@ const Person = require('../../database/data-models/person-model.js');
 const Notification = require('../../database/data-models/notification-model.js');
 const Review = require('../../database/data-models/review-model.js');
 const pageParser = require('../pageParser');
+const checkLogin = require('../users/checkLogin');
 
 
 mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
@@ -239,13 +240,6 @@ const addReview = async (req, res, next) => {
     res.status(201).redirect(`/movies/${req.query.id}`);
 }
 
-function checkLogin(req, res, next) {
-    if (!req.session.userId) {
-        console.log("checking")
-        res.status(401).redirect("/loginPage");
-    }
-    next();
-}
 
 const getUserAndOther = async (req, res, next) => {
     if (req.query.hasOwnProperty("id")) {

@@ -9,6 +9,7 @@ const Review = require('../../database/data-models/review-model');
 const express = require('express');
 
 const pageParser = require('../pageParser');
+const checkLogin = require('../users/checkLogin');
 
 let reviewRouter = require('../reviews/reviews-router.js');
 const session = require('express-session');
@@ -305,16 +306,6 @@ const deleteNotification = async (req, res, next) => {
         if (err) throw err;
         res.status(204).send();
     })
-}
-
-//middleware to ensure user is logged in
-function checkLogin(req, res, next) {
-    if (!req.session.userId) {
-        console.log("checking")
-        res.status(401).redirect("/loginPage");
-        return;
-    }
-    next();
 }
 
 //search database to find user x and user y
