@@ -3,47 +3,10 @@
 <p align="center">
 
 
-  <h3 align="center">IMDBClone</h3>
-
-  <p align="center">
-    A web app with similar functionality to IMDB.
-    <br />
-    <a href="https://github.com/phampe68/IMDBClone"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/phampe68/IMDBClone">View Demo</a>
-    ·
-    <a href="https://github.com/phampe68/IMDBClone/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/phampe68/IMDBClone/issues">Request Feature</a>
-  </p>
-</p>
+  <h1 align="center">IMDBClone</h1>
 
 
 
-<!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#collaborators">Collaborators</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
-  </ol>
-</details>
 
 
 
@@ -89,39 +52,24 @@ To get a local copy up and running follow these simple steps.
   ```sh
   npm install npm@latest -g
   ```
+* mongodb
+    [Download mongodb](https://www.mongodb.com/try/download/community)
 
 ### Installation
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/phampe68/IMDBClone.git
-   ```
+1. Unzip submission and navigate to project level directory
 2. Install NPM packages
    ```sh
    npm install
    ```
 3. Initialize the database
    ```sh
-    node database-initializer.js
+    node database/database-initializer.js
     ```
 4. Start the server
     ```sh
     node mainServer.js
     ```
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-See the [open issues](https://github.com/phampe68/IMDBClone/issues) for a list of proposed features (and known issues).
 
 
 <!-- Collaborators -->
@@ -137,6 +85,7 @@ Project Link: [https://github.com/phampe68/IMDBClone](https://github.com/phampe6
 
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
+Initialization script is based on professor Dave Mckenney's example initialization script.
 
 
 
