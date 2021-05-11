@@ -8,14 +8,14 @@ html
         include ../../stylesheets/index.css
 
     script
-        include ../../scripts/login.js
+        include ../../scripts/signUp.js
 
-    title Login Page
+    title Sign Up
     //include ./navbar.pug
 
     body
         div.bg-dark.p-5
-            h1.text-white Login
+            h1.text-white Sign Up
             div.mt-5
                 label.form-label.text-white(for="inputUsername") Username
                 input.form-control(type="text" name="username" id="inputUsername" aria-describedby="usernameHelp")
@@ -24,5 +24,5 @@ html
                 label.form-label.text-white.mt-3(for="inputPassword") Password
                 input.form-control(type="password" name="password" id="inputPassword")
 
-                button.btn.btn-outline-primary.btn-lg.mt-5(onclick="signIn()" name="action" value="login") Login
-                a.btn.btn-outline-success.btn-lg.mt-5.ms-3(href="/signUp") Sign Up
+                a.btn.btn-outline-primary.btn-lg.mt-5(href="/loginPage") Login
+                button.btn.btn-outline-success.btn-lg.mt-5.ms-3(onclick="signUp()") Sign Up

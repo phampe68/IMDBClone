@@ -1,4 +1,4 @@
-const movieData = require('../movie-data-2500.json');
+const movieData = require('../movie-data/movie-data-2500.json');
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 

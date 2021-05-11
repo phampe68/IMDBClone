@@ -4,7 +4,7 @@
 const express = require('express');
 
 function checkLogin(req, res, next) {
-    if (!req.session.userId) {
+    if (!req.session.loggedin) {
         console.log("checking")
         res.status(401).redirect("/loginPage");
         return;
