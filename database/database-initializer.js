@@ -1,4 +1,4 @@
-const movieData = require('../movie-data/movie-data-2500.json');
+const movieData = require('../movie-data/movie-data-1000.json');
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -92,7 +92,8 @@ const initializeDB = async () => {
 
 
     //connect to database:
-    await mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true}).catch(err => {
+    await mongoose.connect("mongodb+srv://phampe68:yellowSubmarine@imdbclonedata.oik0g.mongodb.net/IMDBCloneDataBase?retryWrites=true&w=majority"
+        , {useNewUrlParser: true}).catch(err => {
         console.log(err);
     });
     console.log("Connected to IMDB Clone");

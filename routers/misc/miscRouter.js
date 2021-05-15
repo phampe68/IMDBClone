@@ -10,11 +10,6 @@ router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-})
 
 // loads contribute page if user is contributor
 const loadContribute = (req, res, next) => {

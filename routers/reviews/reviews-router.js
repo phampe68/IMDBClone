@@ -10,11 +10,6 @@ const pageParser = require('../pageParser');
 const checkLogin = require('../users/checkLogin');
 
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-})
 
 let router = express.Router({mergeParams: true});
 router.use(express.urlencoded({extended: true}));

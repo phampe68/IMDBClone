@@ -10,13 +10,6 @@ const pug = require('pug');
 //const client  = redis.createClient();
 
 
-//connect mongoose
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-    console.log("Connected to IMDB Clone");
-})
 app.set("view engine", "pug");
 app.use(express.static("public"));
 
@@ -50,8 +43,12 @@ app.use(express.static("public"));
 app.use(express.json())
 app.use(express.urlencoded({extended: true}));
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-
+//connect to database:
+mongoose.connect("mongodb+srv://phampe68:yellowSubmarine@imdbclonedata.oik0g.mongodb.net/IMDBCloneDataBase?retryWrites=true&w=majority"
+    , {useNewUrlParser: true}).catch(err => {
+    console.log(err);
+});
+console.log("Connected to IMDB Clone");
 
 /**
  * catch urls that don't exist
@@ -62,5 +59,5 @@ const redirectBadURL = (req, res) => {
 app.get('*', redirectBadURL);
 
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
 console.log("Server listening at http://localhost:3000");

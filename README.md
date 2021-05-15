@@ -18,6 +18,8 @@ Note:
 <li>"users" refer to the users who made accounts and are using the application</li>
 </ul>
 
+## See working demo
+
 ### Built With
 
 -   [Bootstrap](https://getbootstrap.com)
@@ -49,12 +51,15 @@ To get a local copy up and running follow these simple steps.
 
 ### Installation
 
-1. Unzip submission and navigate to project level directory
+1. Clone the repo
+   ```sh
+   git clone https://github.com/phampe68/IMDBClone.git
+   ```
 2. Install NPM packages
     ```sh
     npm install
     ```
-3. Initialize the database
+3. Initialize the database (This can take a few minutes)
     ```sh
      node database/database-initializer.js
     ```
@@ -67,9 +72,9 @@ To get a local copy up and running follow these simple steps.
 
 ## Collaborators
 
-Peter Pham - 101141273
+Peter Pham 
 <br>
-Eric Stewart - 101144582
+Eric Stewart 
 <br>
 Project Link: [https://github.com/phampe68/IMDBClone](https://github.com/phampe68/IMDBClone)
 

@@ -16,11 +16,6 @@ router.use(express.urlencoded({extended:true}));
 router.use(express.static("public"));
 router.use(express.json());
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {})
-
 router.use(session({
     name: "session",
     secret: 'a super duper secret secret',

@@ -10,11 +10,6 @@ router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-})
 
 //returns a user object by searching for its username in the database
 const getUserByName = async (userName) => {
@@ -111,7 +106,7 @@ const signUp = async (req, res, next) => {
 
 // displays sign in form
 const loadSignUp = (req, res, next) => {
-    let data = pug.renderFile("./templates/screens/signUp.pug");
+    let data = pug.renderFile("./templates/screens/signup.pug");
     res.status(200).send(data);
 }
 
@@ -133,7 +128,6 @@ const logout = (req, res, next) => {
         res.status(200);
     }
     res.redirect("/loginPage");
-    next();
 }
 
 

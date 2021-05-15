@@ -21,12 +21,6 @@ router.use(express.json());
 const MAX_ITEMS = 50;
 const DEFAULT_LIMIT = 10;
 
-mongoose.connect('mongodb://localhost/IMDBClone', {useNewUrlParser: true});
-let db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', () => {
-    console.log("User router connected");
-})
 
 const getRecommendedMovies = require("./getRecommendedMovies");
 
