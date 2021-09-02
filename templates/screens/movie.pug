@@ -22,6 +22,11 @@ html
                 else
                     h2#average-rating.display-4 Average Rating: #{movie.averageRating}/10
                 hr
+
+                img(src=movie.poster).img-fluid.rounded.mx-auto.d-block
+
+                hr
+
                 if watched
                     button.btn.btn-outline-danger(onclick='removeFromWatchListHandler("' + movie._id + '", "' + userId + '")') Remove From Watched List
                 else

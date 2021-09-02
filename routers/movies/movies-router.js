@@ -14,7 +14,7 @@ const checkLogin = require('../users/checkLogin');
 
 let reviewRouter = require('../reviews/reviews-router.js');
 let router = express.Router();
-router.use(express.urlencoded({extended:true}));
+router.use(express.urlencoded({extended: true}));
 router.use(express.static("public"));
 router.use(express.json());
 
@@ -244,7 +244,7 @@ const sendMovie = (req, res, next) => {
             let data = pug.renderFile("./templates/screens/movie.pug", req.options);
 
             //keep track of which movies have been viewed so far
-            if(req.session.viewedMovies)
+            if (req.session.viewedMovies)
                 req.session.viewedMovies.push(req.movie);
             else
                 req.session.viewedMovies = [req.movie._id];
@@ -256,7 +256,7 @@ const sendMovie = (req, res, next) => {
 }
 
 //use form data to create a new movie on the server
-const addMovie = async (req,res,next) =>{
+const addMovie = async (req, res, next) => {
     console.log("addMovie request body");
     console.log(req.body);
     let writerNames = req.body.writerName;
@@ -274,27 +274,24 @@ const addMovie = async (req,res,next) =>{
     console.log(Array.isArray(writerNames));
 
     //determine whether input is an array, or a single person name
-    if(!Array.isArray(directorNames)){
+    if (!Array.isArray(directorNames)) {
         console.log(directorNames.type);
         await addPersonToMovie(directorNames, movie, "directorFor");
-    }
-    else{
-        for(let a in directorNames){
+    } else {
+        for (let a in directorNames) {
             await addPersonToMovie(directorNames[a], movie, "directorFor");
         }
     }
-    if(!Array.isArray(writerNames)){
+    if (!Array.isArray(writerNames)) {
         await addPersonToMovie(writerNames, movie, "writerFor");
-    }
-    else {
+    } else {
         for (let b in writerNames) {
             await addPersonToMovie(writerNames[b], movie, "writerFor");
         }
     }
-    if(!Array.isArray(actorNames)){
+    if (!Array.isArray(actorNames)) {
         await addPersonToMovie(actorNames, movie, "actorFor");
-    }
-    else {
+    } else {
         console.log("array");
         for (let c in actorNames) {
             await addPersonToMovie(actorNames[c], movie, "actorFor");
@@ -302,12 +299,12 @@ const addMovie = async (req,res,next) =>{
     }
     movie.plot = "";
     movie.averageRating = 0;
-    await getSimilarMovies(movie).then(similarMovies =>{
+    await getSimilarMovies(movie).then(similarMovies => {
         movie.similarMovies = similarMovies;
     })
 
-    movie.save(function(err){
-        if(err) throw err;
+    movie.save(function (err) {
+        if (err) throw err;
         console.log("Saved new movie.");
         res.status(201).redirect("back");
     })
@@ -329,8 +326,7 @@ const getPersonByName = async (name) => {
 }
 
 
-
-const getUserAndOther = async (req,res,next)=>{
+const getUserAndOther = async (req, res, next) => {
     req.user = await User.findOne({'_id': mongoose.Types.ObjectId(req.session.userId)});
     req.other = await Movie.findOne({'_id': mongoose.Types.ObjectId(req.params.id)});
     next();
@@ -359,7 +355,7 @@ const addPersonToMovie = async (personName, movie, position) => {
         newPerson.numFollowers = 0;
         currPerson = newPerson;
         console.log("new person added");
-    }else{
+    } else {
         let frequentCollaborators;
         frequentCollaborators = await getFrequentCollaborators(currPerson);
 
@@ -367,16 +363,14 @@ const addPersonToMovie = async (personName, movie, position) => {
 
         let notification = new Notification();
         let text;
-        if(position === "writerFor"){
+        if (position === "writerFor") {
             text = "a writer";
-        }
-        else if(position === "directorFor"){
+        } else if (position === "directorFor") {
             text = "a director";
-        }
-        else{
+        } else {
             text = "an actor";
         }
-        notification.text = currPerson["name"] + " was included as " +text+ " in " + movie["title"];
+        notification.text = currPerson["name"] + " was included as " + text + " in " + movie["title"];
         notification.link = `/movies/${movie._id}`;
 
         let followers;
@@ -396,7 +390,8 @@ const addPersonToMovie = async (personName, movie, position) => {
         }
 
         await notification.save(function (err) {
-            if (err) { throw err;
+            if (err) {
+                throw err;
             }
             console.log("Saved new notification.");
             console.log(notification);
@@ -416,17 +411,17 @@ const addPersonToMovie = async (personName, movie, position) => {
     console.log()
     movie[positionMap[position]].push(currPerson._id);
 
-    currPerson.save(function(err){
-        if(err)throw err;
+    currPerson.save(function (err) {
+        if (err) throw err;
     })
 
 
 }
 
 //specify handlers:
-router.get('/:id', [checkLogin,getMovie, loadMovies, sendMovie]);
-router.get('/?', [checkLogin,queryParser, searchMovie, sendSearchResults]);
+router.get('/:id', [checkLogin, getMovie, loadMovies, sendMovie]);
+router.get('/?', [checkLogin, queryParser, searchMovie, sendSearchResults]);
 router.use('/:movieID/reviews/', reviewRouter);
-router.post('/',checkLogin,addMovie);
+router.post('/', checkLogin, addMovie);
 
 module.exports = router;
