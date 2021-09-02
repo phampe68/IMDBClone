@@ -21,9 +21,10 @@ Note:
 ## See working demo
 https://imdbcloneweb.herokuapp.com/
 Some screenshots of functionality: 
+![homePage](https://user-images.githubusercontent.com/38918965/131896748-89ab8c8c-7f6b-46e5-9c0c-7ddd46a7544b.png)
 ![addAndViewReviews](https://user-images.githubusercontent.com/38918965/118345679-2fb7bf80-b504-11eb-8d92-0fd752e9efa7.jpg)
 ![loginPage](https://user-images.githubusercontent.com/38918965/118345680-30e8ec80-b504-11eb-99a5-7348ad31b97b.jpg)
-![movieInfo](https://user-images.githubusercontent.com/38918965/118345681-31818300-b504-11eb-8376-62ac95696102.jpg)
+![movieInfo](https://user-images.githubusercontent.com/38918965/131896932-7233bc16-ca1e-4cef-9099-d6e8f923bddb.png)
 ![searchByGenre](https://user-images.githubusercontent.com/38918965/118345683-32b2b000-b504-11eb-8d9d-31fade01648d.jpg)
 
 
