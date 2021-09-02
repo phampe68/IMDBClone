@@ -6,12 +6,37 @@ html
     style
         include ../../stylesheets/index.css
 
-    title Card Info Page
-    body
+    title Home
+    body(style="background-color: #A12568;")
         include ../partials/navbar
 
         div.p-5
             h1.text-white Welcome to IMDB Clone!
             hr
 
+
+            - for (var i = 0; i < recommendedMovies.length -1; i+=2)
+                - var movie1 = recommendedMovies[i];
+                - var movie2 = recommendedMovies[i+1];
+                div.row
+                    div.col-sm-6
+                        div.card.text-white.bg-dark.mb-3
+                            div.card-body
+                                h5.text-center
+                                    a(href=`/movies/${movie1._id}`) #{movie1.title}
+                                p.text-center
+                                    i#star.fa.fa-star.me-1(style={color: "yellow", 'text-align': "center"})
+                                    span #{movie1.averageRating} / 10
+
+                                img(src=movie1.poster).img-fluid.rounded.mx-auto.d-block
+                    div.col-sm-6
+                        div.card.text-white.bg-dark.mb-3
+                            div.card-body
+                                h5.text-center
+                                    a(href=`/movies/${movie2._id}`) #{movie2.title}
+                                p.text-center
+                                    i#star.fa.fa-star.me-1(style={color: "yellow", 'text-align': "center"})
+                                    span #{movie1.averageRating} / 10
+
+                                img(src=movie2.poster).img-fluid.rounded.mx-auto.d-block
 
